@@ -15,6 +15,7 @@ Because consumers read the shared set live and pick a change up on their next re
 
 | Version | Date | Summary | Consumers must |
 |---|---|---|---|
+| [`0/2/0`](../../wiki/logs/0/2/0/CHANGELOG.md) | 2026-08-12 | Separates this repository's own `.agents/` set from the published `content/`. | Nothing — affects only a publishing repository. |
 | [`0/1/0`](../../wiki/logs/0/1/0/CHANGELOG.md) | 2026-08-12 | Adds a four-tool surface alongside the prompts and resources. | Nothing. Reconnect if your client showed no tools. |
 | [`0/0/0`](../../wiki/logs/0/0/0/CHANGELOG.md) | 2026-08-12 | First release of the shared instruction set, served as `lxagents-agents-base`. | Nothing — initial set. |
 

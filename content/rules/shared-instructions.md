@@ -17,6 +17,14 @@ Open this the moment you are unsure whether something is local or universal.
 Memory, indexes, both wikis, and `rules/repository.md` are **always local**. Everything
 universal is **always shared**. There is no third place.
 
+**This holds for the producer repository too.** `LXAgents/mcp-server` publishes the
+shared set, but it is also an ordinary software project with source, tests and a
+container image — so it carries its own `.agents/` for its rules, indexes, agent wiki
+and memory, and it must not push any of that into the published set. Producing the set
+is not a licence to keep local rules in it: a repository-specific convention in
+`{shared}` is broadcast to everyone, which is the same failure as a shared convention
+copied into a consumer, running the other way.
+
 ## B. Resolution order
 
 Full procedure in [`mcp-connector.md`](agents://rules/mcp-connector.md). In summary:

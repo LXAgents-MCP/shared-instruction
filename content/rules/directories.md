@@ -55,9 +55,11 @@ the `lxagents-agents-base` connector. Every repository carries only what is genu
 its own.
 
 ```
-lxagents-agents-base                <- THE SHARED SET (an MCP server, not a folder)
-  AGENTS.md                         <- the federation contract
-  rules/  git/  planning/  prompts/  creators/  index/
+LXAgents/mcp-server                 <- THE PRODUCER: serves the shared set over MCP
+  content/                          <- THE SHARED SET ITSELF, published as agents:// resources
+    AGENTS.md                       <- the federation contract
+    rules/  git/  planning/  prompts/  creators/  index/
+  .agents/                          <- the producer's OWN local set, published to nobody
   wiki/logs/…                       <- the shared set's own release history
 
 {org}/{repo}                        <- A CONSUMING REPOSITORY
@@ -91,7 +93,11 @@ These are hard failures.
   override**, registered in the override table with a stated reason. A silent copy is
   the failure this whole architecture exists to prevent — see
   [`duplicate-instruction-audit.md`](agents://rules/duplicate-instruction-audit.md).
-* **No memory in the shared set.** Memory is per-repository, always.
+* **No memory in the shared set.** Memory is per-repository, always — including the
+  producer's, which lives in its own `.agents/memory/` and is never published.
+* **Nothing repository-specific in the shared set.** The producer repository keeps its
+  own rules in its own `.agents/`, exactly as a consumer does. A local rule published to
+  everyone is the same failure as a shared rule copied into one repository, in reverse.
 * **No third documentation tree.** `wiki/` and `.agents/wiki/` are the only two. Do
   not create `docs/`, `documentation/`, or a second human wiki.
 * **No memory outside `.agents/memory/`.** No scratch notes, task trackers, `TODO.md`,

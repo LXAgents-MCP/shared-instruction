@@ -52,12 +52,15 @@ State which mode you picked in your first message.
 
 | Mode | You are in | You build |
 |---|---|---|
-| **A — Shared** | `LXAgents/mcp-server` itself | A change to the shared set: edit `content/`, version it, log it. Not this procedure — see [`rules/shared-instructions.md`](agents://rules/shared-instructions.md) §F. |
+| **A — Producer** | `LXAgents/mcp-server` itself | A change to the shared set: edit `content/`, version it, log it. Not this procedure — see [`rules/shared-instructions.md`](agents://rules/shared-instructions.md) §F. The producer **also** keeps its own `.agents/` for what is local to it. |
 | **B — Consumer** | Any other repository, with this connector available | This repository's `AGENTS.md` + `.agents/` (local content only), resolving the shared set through the connector. |
 | **C — Standalone** | Any other repository, with no connector and none planned | Everything locally, as a single self-contained repository. |
 
 How to decide: if the repository's remote is `LXAgents/mcp-server`, you are in Mode A —
-stop deciding. Otherwise, if you can read `agents://manifest.json`, propose **Mode B**.
+stop deciding. Note that Mode A is not "no local set": the producer repository is also a
+software project, so it carries `.agents/` for its own rules, indexes, agent wiki and
+memory exactly as a consumer does. What makes it Mode A is that it *publishes* the
+shared set, not that it lacks a local one. Otherwise, if you can read `agents://manifest.json`, propose **Mode B**.
 If you cannot, ask the user in §1 whether they intend to add the connector (Mode B) or
 want everything local (**Mode C**).
 
