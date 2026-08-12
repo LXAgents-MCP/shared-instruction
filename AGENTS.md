@@ -10,9 +10,23 @@ This repository is `LXAgents/mcp-server`. It holds the shared agent instruction 
 repository in the organization consumes that set through a connector rather than
 copying it.
 
-Working here means you are in **Mode A**: you are editing the shared set itself. A
-change to any file under `content/` changes behavior in every consuming repository at
-once, so it is versioned and logged like a release.
+## Two sets, two roles
+
+This repository is both the **producer** of the shared set and a **consumer** of it, so
+it carries both:
+
+| Set | Path | Published? |
+|---|---|---|
+| Shared — the product | [`content/`](content/) | **Yes.** Served as `agents://` resources. A change here changes behaviour in every consuming repository, so it is versioned and logged like a release. |
+| Local — this repository's own | [`.agents/`](.agents/) | No. Its rules, indexes, agent wiki, and memory. |
+
+`{shared}` resolves to `content/` **in the working tree**, not the deployed connector:
+you are editing the set, so a deployed snapshot may be older than your branch.
+
+Never put a repository-specific rule in `content/`, and never put a universal convention
+in `.agents/`. The routing question is in
+[`content/rules/directories.md`](content/rules/directories.md): *is this true for more
+than this repository?*
 
 ## Auto-Activation
 
@@ -23,8 +37,11 @@ standing orders, not as optional reference material.
 At the start of every session, before doing any work:
 
 1. Read `AGENTS.md` (this file).
-2. Read [`content/index/root-index.md`](content/index/root-index.md).
-3. Match the request against the trigger table below and load the files it names.
+2. Read [`.agents/index/root-index.md`](.agents/index/root-index.md).
+3. Read [`.agents/index/memory-index.md`](.agents/index/memory-index.md) and load only
+   the rows matching the request, so you continue prior work instead of restarting it.
+4. Match the request against the trigger table below and load the files it names —
+   local first, shared second.
 
 If a rule conflicts with a habit, a default, or a template you would otherwise follow,
 the rule wins. If it conflicts with an explicit instruction from the user in this
@@ -52,13 +69,16 @@ resolves to `content/…`.
 | Write documentation | [`content/creators/information-creator.md`](content/creators/information-creator.md) |
 | Touch anything that carries a version number | [`content/rules/versioning.md`](content/rules/versioning.md) |
 | Record a release | [`content/creators/changelog-creator.md`](content/creators/changelog-creator.md) |
-| Need project facts, commands, or orientation | [`wiki/information/architecture.md`](wiki/information/architecture.md) |
+| Edit anything under `content/` | [`.agents/rules/content-publishing.md`](.agents/rules/content-publishing.md) |
+| Record progress, a decision, or session state | [`content/creators/memory-creator.md`](content/creators/memory-creator.md) |
+| Need project facts, commands, or orientation | [`.agents/wiki/context/repository-map.md`](.agents/wiki/context/repository-map.md) |
+| Do anything at all in this repository | [`.agents/rules/repository.md`](.agents/rules/repository.md) |
 
 ## Reading order
 
 1. Read `AGENTS.md`.
-2. Read [`content/index/root-index.md`](content/index/root-index.md) — and nothing else
-   at this stage.
+2. Read [`.agents/index/root-index.md`](.agents/index/root-index.md) — and nothing else
+   at this stage. It routes to both sets.
 3. From its routing table, pick the ONE index whose scope matches the task, and read
    that index.
 4. Only then open the specific file(s) you need.
@@ -73,7 +93,7 @@ NOT read an instruction body until that instruction has been selected.
 
 * `AGENTS.md` and `README.md` are overviews and must never carry detailed rules or
   documentation.
-* `content/index/root-index.md` is a **router only**.
+* `.agents/index/root-index.md` and `content/index/root-index.md` are **routers only**.
 * An index never teaches. The moment it explains something, that content belongs in a
   real file.
 * **One subject per file.** A cross-cutting rule gets its own file and is linked, not
@@ -84,15 +104,20 @@ NOT read an instruction body until that instruction has been selected.
 
 ## Placement
 
-* Shared instruction content → `content/{folder}/{file}.md`, with frontmatter.
-* Routing → `content/index/{scope}-index.md`.
-* This repository's human documentation → `wiki/{folder}/{file-name}.md`, no
-  frontmatter.
+* Universal instruction content → `content/{folder}/{file}.md`, with frontmatter.
+  **Published.**
+* This repository's own rules → `.agents/rules/{file}.md`.
+* Routing → `.agents/index/{scope}-index.md` for local, `content/index/` for shared.
+* Agent knowledge → `.agents/wiki/{type}/{file-name}.md`.
+* Memory → `.agents/memory/{type}/{file-name}.md`.
+* Human documentation → `wiki/{folder}/{file-name}.md`, no frontmatter.
 * Release logs → `wiki/logs/{Major}/{Minor}/{Patch}/`.
 * Server code → `src/`. Tests → `test/`.
 
 A file added to `content/` is published as a resource on the next boot, so it is not a
-draft space. Registration in the owning index rides in the same commit.
+draft space — see
+[`.agents/rules/content-publishing.md`](.agents/rules/content-publishing.md).
+Registration in the owning index rides in the same commit.
 
 ## Discovery protocol
 

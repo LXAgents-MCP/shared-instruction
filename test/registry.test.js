@@ -54,6 +54,44 @@ test('registry: entries are reachable by URI and by name, and are frozen', async
   assert.equal(registry.get('agents://nope.md'), undefined);
 });
 
+test('registry: this repository\'s own .agents/ set is never published', async () => {
+  const registry = await loadRegistry();
+
+  // content/ is the product; .agents/ is this repository's own instruction set.
+  // Publishing a local rule would broadcast a repository-specific convention to
+  // every consumer, which is the exact failure the separation exists to prevent.
+  const leaked = registry.entries.filter((entry) => entry.path.includes('.agents'));
+  assert.deepEqual(leaked, [], 'a local instruction file leaked into the published set');
+
+  for (const entry of registry.entries) {
+    assert.doesNotMatch(entry.uri, /\.agents/, `${entry.uri} is not part of the product`);
+  }
+
+  // Local names must not collide with shared ones by accident: a matching name
+  // is an override, and an unintended one silently shadows a published rule.
+  const { readFile, readdir } = await import('node:fs/promises');
+  const { join } = await import('node:path');
+  const localNames = [];
+  for (const folder of ['rules', 'index', 'wiki/context', 'memory/state', 'memory/tasks']) {
+    const dir = join('.agents', folder);
+    for (const file of await readdir(dir)) {
+      const raw = await readFile(join(dir, file), 'utf8');
+      const name = /^name:\s*(.+)$/m.exec(raw)?.[1]?.trim();
+      assert.ok(name, `${dir}/${file} has no frontmatter name`);
+      localNames.push(name);
+    }
+  }
+
+  assert.equal(new Set(localNames).size, localNames.length, 'duplicate name within .agents/');
+  for (const name of localNames) {
+    assert.equal(
+      registry.getByName(name),
+      undefined,
+      `local name "${name}" collides with a published file — that would be an undeclared override`,
+    );
+  }
+});
+
 test('registry: the discovery-protocol block is byte-identical in every copy', async () => {
   const registry = await loadRegistry();
 
