@@ -1,6 +1,6 @@
 ---
 name: no-session-links
-description: Never put an assistant or tool session link in a file, commit, branch, or pull request — what counts, why, and what to write instead.
+description: Never record an assistant or tool session link — what counts, why, what to write instead, and verifying the artifact after you post it.
 ---
 
 # No Session Links
@@ -93,7 +93,32 @@ patterns above. Over a branch's commits, one scan costs nothing:
 Substitute the repository's actual default branch name. Ordinary prose will match too
 ("in this session of work") — that is fine. Remove only what carries an identifier.
 
-If you find one already committed on an unmerged branch, rewrite the affected messages
-and force-push with `--force-with-lease` before the branch is merged. Once it has
-landed on the default branch it stays there — published history is not rewritten to
-remove it. Report it and move on.
+## Check again after you post
+
+Stripping a session link before you post is necessary and **not sufficient**. A forge,
+bot, or integration can append one *after* the body leaves your hands — the request you
+sent was clean and the artifact that got stored is not. Nothing you can inspect locally
+will show you this.
+
+So after creating or editing a pull request, an issue, a comment, or a release note,
+**read the artifact back from the forge** and scan the stored body for the patterns
+above. Treat a successful create call as unverified until you have.
+
+A tool that promises to strip duplicate footers is not a substitute for looking. The
+footer you did not write is the case this section exists for.
+
+## Removing one you find
+
+The fix depends on what carries it, and the three cases are not equally hard:
+
+* **A posted body — pull request, issue, comment, release note.** Edit it in place and
+  delete the line. This is the easy case and the common one: it needs no history rewrite
+  and no permission beyond what you already used to post. Do it immediately, before the
+  branch is merged.
+* **A commit on an unmerged branch.** Rewrite the affected messages and force-push with
+  `--force-with-lease` before the branch is merged.
+* **A commit already on the default branch.** It stays. Published history is not
+  rewritten to remove a session link. Report it and move on.
+
+Say plainly what you removed and where. A silent fix teaches nobody that the tooling
+does this.
