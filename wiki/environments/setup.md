@@ -32,7 +32,7 @@ Check it is up:
 
 ```bash
 curl -s http://localhost:3000/readyz
-# {"status":"ready","resources":24,"sessions":0}
+# {"status":"ready","resources":25,"sessions":0}
 ```
 
 ## Inspect it
