@@ -85,6 +85,7 @@ a hash exactly rather than guess at it.
 | `agents://rules/auto-activation.md` | `auto-activation` |
 | `agents://rules/mcp-connector.md` | `mcp-connector-resolution` |
 | `agents://rules/no-session-links.md` | `no-session-links` |
+| `agents://rules/change-propagation.md` | `change-propagation` |
 | `agents://rules/discovery-protocol.md` | `discovery-protocol` |
 | `agents://rules/duplicate-instruction-audit.md` | `duplicate-instruction-audit` |
 | `agents://rules/memory-policy.md` | `memory-policy` |

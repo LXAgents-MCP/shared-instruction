@@ -43,6 +43,7 @@ row-for-row.
 | Add, move, rename, or delete any file in a set or in `wiki/` | `{shared}/creators/index-creator.md` |
 | Write a rule or instruction | `{shared}/creators/instruction-creator.md` |
 | Write documentation, an SOP, or a domain guideline | `{shared}/creators/information-creator.md` |
+| Change code or structure that a document describes | `{shared}/rules/change-propagation.md` |
 | Record progress, a decision, or session state | `{shared}/creators/memory-creator.md` |
 | Touch anything that carries a version number | `{shared}/rules/versioning.md` |
 | Record a release | `{shared}/creators/changelog-creator.md` |

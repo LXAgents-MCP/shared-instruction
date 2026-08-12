@@ -15,7 +15,7 @@ instead of cloning or vendoring a copy of them.
   `AGENTS.md`, `.agents/` tree, wiki, and memory.
 - **`check-duplicate-agents-instruction` prompt** — finds instructions a repository
   duplicates from the shared set and removes them. Runs **only when asked**.
-- **24 instruction resources** under `agents://`, plus `agents://manifest.json`
+- **25 instruction resources** under `agents://`, plus `agents://manifest.json`
   listing every file with a content hash — one read instead of walking the set.
 - **Four read-only tools** — `agents_setup`, `agents_check_duplicate_instructions`,
   `agents_list_instructions`, `agents_read_instruction` — delivering the same content

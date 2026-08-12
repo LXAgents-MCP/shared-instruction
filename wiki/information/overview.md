@@ -33,7 +33,7 @@ to vendor by mistake, and every repository reads the same bytes.
 | Prompt | `check-duplicate-agents-instruction` | Finds instructions a repository duplicates from this set. Runs only when asked. |
 | Resource | `agents://manifest.json` | Every file with its `name`, path, description, and content hash. |
 | Resource | `agents://AGENTS.md` | The federation contract consuming repositories rely on. |
-| Resource | `agents://{folder}/{file}.md` | Any instruction file — 24 of them. |
+| Resource | `agents://{folder}/{file}.md` | Any instruction file — 25 of them. |
 
 ## Why prompts and not tools
 
