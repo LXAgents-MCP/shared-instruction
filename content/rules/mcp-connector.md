@@ -74,8 +74,13 @@ repository without cloning anything:
 
 1. Open **Settings → Connectors → Add custom connector**.
 2. Name it `lxagents-agents-base`.
-3. Point it at the deployed server's MCP endpoint, e.g.
+3. Point it at the deployed server's MCP endpoint — **including the `/mcp` path**:
    `https://<host>/mcp`.
+
+The path is not optional. A URL without it lands on a route that speaks no MCP, and
+clients tend to read that failure as "this server needs authentication" and report a
+sign-in or registration error rather than a wrong address. If connecting fails that
+way, check the path first.
 
 **As a local stdio server** — for development on the instruction set itself:
 
@@ -100,6 +105,16 @@ repository without cloning anything:
 | Resource | `agents://manifest.json` | Every shared file with `name`, path, description and content hash. |
 | Resource | `agents://AGENTS.md` | The federation contract. |
 | Resource | `agents://{folder}/{file}.md` | Any shared instruction file. |
+| Tool | `agents_setup` | Same text as the `agents-setup` prompt. |
+| Tool | `agents_check_duplicate_instructions` | Same text as the audit prompt, manifest inlined. **On request only.** |
+| Tool | `agents_list_instructions` | The manifest, optionally filtered to one folder. |
+| Tool | `agents_read_instruction` | One file, by `name`, path, or URI. |
+
+**Prefer the prompts and resources.** They are the right primitives for standing
+orders, and the tools return identical text. The tools exist because some clients
+enumerate a connector by its tools alone and never surface prompts or resources — a
+server without them shows up there as unusable. Use whichever your client actually
+exposes; the instructions you receive are the same either way.
 
 ## When the connector is unavailable
 

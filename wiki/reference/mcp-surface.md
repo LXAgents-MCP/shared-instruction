@@ -1,7 +1,11 @@
 # MCP Surface
 
-Everything `lxagents-agents-base` exposes. There are **no tools** — the surface is
-prompts and resources only.
+Everything `lxagents-agents-base` exposes: prompts, resources, and tools.
+
+Prompts and resources are the primary surface. The tools deliver the same content and
+exist because some clients enumerate a connector by its tools alone — such a client
+shows a prompts-and-resources-only server as "no tools available" and will not let you
+enable it. Prefer prompts and resources where your client exposes them.
 
 ## Server identity
 
@@ -34,6 +38,24 @@ under the MCP spec, but the SDK validates whatever arrives against the declared 
 and an object schema rejects `undefined` even when every field is optional. Declaring
 arguments would make the server's primary entry point fail for spec-compliant clients
 that leave them out.
+
+## Tools
+
+All four are read-only, non-destructive, and idempotent.
+
+| Tool | Arguments | Returns |
+|---|---|---|
+| `agents_setup` | none | The AGENTS-SETUP procedure — identical to the `agents-setup` prompt. |
+| `agents_check_duplicate_instructions` | none | The duplicate audit with the manifest inlined — identical to the audit prompt. **On request only.** |
+| `agents_list_instructions` | `folder` (optional) | Every file with its description and `sha256`, as text and as `structuredContent`. |
+| `agents_read_instruction` | `instruction` (required) | One file verbatim. Accepts a frontmatter `name`, a path, or an `agents://` URI. |
+
+`agents_read_instruction` returns near-match suggestions when nothing resolves, and
+`agents_list_instructions` names the real folders when given an unknown one, so a wrong
+guess costs one call rather than a full listing.
+
+The two zero-argument tools declare no input schema, for the same reason the prompts
+declare none — see the note below.
 
 ## Resources
 
