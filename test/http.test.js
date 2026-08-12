@@ -84,7 +84,8 @@ test('stateless: a client can list and read resources over HTTP', async () => {
   const client = await connect(stateless.url);
 
   const { resources } = await client.listResources();
-  assert.equal(resources.length, stateless.registry.size);
+  // Every instruction file, plus the manifest.
+  assert.equal(resources.length, stateless.registry.size + 1);
 
   const { contents } = await client.readResource({ uri: 'agents://AGENTS.md' });
   assert.match(contents[0].text, /name: shared-agents-entry-point/);

@@ -15,7 +15,8 @@
  * determining its own context from the repository.
  */
 
-import { PROMPT_AGENTS_SETUP } from '../constants.js';
+import { MANIFEST_URI, PROMPT_AGENTS_SETUP, PROMPT_DUPLICATE_AUDIT } from '../constants.js';
+import { buildManifest } from './manifest.js';
 
 /** Wraps prompt text in the single user message clients expect. */
 export function userMessage(text) {
@@ -66,6 +67,66 @@ export function registerAgentsSetupPrompt(server, registry) {
         messages: [
           userMessage(
             `Follow the procedure below for this repository.\n\n${CONNECTOR_PREAMBLE}\n\n---\n\n${procedure.text}`,
+          ),
+        ],
+      };
+    },
+  );
+}
+
+/**
+ * Registers the `check-duplicate-agents-instruction` prompt.
+ *
+ * This is the on-request half of the instruction set. The corresponding rule
+ * fires for nothing else — it proposes deletions, so it runs when a user asks
+ * and at no other time. Making it a prompt rather than an always-on rule is
+ * what enforces that: it cannot run unless someone invokes it.
+ *
+ * The manifest is inlined rather than linked. The audit's first step is to read
+ * it, and an agent that has it already cannot skip the step, mis-read a hash,
+ * or start proposing deletions from a half-loaded picture.
+ *
+ * @param {import('@modelcontextprotocol/sdk/server/mcp.js').McpServer} server
+ * @param {Readonly<object>} registry
+ * @param {string} version
+ */
+export function registerDuplicateAuditPrompt(server, registry, version) {
+  const manifest = `${JSON.stringify(buildManifest(registry, version), null, 2)}\n`;
+
+  server.registerPrompt(
+    PROMPT_DUPLICATE_AUDIT,
+    {
+      title: 'Check for duplicated agent instructions',
+      description:
+        'Audit this repository against the shared instruction set: find instruction files it duplicates, report each with a verdict, and delete only what the user approves.',
+    },
+    async () => {
+      const procedure = requireEntry(registry, 'agents://rules/duplicate-instruction-audit.md');
+
+      return {
+        description:
+          'The duplicate-instruction audit, with the shared set manifest supplied inline.',
+        messages: [
+          userMessage(
+            `Audit this repository for instructions duplicated from the shared set, following the procedure below.
+
+${CONNECTOR_PREAMBLE}
+
+The manifest the procedure tells you to read is included at the end of this message, so step 1 is already done — do not re-read \`${MANIFEST_URI}\`. Read only the shared files you actually need to diff.
+
+**Deletion requires per-file approval.** Report every finding with its verdict and wait. Never delete a file whose verdict you could not determine.
+
+---
+
+${procedure.text}
+
+---
+
+## Shared set manifest
+
+\`\`\`json
+${manifest}\`\`\`
+`,
           ),
         ],
       };

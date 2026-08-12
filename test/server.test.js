@@ -38,10 +38,15 @@ test('resources/list: every instruction file is listed with a description', asyn
   const { client, server, registry } = await connect();
 
   const { resources } = await client.listResources();
-  assert.equal(resources.length, registry.size);
+  // Every instruction file, plus the manifest.
+  assert.equal(resources.length, registry.size + 1);
 
   for (const resource of resources) {
     assert.ok(resource.description, `${resource.uri} has no description to route on`);
+  }
+  for (const entry of registry.entries) {
+    const resource = resources.find((candidate) => candidate.uri === entry.uri);
+    assert.ok(resource, `${entry.uri} is not published`);
     assert.equal(resource.mimeType, 'text/markdown');
   }
 

@@ -11,8 +11,14 @@
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
-import { PROMPT_AGENTS_SETUP, SERVER_ID, SERVER_TITLE } from '../constants.js';
-import { registerAgentsSetupPrompt } from './prompts.js';
+import {
+  PROMPT_AGENTS_SETUP,
+  PROMPT_DUPLICATE_AUDIT,
+  SERVER_ID,
+  SERVER_TITLE,
+} from '../constants.js';
+import { registerManifestResource } from './manifest.js';
+import { registerAgentsSetupPrompt, registerDuplicateAuditPrompt } from './prompts.js';
 import { registerInstructionResources } from './resources.js';
 
 /**
@@ -33,6 +39,9 @@ function buildInstructions(registry) {
     '',
     'A repository consuming this set must never keep its own copy of a file served here.',
     'A local copy overrides the shared one by `name` and then silently goes stale.',
+    '',
+    `The \`${PROMPT_DUPLICATE_AUDIT}\` prompt finds those copies. It runs **only when the user asks**`,
+    '— it proposes deletions, so never invoke it on your own initiative or as part of session start.',
   ].join('\n');
 }
 
@@ -53,7 +62,9 @@ export function createServer({ registry, version }) {
   );
 
   registerInstructionResources(server, registry);
+  registerManifestResource(server, registry, version);
   registerAgentsSetupPrompt(server, registry);
+  registerDuplicateAuditPrompt(server, registry, version);
 
   return server;
 }
