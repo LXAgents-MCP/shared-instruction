@@ -1,0 +1,73 @@
+import assert from 'node:assert/strict';
+import { test } from 'node:test';
+
+import { normalizeBody, parseFrontmatter } from '../src/content/frontmatter.js';
+import { loadRegistry } from '../src/content/registry.js';
+
+test('frontmatter: reads name and description, and keeps colons in values', () => {
+  const { data, body, hasFrontmatter } = parseFrontmatter(
+    '---\nname: a-rule\ndescription: Do X: then Y\n---\n# Title\n\nBody.\n',
+  );
+  assert.equal(hasFrontmatter, true);
+  assert.equal(data.name, 'a-rule');
+  assert.equal(data.description, 'Do X: then Y');
+  assert.equal(body, '# Title\n\nBody.\n');
+});
+
+test('frontmatter: a document without frontmatter is returned whole', () => {
+  const { data, body, hasFrontmatter } = parseFrontmatter('# Plain\n');
+  assert.equal(hasFrontmatter, false);
+  assert.deepEqual(data, {});
+  assert.equal(body, '# Plain\n');
+});
+
+test('normalizeBody: line endings and trailing whitespace do not change the hash input', () => {
+  assert.equal(normalizeBody('a  \r\nb\t\r\n\r\n'), normalizeBody('a\nb\n'));
+});
+
+test('registry: loads the shipped instruction set with unique names and URIs', async () => {
+  const registry = await loadRegistry();
+
+  assert.ok(registry.size >= 20, `expected the full set, loaded ${registry.size}`);
+
+  const names = new Set();
+  const uris = new Set();
+  for (const entry of registry.entries) {
+    assert.ok(entry.description.length <= 140, `${entry.path}: description over 140 chars`);
+    assert.match(entry.name, /^[a-z0-9]+(-[a-z0-9]+)*$/, `${entry.path}: name is not kebab-case`);
+    assert.match(entry.sha256, /^[0-9a-f]{64}$/);
+    names.add(entry.name);
+    uris.add(entry.uri);
+  }
+  assert.equal(names.size, registry.size);
+  assert.equal(uris.size, registry.size);
+});
+
+test('registry: entries are reachable by URI and by name, and are frozen', async () => {
+  const registry = await loadRegistry();
+
+  const entry = registry.get('agents://rules/directories.md');
+  assert.ok(entry, 'directories.md should be published');
+  assert.equal(entry.name, 'directory-architecture');
+  assert.equal(registry.getByName('directory-architecture'), entry);
+  assert.ok(Object.isFrozen(entry), 'entries must be immutable — every session shares them');
+  assert.equal(registry.get('agents://nope.md'), undefined);
+});
+
+test('registry: the discovery-protocol block is byte-identical in every copy', async () => {
+  const registry = await loadRegistry();
+
+  // The canonical block is the first fenced code block in discovery-protocol.md.
+  // Each creator reproduces it verbatim; that duplication is deliberate and
+  // bounded, so it is worth a test rather than a comment.
+  const fenced = (text) => text.split(/^```$/m)[1];
+  const canonical = fenced(registry.get('agents://rules/discovery-protocol.md').text);
+  assert.ok(canonical?.includes('Discovery Protocol'), 'canonical block not found');
+
+  const copies = registry.entries.filter((entry) => entry.folder === 'creators');
+  assert.equal(copies.length, 5, 'all five creators must exist');
+  for (const copy of copies) {
+    const block = copy.text.slice(copy.text.indexOf('## Discovery Protocol'));
+    assert.equal(fenced(block), canonical, `${copy.path} has drifted from the canonical block`);
+  }
+});
