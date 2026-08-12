@@ -58,6 +58,20 @@ export function buildManifest(registry, version) {
 }
 
 /**
+ * The manifest as it is served: pretty-printed, newline-terminated.
+ *
+ * One serializer, so the resource and the copy inlined into the audit are byte
+ * for byte the same document.
+ *
+ * @param {Readonly<object>} registry
+ * @param {string} version
+ * @returns {string}
+ */
+export function manifestJson(registry, version) {
+  return `${JSON.stringify(buildManifest(registry, version), null, 2)}\n`;
+}
+
+/**
  * @param {import('@modelcontextprotocol/sdk/server/mcp.js').McpServer} server
  * @param {Readonly<object>} registry
  * @param {string} version
@@ -65,7 +79,7 @@ export function buildManifest(registry, version) {
 export function registerManifestResource(server, registry, version) {
   // Serialized once per server instance rather than per read: the registry is
   // frozen, so the bytes cannot change underneath us.
-  const text = `${JSON.stringify(buildManifest(registry, version), null, 2)}\n`;
+  const text = manifestJson(registry, version);
 
   server.registerResource(
     'manifest',

@@ -7,7 +7,7 @@ instead of cloning or vendoring a copy of them.
 
 - **Server id:** `lxagents-agents-base`
 - **Package:** `@lxagents/agents-base`
-- **Surface:** MCP prompts and resources. No tools.
+- **Surface:** MCP prompts and resources, plus four read-only tools for clients that only enumerate tools.
 
 ## Key features
 
@@ -17,6 +17,9 @@ instead of cloning or vendoring a copy of them.
   duplicates from the shared set and removes them. Runs **only when asked**.
 - **24 instruction resources** under `agents://`, plus `agents://manifest.json`
   listing every file with a content hash — one read instead of walking the set.
+- **Four read-only tools** — `agents_setup`, `agents_check_duplicate_instructions`,
+  `agents_list_instructions`, `agents_read_instruction` — delivering the same content
+  as the prompts, for clients that surface tools only.
 - **Many clients at once.** Content is loaded once into a frozen registry; each
   request or session gets its own server instance, so nothing is shared and any
   process can serve any request.
@@ -43,7 +46,8 @@ docker compose up --build
 ## Connect it
 
 Add a custom connector pointing at `https://<host>/mcp`, named
-`lxagents-agents-base`. For local development over stdio, see
+`lxagents-agents-base`. **Include the `/mcp` path** — without it the handshake fails,
+and clients report that as a sign-in error rather than a wrong address. For local development over stdio, see
 [`wiki/guides/connect-a-repository.md`](wiki/guides/connect-a-repository.md).
 
 ## Documentation

@@ -8,7 +8,12 @@ How to put a repository onto the shared instruction set.
 
 1. Open **Settings → Connectors → Add custom connector**.
 2. Name it `lxagents-agents-base`.
-3. Set the URL to the deployed server's MCP endpoint, e.g. `https://<host>/mcp`.
+3. Set the URL to the deployed server's MCP endpoint, **including the `/mcp` path**:
+   `https://<host>/mcp`.
+
+If the connector fails with a sign-in or registration error, check the path before
+anything else. A URL without `/mcp` reaches a route that speaks no MCP, and clients
+read that failure as "this server must need authentication".
 
 **Local over stdio** — for working on the instruction set itself:
 
@@ -26,7 +31,9 @@ How to put a repository onto the shared instruction set.
 
 ## 2. Run the setup prompt
 
-Invoke the **`agents-setup`** prompt in the repository you are adopting. It runs the
+Invoke the **`agents-setup`** prompt in the repository you are adopting — or call the
+**`agents_setup`** tool if your client surfaces tools rather than prompts. They deliver
+identical instructions. It runs the
 whole procedure: discovery, the batched question round, the instruction-set selection,
 then the files.
 
@@ -55,7 +62,8 @@ then go stale.
 
 ## 4. If the repository already has an `.agents/` tree
 
-Do not merge it by hand. Invoke **`check-duplicate-agents-instruction`**, which:
+Do not merge it by hand. Invoke **`check-duplicate-agents-instruction`** (or the
+**`agents_check_duplicate_instructions`** tool), which:
 
 1. Compares every local instruction file against the manifest — by `name` first, since
    that is the override key, then by content hash, then by path.

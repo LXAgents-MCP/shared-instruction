@@ -18,8 +18,9 @@ import {
   SERVER_TITLE,
 } from '../constants.js';
 import { registerManifestResource } from './manifest.js';
-import { registerAgentsSetupPrompt, registerDuplicateAuditPrompt } from './prompts.js';
+import { registerPrompts } from './prompts.js';
 import { registerInstructionResources } from './resources.js';
+import { registerTools } from './tools.js';
 
 /**
  * Text handed to the client at `initialize`. Clients surface it to the model
@@ -32,16 +33,20 @@ function buildInstructions(registry) {
     '',
     'It is a set of standing orders, not reference material. Route into it; do not read it all.',
     '',
-    `- Invoke the \`${PROMPT_AGENTS_SETUP}\` prompt to set up or adopt the instruction system in a repository.`,
-    '- Read `agents://manifest.json` once to learn what exists — it is one read instead of many.',
-    '- Read `agents://index/root-index.md` to route, then open only the files the routing table names.',
+    `- Invoke the \`${PROMPT_AGENTS_SETUP}\` prompt, or call the \`agents_setup\` tool, to set up or adopt the instruction system in a repository.`,
+    '- Call `agents_list_instructions` (or read `agents://manifest.json`) once to learn what exists — one call instead of many.',
+    '- Then read one file at a time with `agents_read_instruction`, or the matching `agents://` resource.',
     '- `agents://AGENTS.md` is the federation contract a consuming repository relies on.',
+    '',
+    'The prompts and the tools deliver the same text. Prefer prompts and resources where your',
+    'client exposes them; the tools exist for clients that only enumerate tools.',
     '',
     'A repository consuming this set must never keep its own copy of a file served here.',
     'A local copy overrides the shared one by `name` and then silently goes stale.',
     '',
-    `The \`${PROMPT_DUPLICATE_AUDIT}\` prompt finds those copies. It runs **only when the user asks**`,
-    '— it proposes deletions, so never invoke it on your own initiative or as part of session start.',
+    `The \`${PROMPT_DUPLICATE_AUDIT}\` prompt and the \`agents_check_duplicate_instructions\` tool find`,
+    'those copies. They run **only when the user asks** — they propose deletions, so never invoke',
+    'them on your own initiative or as part of session start.',
   ].join('\n');
 }
 
@@ -63,8 +68,8 @@ export function createServer({ registry, version }) {
 
   registerInstructionResources(server, registry);
   registerManifestResource(server, registry, version);
-  registerAgentsSetupPrompt(server, registry);
-  registerDuplicateAuditPrompt(server, registry, version);
+  registerPrompts(server, registry, version);
+  registerTools(server, registry, version);
 
   return server;
 }
