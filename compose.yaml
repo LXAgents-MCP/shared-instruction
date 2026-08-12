@@ -1,0 +1,35 @@
+services:
+  agents-base:
+    build: .
+    image: lxagents/agents-base:0.0.0
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      # Streamable HTTP is the connector surface; stdio is for local development
+      # and is run directly with `npm start`, not through compose.
+      MCP_TRANSPORT: http
+      MCP_PATH: /mcp
+      # Stateless gives every request its own transport and server, so any
+      # replica can serve any request and scaling needs no coordination.
+      MCP_SESSION_MODE: stateless
+      # One worker per core inside the container.
+      MCP_WORKERS: auto
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    restart: unless-stopped
+    # Docker's own init as PID 1, so the image needs no init package of its own.
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000/readyz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 30s
+      timeout: 3s
+      start_period: 10s
+      retries: 3
