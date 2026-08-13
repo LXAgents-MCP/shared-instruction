@@ -25,6 +25,7 @@ index lists shared files only; a consuming repository's files are routed from it
 | [`discovery-protocol.md`](agents://rules/discovery-protocol.md) | Propose new rules; never self-apply them. |
 | [`duplicate-instruction-audit.md`](agents://rules/duplicate-instruction-audit.md) | On request only — find and remove instructions a repository duplicates from this set. |
 | [`memory-policy.md`](agents://rules/memory-policy.md) | What may be written to memory, and how. |
+| [`work-summary.md`](agents://rules/work-summary.md) | Report finished work back — what changed, what was verified, what was not done. |
 | [`versioning.md`](agents://rules/versioning.md) | Never bump a version without asking. |
 
 ## git/
