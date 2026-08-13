@@ -20,7 +20,7 @@ It is both the **producer** of the shared set and a **consumer** of it. See
 
 | Path | Contents | Touch it when |
 |---|---|---|
-| `content/` | The published instruction set — 25 markdown files served as `agents://` resources. | You are changing a convention every repository follows. **This is a release.** |
+| `content/` | The published instruction set — 26 markdown files served as `agents://` resources. | You are changing a convention every repository follows. **This is a release.** |
 | `.agents/` | This repository's own rules, indexes, agent wiki, memory. | You are changing something true only here. |
 | `wiki/` | Human documentation, plus `wiki/logs/` release history. | A person needs to read it. |
 | `src/content/` | Registry and frontmatter parsing — loads `content/` once at boot. | Changing how content is loaded, validated, or hashed. |

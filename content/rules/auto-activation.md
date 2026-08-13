@@ -47,11 +47,24 @@ row-for-row.
 | Record progress, a decision, or session state | `{shared}/creators/memory-creator.md` |
 | Touch anything that carries a version number | `{shared}/rules/versioning.md` |
 | Record a release | `{shared}/creators/changelog-creator.md` |
+| Report finished work back to the user | `{shared}/rules/work-summary.md` |
 | Need project facts, commands, or orientation | `{repo}/.agents/wiki/context/repository-map.md` |
 | Do anything at all in this project | `{repo}/.agents/rules/repository.md` |
 
 Any row whose file is overridden locally resolves to the local copy — that is what the
 override table in `root-index.md` is for.
+
+### Mirroring this table in a consuming repository
+
+"Row-for-row" is a floor, not a ceiling. A consuming repository reproduces every row
+above, unchanged and in order, and then **appends rows for its own local
+instructions** below them — one per file in `.agents/` that should fire on a trigger.
+Without those rows a repository's own conventions never activate, which is the failure
+this table exists to prevent.
+
+What a consumer must not do: remove a mirrored row, reorder them, or repoint one at a
+local file. Repointing is an override, and an override is declared in the override
+table of `.agents/index/root-index.md`, never by quietly editing a trigger.
 
 ## The one rule that does not auto-activate
 

@@ -15,6 +15,8 @@ Because consumers read the shared set live and pick a change up on their next re
 
 | Version | Date | Summary | Consumers must |
 |---|---|---|---|
+| [`0/4/0`](../../wiki/logs/0/4/0/CHANGELOG.md) | 2026-08-13 | Adds the work-summary rule, and closes two audit gaps found on real consuming repositories. | Re-read `rules/auto-activation.md`, add the `work-summary` trigger row, and add a row per local instruction file. |
+| [`0/3/0`](../../wiki/logs/0/3/0/CHANGELOG.md) | 2026-08-12 | Adds change-propagation, and widens no-session-links to what a forge stores after you post. | Re-read `rules/auto-activation.md`, add the change-propagation trigger row, and delete any local `change-propagation.md`. |
 | [`0/2/0`](../../wiki/logs/0/2/0/CHANGELOG.md) | 2026-08-12 | Separates this repository's own `.agents/` set from the published `content/`. | Nothing — affects only a publishing repository. |
 | [`0/1/0`](../../wiki/logs/0/1/0/CHANGELOG.md) | 2026-08-12 | Adds a four-tool surface alongside the prompts and resources. | Nothing. Reconnect if your client showed no tools. |
 | [`0/0/0`](../../wiki/logs/0/0/0/CHANGELOG.md) | 2026-08-12 | First release of the shared instruction set, served as `lxagents-agents-base`. | Nothing — initial set. |
