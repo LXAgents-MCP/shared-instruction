@@ -89,6 +89,7 @@ a hash exactly rather than guess at it.
 | `agents://rules/discovery-protocol.md` | `discovery-protocol` |
 | `agents://rules/duplicate-instruction-audit.md` | `duplicate-instruction-audit` |
 | `agents://rules/memory-policy.md` | `memory-policy` |
+| `agents://rules/work-summary.md` | `work-summary` |
 | `agents://rules/versioning.md` | `versioning-rules` |
 | `agents://git/branching-strategy.md` | `branching-strategy` |
 | `agents://git/commit-conventions.md` | `commit-conventions` |

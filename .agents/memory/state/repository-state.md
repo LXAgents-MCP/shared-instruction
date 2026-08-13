@@ -11,13 +11,13 @@ description: Current known state of LXAgents/mcp-server — what exists, what is
 `lxagents-agents-base`. Plain JavaScript, Node ESM, no build step. Published as
 `@lxagents/agents-base`.
 
-**Structure.** `content/` holds the 25 published instruction files. `.agents/` holds
+**Structure.** `content/` holds the 26 published instruction files. `.agents/` holds
 this repository's own instruction set — created in this session; before that the
 repository had none, and its root `AGENTS.md` routed its own conventions into the
 published set. `wiki/` holds human documentation. `src/` and `test/` hold the server.
 
 **Surface.** 2 prompts (`agents-setup`, `check-duplicate-agents-instruction`), 26
-resources (25 instruction files plus `agents://manifest.json`), and 4 read-only tools
+resources (26 instruction files plus `agents://manifest.json`), and 4 read-only tools
 (`agents_setup`, `agents_check_duplicate_instructions`, `agents_list_instructions`,
 `agents_read_instruction`). Prompts and tools deliver identical text from
 `src/server/payloads.js`.
