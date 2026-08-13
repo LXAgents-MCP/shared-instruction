@@ -55,8 +55,17 @@ remove from the candidate list everything the audit must never touch:
 | `.agents/memory/**` | Memory is always local and never shared. |
 | `.agents/wiki/**` | Agent knowledge is repository-specific. |
 | `.agents/index/**` | Indexes are per-repository routing, never overridden. |
+| Any `INDEX.md`, at any depth | A legacy index from a setup that predates `.agents/index/`. Still routing, still never an override. |
 | `.agents/rules/repository.md` | This repository's own rules, by definition local. |
 | `wiki/**`, `README.md`, `AGENTS.md` | Not part of the shared set. |
+
+The `INDEX.md` row matters more than it looks. A repository scaffolded before indexes
+moved to `.agents/index/` keeps them at `.agents/INDEX.md`, `wiki/INDEX.md`, and the
+repository root — paths the `.agents/index/**` exclusion does not cover. Those files
+are the repository's routing tables, so an audit that treats them as candidates
+proposes deleting the map. They are replaced during adoption, by
+[`../prompts/agents-setup.md`](agents://prompts/agents-setup.md), and never by this
+audit.
 
 What remains is the real candidate set: instruction files under `.agents/` that
 plausibly shadow a shared file.
