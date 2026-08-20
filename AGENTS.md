@@ -44,6 +44,12 @@ At the start of every session, before doing any work:
 4. Match the request against the trigger table below and load the files it names —
    local first, shared second.
 
+Three of those files load on **every** request rather than on a trigger — the task
+workflow, the branching strategy, and the commit conventions — along with the two
+permission gates that ride with them: ask before opening a pull request, ask before
+merging. See
+[`content/rules/shared-instructions.md`](content/rules/shared-instructions.md) §H.
+
 If a rule conflicts with a habit, a default, or a template you would otherwise follow,
 the rule wins. If it conflicts with an explicit instruction from the user in this
 session, the user wins — and you say out loud which rule you are setting aside.

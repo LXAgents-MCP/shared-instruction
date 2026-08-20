@@ -54,6 +54,15 @@ row-for-row.
 Any row whose file is overridden locally resolves to the local copy — that is what the
 override table in `root-index.md` is for.
 
+### Three files load on every request, not on a trigger
+
+`{shared}/planning/task-workflow.md`, `{shared}/git/branching-strategy.md`, and
+`{shared}/git/commit-conventions.md` are **mandatory standard files**. They load at the
+start of every request regardless of the rows above, because their conventions have to
+be known before the work starts — not at the moment a branch or a commit is finally
+created. The mandate, and the two permission gates that come with it, are in
+[`shared-instructions.md`](agents://rules/shared-instructions.md) §H.
+
 ### Mirroring this table in a consuming repository
 
 "Row-for-row" is a floor, not a ceiling. A consuming repository reproduces every row
