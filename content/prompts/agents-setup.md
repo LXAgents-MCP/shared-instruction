@@ -52,12 +52,12 @@ State which mode you picked in your first message.
 
 | Mode | You are in | You build |
 |---|---|---|
-| **A — Producer** | `LXAgents/mcp-server` itself | A change to the shared set: edit `content/`, version it, log it. Not this procedure — see [`rules/shared-instructions.md`](agents://rules/shared-instructions.md) §F. The producer **also** keeps its own `.agents/` for what is local to it. |
+| **A — Producer** | `LXAgents-MCP/shared-instruction` itself | A change to the shared set: edit `content/`, version it, log it. Not this procedure — see [`rules/shared-instructions.md`](agents://rules/shared-instructions.md) §F. The producer **also** keeps its own `.agents/` for what is local to it. |
 | **B — Consumer** | Any other repository, with this connector available | This repository's `AGENTS.md` + `.agents/` (local content only), resolving the shared set through the connector. |
 | **C — Standalone** | Any other repository, with no connector and none planned | Everything locally, as a single self-contained repository. |
 
-How to decide: if the repository's remote is `LXAgents/mcp-server`, you are in Mode A —
-stop deciding. Note that Mode A is not "no local set": the producer repository is also a
+How to decide: if the repository's remote is `LXAgents-MCP/shared-instruction`, you are
+in Mode A — stop deciding. Note that Mode A is not "no local set": the producer repository is also a
 software project, so it carries `.agents/` for its own rules, indexes, agent wiki and
 memory exactly as a consumer does. What makes it Mode A is that it *publishes* the
 shared set, not that it lacks a local one. Otherwise, if you can read `agents://manifest.json`, propose **Mode B**.
@@ -106,7 +106,7 @@ present them for selection *before* creating anything:
 * **Route every proposal to a set first.** Ask: *is this true for more than this
   repository?* Yes → **shared**; no → **local**. In Mode B a shared proposal is never
   created here — it is reported as a discovery to be raised against
-  `LXAgents/mcp-server`.
+  `LXAgents-MCP/shared-instruction`.
 * Group by target, one line each:
   `[ ] {set} {folder}/{file}.md — name: {name-id} — {one-line description}`.
 * Keep each description to one line. Do not write file bodies yet.

@@ -40,8 +40,8 @@ log. Never re-tag, never delete a version directory.
 
 ## Shared-set releases
 
-A shared-set release is logged in `LXAgents/mcp-server`, and its entry **names what
-consumers must do** — nothing, re-read a file, or drop an override. Consumers pick the
+A shared-set release is logged in `LXAgents-MCP/shared-instruction`, and its entry
+**names what consumers must do** — nothing, re-read a file, or drop an override. Consumers pick the
 change up on their next read, so the entry is the only notice they get.
 
 ## Session digest at each release

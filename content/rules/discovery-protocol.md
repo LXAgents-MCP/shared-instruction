@@ -44,7 +44,7 @@ Ask one question: *is this true for more than this repository?*
 
 * **Yes → `shared`.** It belongs to the set served by the connector. From a consuming
   repository you never write it; you report it so it can be raised as a pull request
-  against `LXAgents/mcp-server`.
+  against `LXAgents-MCP/shared-instruction`.
 * **No → `local`.** It belongs in `{repo}/.agents/`.
 
 When it is genuinely ambiguous, propose it as `local` and note that it may be worth

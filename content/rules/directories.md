@@ -55,7 +55,7 @@ the `lxagents-agents-base` connector. Every repository carries only what is genu
 its own.
 
 ```
-LXAgents/mcp-server                 <- THE PRODUCER: serves the shared set over MCP
+LXAgents-MCP/shared-instruction     <- THE PRODUCER: serves the shared set over MCP
   content/                          <- THE SHARED SET ITSELF, published as agents:// resources
     AGENTS.md                       <- the federation contract
     rules/  git/  planning/  prompts/  creators/  index/

@@ -23,7 +23,7 @@ read that failure as "this server must need authentication".
     "lxagents-agents-base": {
       "command": "node",
       "args": ["src/index.js"],
-      "cwd": "/path/to/mcp-server"
+      "cwd": "/path/to/shared-instruction"
     }
   }
 }

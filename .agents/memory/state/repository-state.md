@@ -1,6 +1,6 @@
 ---
 name: memory-state-repository-state
-description: Current known state of LXAgents/mcp-server — what exists, what is deployed, and what is not built yet.
+description: Current known state of LXAgents-MCP/shared-instruction — what exists, what is deployed, and what is not built yet.
 ---
 
 # Repository State

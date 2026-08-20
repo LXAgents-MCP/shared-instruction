@@ -1,7 +1,7 @@
 # Overview
 
-`LXAgents/mcp-server` is an MCP server that delivers the organization's shared agent
-instruction set. Its id is `lxagents-agents-base` and it is published as
+`LXAgents-MCP/shared-instruction` is an MCP server that delivers the organization's
+shared agent instruction set. Its id is `lxagents-agents-base` and it is published as
 `@lxagents/agents-base`.
 
 ## The problem it solves

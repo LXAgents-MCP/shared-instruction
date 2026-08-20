@@ -90,7 +90,7 @@ way, check the path first.
     "lxagents-agents-base": {
       "command": "node",
       "args": ["src/index.js"],
-      "cwd": "/path/to/mcp-server"
+      "cwd": "/path/to/shared-instruction"
     }
   }
 }
