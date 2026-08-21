@@ -34,12 +34,20 @@ to vendor by mistake, and every repository reads the same bytes.
 | Resource | `agents://manifest.json` | Every file with its `name`, path, description, and content hash. |
 | Resource | `agents://AGENTS.md` | The federation contract consuming repositories rely on. |
 | Resource | `agents://{folder}/{file}.md` | Any instruction file — 26 of them. |
+| Tool | `agents_setup`, `agents_check_duplicate_instructions` | The two procedures, for clients that expose tools but not prompts. |
+| Tool | `agents_list_instructions`, `agents_read_instruction` | Discover and read the set without a prompt surface. |
+| Tool | `mcp_creator` | Scaffolds a new dual-purpose MCP repository. The only tool that writes; plans by default. |
 
-## Why prompts and not tools
+## Why prompts first, and tools as well
 
-A tool makes an instruction set something the model *may decide* to call. A prompt
-makes it something a user invokes and the model then obeys. These are standing orders,
-so the prompt is the correct primitive, and the server exposes no tools at all.
+A tool makes an instruction set something the model *may decide* to call. A prompt makes
+it something a user invokes and the model then obeys. These are standing orders, so the
+prompt is the correct primitive and remains the preferred one.
+
+Tools exist alongside them because several clients enumerate a connector by its tools
+alone: such a client shows a prompts-and-resources-only server as "no tools available"
+and will not let you enable it. The two procedure tools return exactly what the matching
+prompt returns, so nothing is lost by reaching the set either way.
 
 Resources cover the other half: an agent that has already been told to follow the set
 needs to read one file out of it, addressed by URI, without a round trip through a tool

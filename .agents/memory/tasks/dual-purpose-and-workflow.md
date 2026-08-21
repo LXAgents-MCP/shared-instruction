@@ -1,6 +1,6 @@
 ---
 name: memory-tasks-dual-purpose-and-workflow
-description: Repository URL migration, the always-on workflow mandate, the dual-purpose CLI, and the two MCP repository tools; the 0.5.0 release.
+description: Repository URL migration, the always-on workflow mandate, the dual-purpose CLI, and mcp-creator; the 0.5.0 and 0.6.0 releases.
 ---
 
 # Dual-Purpose Build and the Always-On Workflow
@@ -17,6 +17,8 @@ Six tasks, one branch each, stacked in dependency order off `master`.
 | 4 | `feat/mcp-repos-tool` | `mcp-repos` — discovery and selection of MCP repositories. **Withdrawn in `0.6.0`.** |
 | 5 | `feat/mcp-creator-tool` | `mcp-creator` — scaffolds a dual-purpose MCP repository. |
 | 6 | `chore/release-0-5-0` | Version bump, `wiki/logs/0/5/0/`, index rows, this file. |
+| 7 | `refactor/mcp-repos-removal` | `mcp-repos` withdrawn, plus the `0.6.0` release. One branch, two commits, by request. |
+| 8 | `docs/agents-state-refresh` | This audit: `.agents/` and `wiki/` brought back in line with the code. |
 
 ## Decisions worth not re-litigating
 
@@ -52,13 +54,28 @@ already holds its own server list in configuration, so it answered a question th
 had usually already answered. Nothing depended on it and `mcp_creator` never called it.
 **Do not re-add it** without a caller that actually needs it.
 
+## What the 0.6.0 audit found stale
+
+Documentation drifts fastest where nobody reads it. Worth knowing which pages lie when
+they go unmaintained:
+
+* `.agents/wiki/context/repository-map.md` documented one entry point after the build
+  became dual-purpose, and still said "never write to stdout" flatly, contradicting the
+  CLI carve-out recorded in `.agents/rules/repository.md` in the same release.
+* `.agents/memory/state/repository-state.md` carried its original date heading and said
+  the connector "lags until `0.5.0` merges" after both `0.5.0` and `0.6.0` had merged.
+* `wiki/information/overview.md` claimed "the server exposes no tools at all" — wrong
+  since `0.1.0` added the tool surface, and never corrected in five releases.
+* `wiki/information/architecture.md` had a source tree missing `tools.js` and
+  `payloads.js` (since `0.1.0`) as well as `cli/`, `tools/`, `run.js`, and `resolve.js`.
+
 ## Known gaps, deliberately left
 
 * `wiki/logs/0/2/0/CHANGELOG.md` still names the old slug. Released logs are never
   rewritten — `versioning.md`.
-* `.agents/memory/state/repository-state.md` still names the Render hostname
-  `lxagents-mcp-server.onrender.com`. That is a deployment hostname, not the repository
-  URL, and the new one is not known. Ask before changing it.
+* The deployed Render hostname was named after the old repository. Whether it still
+  resolves after the move has not been checked. Confirm before quoting it.
 * `compose.yaml` still tags the image `0.0.0`, as it has since `0.0.0`. Left alone to
-  match precedent rather than changed as a side effect of this release.
+  match precedent rather than changed as a side effect of a release.
 * Still no CI. Nothing runs `npm test` on push.
+* Merged branches accumulate on the remote; deleting them was out of scope.

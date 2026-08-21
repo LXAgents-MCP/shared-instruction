@@ -23,20 +23,32 @@ It is both the **producer** of the shared set and a **consumer** of it. See
 | `content/` | The published instruction set — 26 markdown files served as `agents://` resources. | You are changing a convention every repository follows. **This is a release.** |
 | `.agents/` | This repository's own rules, indexes, agent wiki, memory. | You are changing something true only here. |
 | `wiki/` | Human documentation, plus `wiki/logs/` release history. | A person needs to read it. |
-| `src/content/` | Registry and frontmatter parsing — loads `content/` once at boot. | Changing how content is loaded, validated, or hashed. |
+| `src/content/` | Registry, frontmatter parsing, and identifier resolution — loads `content/` once at boot. | Changing how content is loaded, validated, hashed, or looked up. |
 | `src/server/` | `create-server.js`, `resources.js`, `prompts.js`, `tools.js`, `manifest.js`, `payloads.js`, `run.js`. | Changing the MCP surface or the boot sequence. |
 | `src/cli/` | `index.js`, `run.js`, `commands.js`, `output.js` — the CLI half of the dual-purpose build. | Changing what a person sees at a terminal. |
 | `src/tools/` | Tools that act on repositories rather than on content — `mcp-creator.js`. Surfaced through both MCP and the CLI. | Adding or changing a repository-level tool. |
 | `src/transport/` | `stdio.js`, `http.js`, `session-store.js`, `cluster.js`. | Changing how clients connect or how concurrency works. |
-| `test/` | `node:test` suites — registry, server, http, manifest, tools, cli. | Always. Every behavioural change ships with one. |
+| `test/` | `node:test` suites — registry, server, http, manifest, tools, cli, mcp-creator. | Always. Every behavioural change ships with one. |
 
 ## Entry points
 
-* `src/index.js` — process entry. Loads content, then starts stdio or HTTP.
+There are **two**, and they are the dual-purpose split:
+
+* `src/index.js` — the server entry, what an MCP client spawns. Delegates straight to
+  `server/run.js`.
+* `src/cli/index.js` — the CLI entry, what a person runs. `serve` hands back to the
+  server half; every other command renders for a terminal.
+
+Behind both:
+
+* `src/server/run.js` — the boot sequence. Loads content, then starts stdio or HTTP.
+  Both entry points come through here, which is what stops them drifting apart.
 * `src/server/create-server.js` — builds one `McpServer`; the single place every
   prompt, resource, and tool is registered.
 * `src/content/registry.js` — `loadRegistry()`, the boot-time validation gate.
-* `src/server/payloads.js` — the procedure text shared by prompts and tools.
+* `src/content/resolve.js` — identifier resolution, shared by the tool surface and the
+  CLI so a name that resolves in one resolves in the other.
+* `src/server/payloads.js` — the procedure text shared by prompts, tools, and the CLI.
 
 ## Commands
 
@@ -47,6 +59,7 @@ npm start                # stdio
 npm run start:http       # streamable HTTP on :3000
 npm run dev              # HTTP with restart on change
 npm run inspect          # MCP Inspector against the stdio server
+npm run cli -- <command>  # the CLI half, e.g. -- list --folder git
 docker compose up --build
 ```
 
@@ -57,12 +70,15 @@ docker compose up --build
   [`../../rules/content-publishing.md`](../../rules/content-publishing.md).
 * **Content changes need a restart.** The registry is frozen at boot; editing markdown
   does nothing to a running process.
-* **Never write to stdout.** stdout is the JSON-RPC channel on stdio. Use
-  `src/logger.js`, which writes to stderr.
+* **Never write to stdout — except from the CLI.** stdout is the JSON-RPC channel on
+  stdio, so the server path uses `src/logger.js`, which writes to stderr. CLI output is
+  the one exception and goes through `src/cli/output.js`; `serve` prints nothing itself,
+  so the two never collide. A `console.log` anywhere else in `src/` is a bug.
 * **Never share an `McpServer` between clients.** It holds per-connection state;
   reusing one delivers responses to the wrong connection.
-* **Prompts and tools must stay identical.** Both read `payloads.js`; tests assert the
-  outputs match byte for byte.
+* **Prompts, tools, and the CLI must stay identical.** All three read `payloads.js` and
+  the same frozen registry; tests assert the outputs match byte for byte. Adding a
+  fourth way to reach the content means adding it to those tests too.
 * **Declaring optional-only argument schemas breaks callers.** The SDK validates
   arguments against an object schema that rejects `undefined`, and the spec lets clients
   omit `arguments`. The two zero-argument tools and both prompts declare no schema for

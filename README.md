@@ -7,7 +7,7 @@ instead of cloning or vendoring a copy of them.
 
 - **Server id:** `lxagents-agents-base`
 - **Package:** `@lxagents/agents-base`
-- **Surface:** MCP prompts and resources, plus four read-only tools for clients that only enumerate tools.
+- **Surface:** MCP prompts and resources, plus five tools — four read-only, and `mcp_creator`, which writes.
 - **Dual-purpose:** the same set is reachable as a CLI (`lxagents-agents`) and as an MCP server (`lxagents-agents-base`).
 
 ## Key features
