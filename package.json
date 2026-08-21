@@ -5,6 +5,7 @@
   "type": "module",
   "main": "src/index.js",
   "bin": {
+    "lxagents-agents": "src/cli/index.js",
     "lxagents-agents-base": "src/index.js"
   },
   "files": [
@@ -15,6 +16,7 @@
   ],
   "scripts": {
     "start": "node src/index.js",
+    "cli": "node src/cli/index.js",
     "start:http": "MCP_TRANSPORT=http node src/index.js",
     "start:stdio": "MCP_TRANSPORT=stdio node src/index.js",
     "dev": "MCP_TRANSPORT=http node --watch src/index.js",

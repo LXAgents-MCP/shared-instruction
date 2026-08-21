@@ -24,9 +24,10 @@ It is both the **producer** of the shared set and a **consumer** of it. See
 | `.agents/` | This repository's own rules, indexes, agent wiki, memory. | You are changing something true only here. |
 | `wiki/` | Human documentation, plus `wiki/logs/` release history. | A person needs to read it. |
 | `src/content/` | Registry and frontmatter parsing — loads `content/` once at boot. | Changing how content is loaded, validated, or hashed. |
-| `src/server/` | `create-server.js`, `resources.js`, `prompts.js`, `tools.js`, `manifest.js`, `payloads.js`. | Changing the MCP surface. |
+| `src/server/` | `create-server.js`, `resources.js`, `prompts.js`, `tools.js`, `manifest.js`, `payloads.js`, `run.js`. | Changing the MCP surface or the boot sequence. |
+| `src/cli/` | `index.js`, `run.js`, `commands.js`, `output.js` — the CLI half of the dual-purpose build. | Changing what a person sees at a terminal. |
 | `src/transport/` | `stdio.js`, `http.js`, `session-store.js`, `cluster.js`. | Changing how clients connect or how concurrency works. |
-| `test/` | `node:test` suites — registry, server, http, manifest, tools. | Always. Every behavioural change ships with one. |
+| `test/` | `node:test` suites — registry, server, http, manifest, tools, cli. | Always. Every behavioural change ships with one. |
 
 ## Entry points
 
