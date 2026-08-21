@@ -28,7 +28,7 @@ reflected here in the same commit.
 
 | File | Purpose |
 |---|---|
-| [`../../wiki/environments/setup.md`](../../wiki/environments/setup.md) | Running and testing it locally. |
+| [`../../wiki/environments/setup.md`](../../wiki/environments/setup.md) | Installing, running, and testing both modes — CLI and MCP server. |
 | [`../../wiki/environments/env.md`](../../wiki/environments/env.md) | Every environment variable. |
 | [`../../wiki/environments/docker.md`](../../wiki/environments/docker.md) | Container image, compose, and scaling. |
 

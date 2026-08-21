@@ -24,7 +24,7 @@
 import { z } from 'zod';
 
 import { buildAuditPayload, buildSetupPayload, requireEntry } from './payloads.js';
-import { RESOURCE_SCHEME } from '../constants.js';
+import { resolveEntry, suggestEntries } from '../content/resolve.js';
 
 /** Wraps text in the content shape a tool result requires. */
 function text(value) {
@@ -43,29 +43,6 @@ const READ_ONLY = Object.freeze({
   idempotentHint: true,
   openWorldHint: false,
 });
-
-/**
- * Resolves a caller-supplied identifier to a registry entry.
- *
- * Accepts whichever of the three forms the caller happens to hold — the
- * frontmatter `name`, the path, or the full URI — because an agent that has read
- * the manifest may have any of them, and guessing wrong should not cost a
- * round trip.
- */
-function resolveEntry(registry, identifier) {
-  const trimmed = identifier.trim();
-
-  const candidates = [
-    trimmed,
-    trimmed.startsWith(`${RESOURCE_SCHEME}://`) ? trimmed : `${RESOURCE_SCHEME}://${trimmed}`,
-  ];
-  for (const uri of candidates) {
-    const entry = registry.get(uri);
-    if (entry) return entry;
-  }
-
-  return registry.getByName(trimmed);
-}
 
 /**
  * @param {import('@modelcontextprotocol/sdk/server/mcp.js').McpServer} server
@@ -208,18 +185,7 @@ Errors: if nothing matches, returns the closest available names so you can retry
     async ({ instruction }) => {
       const entry = resolveEntry(registry, instruction);
       if (!entry) {
-        // Suggest rather than just refuse: a near-miss on a name is the common
-        // failure, and listing the whole set to recover would be wasteful.
-        const needle = instruction.trim().toLowerCase();
-        const near = registry.entries
-          .filter((candidate) =>
-            [candidate.name, candidate.path].some(
-              (value) => value.toLowerCase().includes(needle) || needle.includes(value.toLowerCase()),
-            ),
-          )
-          .slice(0, 5)
-          .map((candidate) => `${candidate.name} (${candidate.path})`);
-
+        const near = suggestEntries(registry, instruction);
         return failure(
           `No instruction matches "${instruction}".` +
             (near.length

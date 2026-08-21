@@ -2,6 +2,11 @@
 
 Everything `lxagents-agents-base` exposes: prompts, resources, and tools.
 
+This page documents **server mode**. The same content is reachable in CLI mode without
+an MCP client — `lxagents-agents list`, `read`, `setup`, `audit`, `manifest` — and both
+modes read one frozen registry, so their output is identical. See
+[`../environments/setup.md`](../environments/setup.md).
+
 Prompts and resources are the primary surface. The tools deliver the same content and
 exist because some clients enumerate a connector by its tools alone — such a client
 shows a prompts-and-resources-only server as "no tools available" and will not let you

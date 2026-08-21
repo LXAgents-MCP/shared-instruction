@@ -33,7 +33,7 @@ authority; the deployed server is a snapshot that may be older than your branch.
 | `content/` | The shared instruction set. | **Yes** — served as `agents://` resources. |
 | `.agents/` | This repository's own rules, indexes, agent wiki, memory. | No. |
 | `wiki/` | This repository's human documentation. | No. |
-| `src/`, `test/` | The server implementation and its tests. | No. |
+| `src/`, `test/` | The server and CLI implementation and its tests. | No. |
 
 Never put a repository-specific rule in `content/`, and never put a universal
 convention in `.agents/`. The routing question is the one in
@@ -51,6 +51,7 @@ do not introduce TypeScript, a bundler, or a transpiler without agreement.
 | Test | `npm test` |
 | Run locally (stdio) | `npm start` |
 | Run the connector surface | `npm run start:http` |
+| Run the CLI | `npm run cli -- <command>` |
 | Inspect the MCP surface | `npm run inspect` |
 | Container | `docker compose up --build` |
 
@@ -59,9 +60,11 @@ Full orientation: [`../wiki/context/repository-map.md`](../wiki/context/reposito
 ## Code conventions the codebase already follows
 
 * **ESM only.** `import`/`export`, `.js` extensions in relative specifiers, no `require`.
-* **Nothing writes to stdout.** On the stdio transport stdout is the JSON-RPC channel;
-  all logging goes through `src/logger.js` to stderr. A `console.log` anywhere in `src/`
-  is a bug.
+* **Nothing writes to stdout except the CLI.** On the stdio transport stdout is the
+  JSON-RPC channel, so all logging goes through `src/logger.js` to stderr. The one
+  exception is CLI output, which is the CLI's whole product and is safe because `serve`
+  prints nothing itself — it must go through `src/cli/output.js`. A `console.log`
+  anywhere in `src/` is still a bug.
 * **The registry is frozen and shared.** Never mutate a registry entry, and never add a
   per-request cache keyed on shared state — that is what makes concurrent clients safe.
 * **One `McpServer` per session.** Never hoist a server instance to module scope.

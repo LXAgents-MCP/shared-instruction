@@ -8,6 +8,7 @@ instead of cloning or vendoring a copy of them.
 - **Server id:** `lxagents-agents-base`
 - **Package:** `@lxagents/agents-base`
 - **Surface:** MCP prompts and resources, plus four read-only tools for clients that only enumerate tools.
+- **Dual-purpose:** the same set is reachable as a CLI (`lxagents-agents`) and as an MCP server (`lxagents-agents-base`).
 
 ## Key features
 
@@ -29,13 +30,27 @@ instead of cloning or vendoring a copy of them.
 ```bash
 npm install
 npm test
-
-# Local, over stdio
-npm start
-
-# Remote connector surface, over streamable HTTP
-npm run start:http     # http://localhost:3000/mcp
 ```
+
+**CLI mode** — read the set at a terminal:
+
+```bash
+npm link                                  # puts lxagents-agents on PATH
+lxagents-agents list --folder git
+lxagents-agents read branching-strategy
+lxagents-agents setup
+```
+
+**Server mode** — serve the set to an MCP client:
+
+```bash
+npm start              # stdio, for an editor or agent
+npm run start:http     # streamable HTTP — http://localhost:3000/mcp
+```
+
+Both modes read the same frozen registry, so a file read at a terminal is
+byte-identical to the same file read over MCP. Full instructions for each mode are in
+[`wiki/environments/setup.md`](wiki/environments/setup.md).
 
 With Docker:
 
