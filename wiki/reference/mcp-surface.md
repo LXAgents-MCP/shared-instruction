@@ -46,7 +46,8 @@ that leave them out.
 
 ## Tools
 
-All are read-only, non-destructive, and idempotent.
+Every tool is non-destructive. All are read-only and idempotent except `mcp_creator`,
+which creates files when asked and says so in its annotations.
 
 | Tool | Arguments | Returns |
 |---|---|---|
