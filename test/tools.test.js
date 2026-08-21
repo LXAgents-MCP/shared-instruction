@@ -16,7 +16,7 @@ async function connect() {
   return { client, server, registry };
 }
 
-test('tools/list: publishes the four tools, all read-only', async () => {
+test('tools/list: publishes every tool, each described and non-destructive', async () => {
   const { client, server } = await connect();
 
   const { tools } = await client.listTools();
@@ -27,13 +27,29 @@ test('tools/list: publishes the four tools, all read-only', async () => {
     'agents_list_instructions',
     'agents_read_instruction',
     'agents_setup',
+    'mcp_repos',
   ]);
 
   for (const tool of tools) {
     assert.ok(tool.description, `${tool.name} needs a description`);
-    assert.equal(tool.annotations?.readOnlyHint, true, `${tool.name} must be read-only`);
-    assert.equal(tool.annotations?.destructiveHint, false);
+    // Nothing here may destroy anything, whether or not it is read-only.
+    assert.equal(tool.annotations?.destructiveHint, false, `${tool.name} must be non-destructive`);
   }
+
+  await server.close();
+});
+
+test('every content tool is read-only', async () => {
+  const { client, server } = await connect();
+
+  const { tools } = await client.listTools();
+  for (const tool of tools.filter((candidate) => candidate.name.startsWith('agents_'))) {
+    assert.equal(tool.annotations?.readOnlyHint, true, `${tool.name} must be read-only`);
+  }
+
+  // Discovery only inspects the filesystem, so it is read-only too.
+  const repos = tools.find((tool) => tool.name === 'mcp_repos');
+  assert.equal(repos.annotations?.readOnlyHint, true);
 
   await server.close();
 });

@@ -60,6 +60,9 @@ lxagents-agents read agents://rules/directories.md
 lxagents-agents setup                      # the AGENTS-SETUP procedure
 lxagents-agents audit                      # the duplicate-instruction audit
 lxagents-agents manifest                   # the manifest, as JSON
+
+lxagents-agents repos                      # discover MCP repositories
+lxagents-agents repos alpha --root ~/src   # narrow the search
 ```
 
 `read` accepts a frontmatter `name`, a path, or an `agents://` URI — all three resolve
