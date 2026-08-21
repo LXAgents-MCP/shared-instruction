@@ -19,6 +19,7 @@ the **Consumers must** column the only notice a repository gets, so it is never 
 
 | Version | Date | Summary | Consumers must |
 |---|---|---|---|
+| `0/6/0` | 2026-08-21 | Withdraws the `mcp_repos` tool. The shared instruction set is unchanged. | Nothing, unless you called `mcp_repos` or the `repos` CLI command directly. No instruction file changed. Reconnect if your client cached the tool list. |
 | `0/5/0` | 2026-08-21 | Makes the task and git workflow apply to every request with no trigger phrase, and gates opening a pull request on the user's permission. | Re-read `rules/shared-instructions.md` §H and `planning/task-workflow.md`. Ask before opening a pull request, as you already do before merging. No trigger row changes and no override needs dropping. |
 | `0/4/0` | 2026-08-13 | Adds a rule that finished work is reported back to the user, and closes two gaps the duplicate audit hit on real repositories. | Re-read `rules/auto-activation.md` and add the new `work-summary` trigger row to your `AGENTS.md`, plus a row for each of your own local instructions. |
 | `0/3/0` | 2026-08-12 | Adds a rule that documentation follows code, and extends the session-link rule to what a forge stores after you post. | Re-read `rules/auto-activation.md` and add the new trigger row to your `AGENTS.md`. Delete any local `change-propagation.md` — it now shadows a shared `name`. |

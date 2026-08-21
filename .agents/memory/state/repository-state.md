@@ -16,9 +16,9 @@ this repository's own instruction set. `wiki/` holds human documentation. `src/`
 `test/` hold the server and the CLI.
 
 **Surface.** 2 prompts (`agents-setup`, `check-duplicate-agents-instruction`), 27
-resources (26 instruction files plus `agents://manifest.json`), and 6 tools — 5
+resources (26 instruction files plus `agents://manifest.json`), and 5 tools — 4
 read-only (`agents_setup`, `agents_check_duplicate_instructions`,
-`agents_list_instructions`, `agents_read_instruction`, `mcp_repos`) and one that writes
+`agents_list_instructions`, `agents_read_instruction`) and one that writes
 (`mcp_creator`, which plans by default). Prompts and tools deliver identical text from
 `src/server/payloads.js`.
 
@@ -35,13 +35,14 @@ seconds. Connected successfully once the `/mcp` path was included in the connect
 omitting it surfaced as a sign-in error, which cost a debugging round and is now written
 into `content/rules/mcp-connector.md`.
 
-**Version.** `0.5.0`. Releases so far: `0.0.0` (initial set), `0.1.0` (tool surface),
+**Version.** `0.6.0`. Releases so far: `0.0.0` (initial set), `0.1.0` (tool surface),
 `0.2.0` (producer/local set split), `0.3.0` (change propagation), `0.4.0` (work summary),
-`0.5.0` (always-on workflow, dual-purpose CLI, repository tools). The deployed connector
+`0.5.0` (always-on workflow, dual-purpose CLI, repository tools), `0.6.0` (`mcp_repos`
+withdrawn). The deployed connector
 serves whatever `master` last built, so it lags until `0.5.0` merges and Render redeploys.
 
-**Tests.** 73, all passing, across registry, server, http, manifest, tools, cli,
-mcp-repos, and mcp-creator.
+**Tests.** 66, all passing, across registry, server, http, manifest, tools, cli, and
+mcp-creator.
 
 **Not built yet.**
 
