@@ -78,8 +78,9 @@ Every behavioural change ships with a test in `test/`, using `node:test` and
 `node:assert/strict`. The suite must pass before any commit.
 
 Prefer a test that pins an invariant over one that pins a string: the useful tests here
-are the ones asserting the two surfaces return identical text, that manifest hashes
-reproduce from the served file, and that concurrent sessions do not cross.
+are the ones asserting that all three surfaces — prompts, tools, and the CLI — return
+identical text, that manifest hashes reproduce from the served file, and that concurrent
+sessions do not cross.
 
 ## What must not be introduced
 

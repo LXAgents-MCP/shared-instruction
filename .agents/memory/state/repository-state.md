@@ -5,10 +5,11 @@ description: Current known state of LXAgents-MCP/shared-instruction — what exi
 
 # Repository State
 
-## 2026-08-12
+## 2026-08-21
 
-**What this is.** An MCP server serving the LXAgents shared agent instruction set as
-`lxagents-agents-base`. Plain JavaScript, Node ESM, no build step. Published as
+**What this is.** A dual-purpose package that serves the LXAgents shared agent
+instruction set: an MCP server (`lxagents-agents-base`) and a CLI (`lxagents-agents`)
+over one frozen registry. Plain JavaScript, Node ESM, no build step. Published as
 `@lxagents/agents-base`.
 
 **Structure.** `content/` holds the 26 published instruction files. `.agents/` holds
@@ -29,17 +30,20 @@ the same frozen registry, `lxagents-agents-base` is the MCP server. Both boot th
 **Transports.** stdio for local use; streamable HTTP for the connector, stateless by
 default, with optional stateful sessions and cluster workers.
 
-**Deployed.** Render, from `master`, at `https://lxagents-mcp-server.onrender.com/mcp`.
-Free tier, so it spins down when idle and the first request after a pause takes 50+
-seconds. Connected successfully once the `/mcp` path was included in the connector URL —
-omitting it surfaced as a sign-in error, which cost a debugging round and is now written
-into `content/rules/mcp-connector.md`.
+**Deployed.** Render, from `master`, free tier — so it spins down when idle and the
+first request after a pause takes 50+ seconds. Connecting works only when the `/mcp`
+path is included in the connector URL; omitting it surfaces as a sign-in error, which
+cost a debugging round and is now written into `content/rules/mcp-connector.md`.
+
+**The deployed hostname is unverified.** It was
+`https://lxagents-mcp-server.onrender.com/mcp`, named after the old repository. Whether
+Render still serves that name after the move to `LXAgents-MCP/shared-instruction` has
+not been checked from this repository. Confirm it before quoting it to anyone.
 
 **Version.** `0.6.0`. Releases so far: `0.0.0` (initial set), `0.1.0` (tool surface),
 `0.2.0` (producer/local set split), `0.3.0` (change propagation), `0.4.0` (work summary),
 `0.5.0` (always-on workflow, dual-purpose CLI, repository tools), `0.6.0` (`mcp_repos`
-withdrawn). The deployed connector
-serves whatever `master` last built, so it lags until `0.5.0` merges and Render redeploys.
+withdrawn). Both `0.5.0` and `0.6.0` are merged to `master`.
 
 **Tests.** 66, all passing, across registry, server, http, manifest, tools, cli, and
 mcp-creator.
@@ -47,6 +51,8 @@ mcp-creator.
 **Not built yet.**
 
 * No CI — nothing runs `npm test` or builds the image on push.
+* `compose.yaml` still tags the image `0.0.0`, as it has since the first release. It is
+  a local build placeholder, deliberately not moved with the package version.
 * `content/rules/mcp-connector.md` still uses a `https://<host>/mcp` placeholder rather
   than the real Render hostname; pinning it is a deliberate decision, not an oversight.
 * No migration guide for repositories that already carry an older instruction set; the

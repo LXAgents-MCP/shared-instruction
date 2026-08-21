@@ -1,11 +1,11 @@
 # Architecture
 
-Plain JavaScript (Node ESM), no build step. Three layers: content, server, transport.
+Plain JavaScript (Node ESM), no build step. Three layers — content, server, transport — reached through two entry points, one for an MCP client and one for a terminal.
 
 ```
 content/                      the instruction set, as markdown files
 src/
-  index.js                    entry point — loads content, then starts a transport
+  index.js                    server entry — what an MCP client spawns
   config.js                   environment parsing, frozen at import
   constants.js                fixed values shared by every session
   logger.js                   stderr-only structured logging
@@ -13,11 +13,22 @@ src/
   content/
     frontmatter.js            frontmatter reader and body normalizer
     registry.js               loads content once into a frozen registry
+    resolve.js                name/path/URI lookup, shared by tools and CLI
   server/
+    run.js                    the boot sequence both entry points share
     create-server.js          builds one McpServer
     resources.js              publishes each instruction file
     manifest.js               builds and publishes agents://manifest.json
     prompts.js                the two prompts
+    tools.js                  the tool surface
+    payloads.js               procedure text shared by prompts, tools, CLI
+  cli/
+    index.js                  CLI entry — what a person runs
+    run.js                    argument parsing and dispatch
+    commands.js               the read-only commands
+    output.js                 the only module in src/ that writes stdout
+  tools/
+    mcp-creator.js            scaffolds a new dual-purpose MCP repository
   transport/
     stdio.js                  local, single client
     http.js                   streamable HTTP, stateless and stateful modes
