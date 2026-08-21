@@ -18,9 +18,11 @@ instead of cloning or vendoring a copy of them.
   duplicates from the shared set and removes them. Runs **only when asked**.
 - **26 instruction resources** under `agents://`, plus `agents://manifest.json`
   listing every file with a content hash — one read instead of walking the set.
-- **Four read-only tools** — `agents_setup`, `agents_check_duplicate_instructions`,
+- **Read-only tools** — `agents_setup`, `agents_check_duplicate_instructions`,
   `agents_list_instructions`, `agents_read_instruction` — delivering the same content
   as the prompts, for clients that surface tools only.
+- **`mcp_repos`** — discovers the MCP repositories on this machine and narrows them to
+  the one you need, from a registry file or a filesystem scan. No network calls.
 - **Many clients at once.** Content is loaded once into a frozen registry; each
   request or session gets its own server instance, so nothing is shared and any
   process can serve any request.

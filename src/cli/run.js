@@ -15,6 +15,7 @@ import {
   loadContext,
   manifest,
   readInstruction,
+  reposCommand,
   setupProcedure,
 } from './commands.js';
 import { write as writeStdout, writeError } from './output.js';
@@ -35,6 +36,7 @@ const OPTIONS = {
   http: { type: 'boolean' },
   stdio: { type: 'boolean' },
   port: { type: 'string' },
+  root: { type: 'string' },
 };
 
 export const HELP = `lxagents-agents — the LXAgents shared agent instruction set
@@ -53,13 +55,15 @@ Commands
   setup                  Print the AGENTS-SETUP procedure
   audit                  Print the duplicate-instruction audit procedure
   manifest               Print the manifest as JSON
+  repos [query]          Discover MCP repositories, narrowed by an optional query
 
 Options
   --http                 serve: use the streamable HTTP transport
   --stdio                serve: use the stdio transport (default)
   --port <n>             serve: HTTP port (default 3000)
   --folder <name>        list: restrict to one folder, e.g. rules, git
-  --json                 list, read: emit JSON instead of text
+  --root <dir>           repos: scan this directory instead of the configured roots
+  --json                 list, read, repos: emit JSON instead of text
   -h, --help             Show this help
   -v, --version          Show the version
 
@@ -68,6 +72,7 @@ Examples
   lxagents-agents read branching-strategy
   lxagents-agents read agents://rules/directories.md
   lxagents-agents serve --http --port 8080
+  lxagents-agents repos --root ~/src
 
 Environment
   Every option above has an environment equivalent for server mode; see
@@ -164,6 +169,9 @@ export async function run(argv, { write = writeStdout } = {}) {
         return EXIT_OK;
       case 'manifest':
         write(manifest(registry, version));
+        return EXIT_OK;
+      case 'repos':
+        write(await reposCommand({ query: rest[0] ?? null, root: values.root, json: values.json }));
         return EXIT_OK;
       default:
         throw new UsageError(`Unknown command "${command}".`);

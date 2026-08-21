@@ -47,6 +47,16 @@ directly.
 | `MCP_CONTENT_DIR` | `content/` beside the package | Override the instruction set root. |
 | `LOG_LEVEL` | `info` | `error`, `warn`, `info`, or `debug`. |
 
+## Repository discovery
+
+Read by the `mcp_repos` tool and the `repos` CLI command. Both are offline: no forge
+API is called, so discovery works without credentials and without a network.
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `MCP_REPOS_FILE` | unset | Path to a JSON file listing known MCP repositories — either an array or `{ "repositories": [...] }`. Entries need a `name`; `path`, `url`, `description`, `transport`, and `endpoint` are optional. |
+| `MCP_REPOS_ROOTS` | the working directory | Directories to scan, separated by `:` or `;`. Scanned two levels deep, skipping `node_modules` and dotted directories. |
+
 Logs are JSON, one object per line, written to **stderr only** — on stdio, stdout is
 the JSON-RPC channel.
 
