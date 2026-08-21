@@ -109,12 +109,17 @@ way, check the path first.
 | Tool | `agents_check_duplicate_instructions` | Same text as the audit prompt, manifest inlined. **On request only.** |
 | Tool | `agents_list_instructions` | The manifest, optionally filtered to one folder. |
 | Tool | `agents_read_instruction` | One file, by `name`, path, or URI. |
+| Tool | `mcp_creator` | Scaffolds a new MCP repository. **Not part of reading this set** — listed so you know the capability is there. Plans by default; creates files only when asked. |
 
 **Prefer the prompts and resources.** They are the right primitives for standing
 orders, and the tools return identical text. The tools exist because some clients
 enumerate a connector by its tools alone and never surface prompts or resources — a
 server without them shows up there as unusable. Use whichever your client actually
 exposes; the instructions you receive are the same either way.
+
+Everything above except `mcp_creator` is read-only. `mcp_creator` writes files, and
+only when a call explicitly asks it to — so it is never something to invoke while
+merely resolving the set.
 
 ## When the connector is unavailable
 
