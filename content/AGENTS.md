@@ -137,6 +137,15 @@ Source of truth: [`rules/discovery-protocol.md`](agents://rules/discovery-protoc
 > what the user selects. This gate covers instruction files only — writing memory
 > under `.agents/memory/` is expected and needs no approval.
 
+## Task and git workflow
+
+The task workflow, the branching strategy, and the commit conventions load on **every**
+request, with no trigger phrase, and two actions are gated on explicit user permission:
+opening a pull request, and merging one. The mandate is
+[`rules/shared-instructions.md`](agents://rules/shared-instructions.md) §H; the
+procedure it points at is
+[`planning/task-workflow.md`](agents://planning/task-workflow.md).
+
 ## Version rule
 
 Never change a project version without explicit user approval — see

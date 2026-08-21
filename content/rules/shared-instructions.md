@@ -1,6 +1,6 @@
 ---
 name: shared-instructions
-description: How the shared set and a repository's local set combine — resolution, precedence, override semantics, promotion, and the adoption checklist.
+description: How shared and local sets combine — precedence, overrides, promotion, adoption, and the always-on task and git workflow mandate.
 ---
 
 # Shared Instructions
@@ -18,10 +18,10 @@ Memory, indexes, both wikis, and `rules/repository.md` are **always local**. Eve
 universal is **always shared**. There is no third place.
 
 **This holds for the producer repository too.** `LXAgents-MCP/shared-instruction`
-publishes the shared set, but it is also an ordinary software project with source,
-tests and a container image — so it carries its own `.agents/` for its rules, indexes, agent wiki
-and memory, and it must not push any of that into the published set. Producing the set
-is not a licence to keep local rules in it: a repository-specific convention in
+publishes the shared set, but it is also an ordinary software project with source, tests
+and a container image — so it carries its own `.agents/` for its rules, indexes, agent
+wiki and memory, and it must not push any of that into the published set. Producing the
+set is not a licence to keep local rules in it: a repository-specific convention in
 `{shared}` is broadcast to everyone, which is the same failure as a shared convention
 copied into a consumer, running the other way.
 
@@ -89,8 +89,8 @@ index points at a file that no longer exists.
 ## F. Changing the shared set
 
 A pull request against `LXAgents-MCP/shared-instruction`, following that repository's
-own `git/` conventions. Because a shared change alters behavior in every consuming repository at
-once:
+own `git/` conventions. Because a shared change alters behavior in every consuming
+repository at once:
 
 * A change that breaks an existing convention is a **major** version bump
   ([`versioning.md`](agents://rules/versioning.md)).
@@ -112,3 +112,40 @@ The adoption checklist:
 6. **Nothing copied from the shared set.**
 
 The `agents-setup` prompt performs all of it. Invoke it rather than doing it by hand.
+
+## H. Global task and git workflow enforcement
+
+Everything in this section applies to **every** request, automatically. There is no
+trigger phrase and no opt-in. A user who says only "fix the typo" has still asked for
+the procedure below; silence is not an exemption, and neither is the size of the change.
+
+This section is the mandate, not the procedure. Each row names the file that owns one,
+and that file remains the single authority for how it is carried out.
+
+| On every request you must… | Authority |
+|---|---|
+| Load the three mandatory standard files before acting | [`../git/branching-strategy.md`](agents://git/branching-strategy.md), [`../git/commit-conventions.md`](agents://git/commit-conventions.md), [`../planning/task-workflow.md`](agents://planning/task-workflow.md) |
+| Refine the requirements and put a plan in front of the user **before** running code or writing a file | [`../planning/task-workflow.md`](agents://planning/task-workflow.md) §A |
+| Break the work into one or more manageable tasks and present the list before starting | [`../planning/task-workflow.md`](agents://planning/task-workflow.md) §B |
+| Isolate each task on its own branch — one task, one branch, never two on one | [`../git/branching-strategy.md`](agents://git/branching-strategy.md), [`../planning/task-workflow.md`](agents://planning/task-workflow.md) §C |
+| Ask before opening a pull request, and ask again before merging one | [`../planning/task-workflow.md`](agents://planning/task-workflow.md) §F |
+
+### The three standard files are not trigger-gated
+
+[`auto-activation.md`](agents://rules/auto-activation.md) fires most instructions from a
+trigger table. These three are the exception: they load at the start of every request,
+whether or not it looks like work that will end in a branch. By the time a commit is in
+front of you, it is too late to go and learn the convention it should have followed.
+
+### The two permission gates
+
+Both are explicit-consent gates, and both are satisfied by permission the user has
+already given — for this task or as a standing instruction. Once given, do not ask
+again.
+
+* **Opening a pull request.** Ask, and wait for a yes.
+* **Merging a branch or a pull request.** Ask, and wait for a yes. Never merge on your
+  own initiative, and never enable auto-merge unless you were asked to.
+
+Neither gate is satisfied by inference. Finishing the work is not permission to open
+anything, and a green pipeline is not permission to merge it.

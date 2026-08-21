@@ -1,9 +1,13 @@
 ---
 name: task-workflow
-description: How a request becomes tasks, branches, and merged pull requests — intake, decomposition, stacked branches, in-order execution, merging.
+description: How a request becomes tasks, branches, and pull requests — intake, decomposition, stacked branches, in-order execution, and the two gates.
 ---
 
 # Task Workflow
+
+This workflow is not opt-in and needs no trigger phrase: it runs on every request. The
+mandate is in [`../rules/shared-instructions.md`](agents://rules/shared-instructions.md)
+§H; what follows is the procedure it points at.
 
 ## A. Intake — Goal, Objective, Detail
 
@@ -23,6 +27,11 @@ Then ask the user for three things, in one message:
 If the request already contains all three, do not ask again: restate your understanding
 in a short block and continue. If the user declines to answer, state the assumptions you
 will work under and get a yes before writing any file.
+
+**Refine before you plan, and plan before you execute.** Restating a request is not the
+same as refining it: name what will change, what will not, and what you are assuming
+where the request is silent. Nothing is executed and no file is written until that
+refinement and the task list in §B are in front of the user.
 
 ## B. Split the request into tasks
 
@@ -79,8 +88,11 @@ starting. Once confirmed, write the list to `.agents/memory/tasks/{slug}.md`.
 
 ## F. Pull requests and merging
 
-* When all tasks are done, push every branch, then open **one pull request per branch** —
-  never one pull request covering several tasks.
+* **Ask the user before opening a pull request, and wait for an explicit yes.**
+  Permission already given — for this task or as a standing instruction — is that yes;
+  do not ask twice.
+* Once permitted: when all tasks are done, push every branch, then open **one pull
+  request per branch** — never one pull request covering several tasks.
 * Pull request `1` targets the default branch; pull request `k` targets task `k-1`'s
   branch. State the chain in each body:
   `Merge order: 2 of 4 — merges after #<previous PR>`. Across repositories, name the
@@ -88,8 +100,9 @@ starting. Once confirmed, write the list to `.agents/memory/tasks/{slug}.md`.
 * Title and body follow
   [`../git/pull-request-template.md`](agents://git/pull-request-template.md), and carry no
   session link ([`../rules/no-session-links.md`](agents://rules/no-session-links.md)).
-* **Ask the user before merging anything, and wait for an explicit yes.** Never merge on
-  your own initiative, and never enable auto-merge without being asked.
+* **Ask the user before merging anything, and wait for an explicit yes**, on the same
+  terms as the pull request gate above. Never merge on your own initiative, and never
+  enable auto-merge without being asked.
 * Once approved, merge in order `1…n`. Wait for each merge to finish before starting the
   next, and re-target the next pull request's base branch if the platform does not do it
   automatically.
