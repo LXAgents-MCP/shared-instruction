@@ -13,7 +13,6 @@ import { resolveEntry, suggestEntries } from '../content/resolve.js';
 import { manifestJson } from '../server/manifest.js';
 import { buildAuditPayload, buildSetupPayload } from '../server/payloads.js';
 import { formatScaffold, scaffoldRepo, writeScaffold } from '../tools/mcp-creator.js';
-import { discoverRepos, formatRepos, selectRepos } from '../tools/mcp-repos.js';
 import { resolveVersion } from '../version.js';
 
 /** Raised for a condition the user can fix; the CLI prints it without a stack. */
@@ -113,35 +112,6 @@ export function auditProcedure(registry, version) {
 /** The machine-readable manifest, byte-identical to the served resource. */
 export function manifest(registry, version) {
   return manifestJson(registry, version);
-}
-
-/**
- * `mcp-repos` — discovers MCP repositories and narrows them to a query.
- *
- * Returns the shortlist rather than a winner, for the same reason the tool
- * does: silently picking one of several plausible matches is how you end up
- * working in the wrong repository.
- */
-export async function reposCommand({ query = null, root = null, json = false } = {}) {
-  const discovery = await discoverRepos(root ? { roots: [root] } : {});
-  const { matches, exact } = selectRepos(discovery.repositories, query);
-
-  if (json) {
-    return JSON.stringify(
-      {
-        count: matches.length,
-        query,
-        exact: exact?.name ?? null,
-        roots: discovery.roots,
-        registryFile: discovery.registryFile,
-        repositories: matches,
-      },
-      null,
-      2,
-    );
-  }
-
-  return formatRepos({ ...discovery, repositories: matches }, query);
 }
 
 /**

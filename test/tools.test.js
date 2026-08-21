@@ -28,7 +28,6 @@ test('tools/list: publishes every tool, each described and non-destructive', asy
     'agents_read_instruction',
     'agents_setup',
     'mcp_creator',
-    'mcp_repos',
   ]);
 
   for (const tool of tools) {
@@ -48,9 +47,9 @@ test('every content tool is read-only', async () => {
     assert.equal(tool.annotations?.readOnlyHint, true, `${tool.name} must be read-only`);
   }
 
-  // Discovery only inspects the filesystem, so it is read-only too.
-  const repos = tools.find((tool) => tool.name === 'mcp_repos');
-  assert.equal(repos.annotations?.readOnlyHint, true);
+  // mcp_creator is the sole exception, and declares it: it writes files.
+  const writers = tools.filter((tool) => tool.annotations?.readOnlyHint === false);
+  assert.deepEqual(writers.map((tool) => tool.name), ['mcp_creator']);
 
   await server.close();
 });

@@ -16,7 +16,6 @@ import {
   loadContext,
   manifest,
   readInstruction,
-  reposCommand,
   setupProcedure,
 } from './commands.js';
 import { write as writeStdout, writeError } from './output.js';
@@ -37,7 +36,6 @@ const OPTIONS = {
   http: { type: 'boolean' },
   stdio: { type: 'boolean' },
   port: { type: 'string' },
-  root: { type: 'string' },
   description: { type: 'string' },
   directory: { type: 'string' },
   write: { type: 'boolean' },
@@ -60,7 +58,6 @@ Commands
   setup                  Print the AGENTS-SETUP procedure
   audit                  Print the duplicate-instruction audit procedure
   manifest               Print the manifest as JSON
-  repos [query]          Discover MCP repositories, narrowed by an optional query
   create <name>          Scaffold a new dual-purpose MCP repository
 
 Options
@@ -68,12 +65,11 @@ Options
   --stdio                serve: use the stdio transport (default)
   --port <n>             serve: HTTP port (default 3000)
   --folder <name>        list: restrict to one folder, e.g. rules, git
-  --root <dir>           repos: scan this directory instead of the configured roots
   --description <text>   create: one line describing the new repository
   --directory <dir>      create: where to create it (default: the name)
   --write                create: actually write the files (default: plan only)
   --force                create: allow a target directory that is not empty
-  --json                 list, read, repos, create: emit JSON instead of text
+  --json                 list, read, create: emit JSON instead of text
   -h, --help             Show this help
   -v, --version          Show the version
 
@@ -82,7 +78,6 @@ Examples
   lxagents-agents read branching-strategy
   lxagents-agents read agents://rules/directories.md
   lxagents-agents serve --http --port 8080
-  lxagents-agents repos --root ~/src
   lxagents-agents create weather-mcp                 # show the plan
   lxagents-agents create weather-mcp --write         # create it
 
@@ -181,9 +176,6 @@ export async function run(argv, { write = writeStdout } = {}) {
         return EXIT_OK;
       case 'manifest':
         write(manifest(registry, version));
-        return EXIT_OK;
-      case 'repos':
-        write(await reposCommand({ query: rest[0] ?? null, root: values.root, json: values.json }));
         return EXIT_OK;
       case 'create': {
         const [name] = rest;

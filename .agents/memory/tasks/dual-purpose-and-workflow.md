@@ -14,7 +14,7 @@ Six tasks, one branch each, stacked in dependency order off `master`.
 | 1 | `docs/repository-url` | Repository slug and URL moved to `LXAgents-MCP/shared-instruction`. |
 | 2 | `docs/global-workflow-enforcement` | The always-on mandate as `shared-instructions.md` §H. |
 | 3 | `feat/dual-purpose-entry-point` | CLI half of the package, sharing one registry with the server. |
-| 4 | `feat/mcp-repos-tool` | `mcp-repos` — discovery and selection of MCP repositories. |
+| 4 | `feat/mcp-repos-tool` | `mcp-repos` — discovery and selection of MCP repositories. **Withdrawn in `0.6.0`.** |
 | 5 | `feat/mcp-creator-tool` | `mcp-creator` — scaffolds a dual-purpose MCP repository. |
 | 6 | `chore/release-0-5-0` | Version bump, `wiki/logs/0/5/0/`, index rows, this file. |
 
@@ -43,6 +43,14 @@ a real `node:http` + SDK transport path rather than the doc being quietly narrow
 **`mcp_creator` plans by default.** It is the only non-read-only tool here. Writing only
 on an explicit flag keeps a speculative model call from creating directory trees, and it
 refuses a non-empty target unless forced.
+
+## Withdrawn in 0.6.0
+
+`mcp-repos` was removed one release after it shipped. It scanned the filesystem to find
+MCP repositories, but anything reaching this server arrived through a client that
+already holds its own server list in configuration, so it answered a question the caller
+had usually already answered. Nothing depended on it and `mcp_creator` never called it.
+**Do not re-add it** without a caller that actually needs it.
 
 ## Known gaps, deliberately left
 

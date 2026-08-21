@@ -61,9 +61,6 @@ lxagents-agents setup                      # the AGENTS-SETUP procedure
 lxagents-agents audit                      # the duplicate-instruction audit
 lxagents-agents manifest                   # the manifest, as JSON
 
-lxagents-agents repos                      # discover MCP repositories
-lxagents-agents repos alpha --root ~/src   # narrow the search
-
 lxagents-agents create weather-mcp          # show the scaffold plan
 lxagents-agents create weather-mcp --write  # create the repository
 ```
