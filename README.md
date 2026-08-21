@@ -21,8 +21,6 @@ instead of cloning or vendoring a copy of them.
 - **Read-only tools** — `agents_setup`, `agents_check_duplicate_instructions`,
   `agents_list_instructions`, `agents_read_instruction` — delivering the same content
   as the prompts, for clients that surface tools only.
-- **`mcp_repos`** — discovers the MCP repositories on this machine and narrows them to
-  the one you need, from a registry file or a filesystem scan. No network calls.
 - **`mcp_creator`** — scaffolds a new dual-purpose MCP repository from one name, each
   one shipping a `wiki/environments/setup.md` that documents both CLI and server mode.
   Plans by default; writes only when asked.

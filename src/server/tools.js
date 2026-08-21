@@ -26,7 +26,6 @@ import { z } from 'zod';
 import { buildAuditPayload, buildSetupPayload, requireEntry } from './payloads.js';
 import { resolveEntry, suggestEntries } from '../content/resolve.js';
 import { formatScaffold, scaffoldRepo, writeScaffold } from '../tools/mcp-creator.js';
-import { discoverRepos, formatRepos, selectRepos } from '../tools/mcp-repos.js';
 
 /** Wraps text in the content shape a tool result requires. */
 function text(value) {
@@ -197,73 +196,6 @@ Errors: if nothing matches, returns the closest available names so you can retry
       }
 
       return text(entry.text);
-    },
-  );
-
-  server.registerTool(
-    'mcp_repos',
-    {
-      title: 'Discover and select MCP repositories',
-      description: `Discover the MCP repositories available on this machine, and narrow them to the one you need.
-
-Use this when you must act on *another* MCP repository and do not know where it is — before scaffolding against it, comparing it, or connecting to it. Discovery runs at call time, so it reflects what exists now rather than a list baked into this server.
-
-Sources, both offline: a registry file named by MCP_REPOS_FILE, and a filesystem scan of MCP_REPOS_ROOTS (defaulting to the working directory). No network calls are made.
-
-Args:
-  - query (string, optional): narrow by name, path, or description. Omit to list everything found.
-  - root (string, optional): scan this directory instead of the configured roots.
-
-Returns: { count, query, exact, repositories: [{ name, path, description, source, signals, confidence }] }, plus a markdown table. \`exact\` is set only when one repository matches unambiguously — otherwise choose from the shortlist rather than assuming the first row.`,
-      inputSchema: {
-        query: z
-          .string()
-          .optional()
-          .describe('Narrow by name, path, or description. Omit to list everything.'),
-        root: z
-          .string()
-          .optional()
-          .describe('Scan this directory instead of the configured roots.'),
-      },
-      outputSchema: {
-        count: z.number().int().describe('Number of repositories returned'),
-        query: z.string().nullable(),
-        exact: z.string().nullable().describe('Name of the unambiguous match, when there is one'),
-        repositories: z.array(
-          z.object({
-            name: z.string(),
-            path: z.string().nullable(),
-            description: z.string().nullable(),
-            source: z.string(),
-            signals: z.array(z.string()),
-            confidence: z.string(),
-          }),
-        ),
-      },
-      annotations: READ_ONLY,
-    },
-    async ({ query, root }) => {
-      const discovery = await discoverRepos(root ? { roots: [root] } : {});
-      const { matches, exact } = selectRepos(discovery.repositories, query);
-
-      const output = {
-        count: matches.length,
-        query: query ?? null,
-        exact: exact?.name ?? null,
-        repositories: matches.map((repo) => ({
-          name: repo.name,
-          path: repo.path ?? null,
-          description: repo.description ?? null,
-          source: repo.source,
-          signals: [...repo.signals],
-          confidence: repo.confidence,
-        })),
-      };
-
-      return {
-        ...text(formatRepos({ ...discovery, repositories: matches }, query ?? null)),
-        structuredContent: output,
-      };
     },
   );
 

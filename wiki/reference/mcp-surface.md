@@ -54,22 +54,7 @@ All are read-only, non-destructive, and idempotent.
 | `agents_check_duplicate_instructions` | none | The duplicate audit with the manifest inlined — identical to the audit prompt. **On request only.** |
 | `agents_list_instructions` | `folder` (optional) | Every file with its description and `sha256`, as text and as `structuredContent`. |
 | `agents_read_instruction` | `instruction` (required) | One file verbatim. Accepts a frontmatter `name`, a path, or an `agents://` URI. |
-| `mcp_repos` | `query`, `root` (both optional) | MCP repositories discovered on this machine, narrowed by `query`. Returns the shortlist and an `exact` field set only on an unambiguous match. |
 | `mcp_creator` | `name` (required), `description`, `directory`, `write`, `force` | The plan for a new dual-purpose MCP repository, and — with `write` — the repository itself. |
-
-### `mcp_repos`
-
-Discovery runs at call time from two offline sources — a registry file named by
-`MCP_REPOS_FILE`, and a filesystem scan of `MCP_REPOS_ROOTS` — because the set of MCP
-repositories in an organization changes far more often than this server is released.
-
-A directory qualifies on a dependency of `@modelcontextprotocol/*`, an `mcp` keyword, an
-MCP-looking `bin`, or an `.mcp.json`. An `AGENTS.md` is recorded as a signal but never
-qualifies a repository on its own: that marks an *agent* repository, which is not the
-same thing. Two or more signals read as `high` confidence, one as `low`.
-
-It returns the whole shortlist rather than a winner. Silently picking one of several
-plausible matches is how an agent ends up working in the wrong repository.
 
 ### `mcp_creator`
 
