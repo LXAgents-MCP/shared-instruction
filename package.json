@@ -31,11 +31,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/LXAgents/mcp-server.git"
+    "url": "git+https://github.com/LXAgents-MCP/shared-instruction.git"
   },
-  "homepage": "https://github.com/LXAgents/mcp-server#readme",
+  "homepage": "https://github.com/LXAgents-MCP/shared-instruction#readme",
   "bugs": {
-    "url": "https://github.com/LXAgents/mcp-server/issues"
+    "url": "https://github.com/LXAgents-MCP/shared-instruction/issues"
   },
   "keywords": [
     "mcp",

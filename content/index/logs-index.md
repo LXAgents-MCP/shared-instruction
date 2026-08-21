@@ -8,7 +8,7 @@ description: Release history of the shared instruction set, newest first — wha
 **Scope:** the release history of the shared instruction set
 **Parent:** [`root-index.md`](agents://index/root-index.md)
 
-The log files themselves live in `LXAgents/mcp-server` under
+The log files themselves live in `LXAgents-MCP/shared-instruction` under
 `wiki/logs/{Major}/{Minor}/{Patch}/`. They are release records for humans, not instructions,
 so they are not served as `agents://` resources — this index is the routing surface.
 

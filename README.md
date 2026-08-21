@@ -1,4 +1,4 @@
-# mcp-server
+# shared-instruction
 
 The MCP server that delivers the **LXAgents shared agent instruction set**. A
 repository connects it as a connector and reads the conventions it needs — branching,

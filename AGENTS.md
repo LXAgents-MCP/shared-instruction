@@ -1,12 +1,13 @@
 ---
 name: agents-entry-point
-description: Entry point for LXAgents/mcp-server — the repository that holds and serves the shared agent instruction set.
+description: Entry point for LXAgents-MCP/shared-instruction — the repository that holds and serves the shared agent instruction set.
 ---
 
 # AGENTS.md
 
-This repository is `LXAgents/mcp-server`. It holds the shared agent instruction set in
-[`content/`](content/) and serves it over MCP as `lxagents-agents-base`. Every other
+This repository is `LXAgents-MCP/shared-instruction`. It holds the shared agent
+instruction set in [`content/`](content/) and serves it over MCP as
+`lxagents-agents-base`. Every other
 repository in the organization consumes that set through a connector rather than
 copying it.
 

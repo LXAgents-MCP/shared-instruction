@@ -85,7 +85,7 @@ lasts. See [`rules/shared-instructions.md`](agents://rules/shared-instructions.m
 ## How to change this set
 
 A change to a shared file changes behavior in every consuming repository at once, so
-it goes through a pull request against `LXAgents/mcp-server`, following this
+it goes through a pull request against `LXAgents-MCP/shared-instruction`, following this
 repository's own `git/` conventions. A change that breaks an existing convention is a
 major version bump ([`rules/versioning.md`](agents://rules/versioning.md)) and is
 announced in this repository's `wiki/logs/`, with the entry naming what consumers

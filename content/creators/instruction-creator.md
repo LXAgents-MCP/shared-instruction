@@ -12,7 +12,7 @@ else.
 
 1. **Decide the set.** *Is this true for more than this repository?* Yes → shared; no →
    local. From a consuming repository a shared rule is **never written** — it is proposed
-   against `LXAgents/mcp-server`.
+   against `LXAgents-MCP/shared-instruction`.
 2. **Confirm it does not already exist.** Check the local `agents-index.md`, then
    `agents://manifest.json` for the shared set. If something already covers the subject,
    extend that file instead of adding a near-duplicate — subject to the discovery protocol

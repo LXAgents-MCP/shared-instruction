@@ -1,6 +1,6 @@
 ---
 name: repository-rules
-description: Rules specific to LXAgents/mcp-server — the dual producer/consumer role, the code conventions, and what must not be introduced.
+description: Rules specific to LXAgents-MCP/shared-instruction — the dual producer/consumer role, the code conventions, and what must not be introduced.
 ---
 
 # Repository Rules

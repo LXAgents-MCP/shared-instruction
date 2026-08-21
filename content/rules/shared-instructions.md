@@ -17,9 +17,9 @@ Open this the moment you are unsure whether something is local or universal.
 Memory, indexes, both wikis, and `rules/repository.md` are **always local**. Everything
 universal is **always shared**. There is no third place.
 
-**This holds for the producer repository too.** `LXAgents/mcp-server` publishes the
-shared set, but it is also an ordinary software project with source, tests and a
-container image — so it carries its own `.agents/` for its rules, indexes, agent wiki
+**This holds for the producer repository too.** `LXAgents-MCP/shared-instruction`
+publishes the shared set, but it is also an ordinary software project with source,
+tests and a container image — so it carries its own `.agents/` for its rules, indexes, agent wiki
 and memory, and it must not push any of that into the published set. Producing the set
 is not a licence to keep local rules in it: a repository-specific convention in
 `{shared}` is broadcast to everyone, which is the same failure as a shared convention
@@ -88,8 +88,8 @@ index points at a file that no longer exists.
 
 ## F. Changing the shared set
 
-A pull request against `LXAgents/mcp-server`, following that repository's own `git/`
-conventions. Because a shared change alters behavior in every consuming repository at
+A pull request against `LXAgents-MCP/shared-instruction`, following that repository's
+own `git/` conventions. Because a shared change alters behavior in every consuming repository at
 once:
 
 * A change that breaks an existing convention is a **major** version bump
