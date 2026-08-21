@@ -27,6 +27,7 @@ test('tools/list: publishes every tool, each described and non-destructive', asy
     'agents_list_instructions',
     'agents_read_instruction',
     'agents_setup',
+    'mcp_creator',
     'mcp_repos',
   ]);
 

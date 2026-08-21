@@ -55,6 +55,7 @@ All are read-only, non-destructive, and idempotent.
 | `agents_list_instructions` | `folder` (optional) | Every file with its description and `sha256`, as text and as `structuredContent`. |
 | `agents_read_instruction` | `instruction` (required) | One file verbatim. Accepts a frontmatter `name`, a path, or an `agents://` URI. |
 | `mcp_repos` | `query`, `root` (both optional) | MCP repositories discovered on this machine, narrowed by `query`. Returns the shortlist and an `exact` field set only on an unambiguous match. |
+| `mcp_creator` | `name` (required), `description`, `directory`, `write`, `force` | The plan for a new dual-purpose MCP repository, and — with `write` — the repository itself. |
 
 ### `mcp_repos`
 
@@ -69,6 +70,22 @@ same thing. Two or more signals read as `high` confidence, one as `low`.
 
 It returns the whole shortlist rather than a winner. Silently picking one of several
 plausible matches is how an agent ends up working in the wrong repository.
+
+### `mcp_creator`
+
+The one tool here that is not read-only. It **defaults to a dry run**: called without
+`write`, it returns the full file list and touches nothing, so a speculative call cannot
+litter a filesystem. It is still non-destructive — it refuses a target directory that is
+not empty unless `force` is passed.
+
+The repository it generates is dual-purpose from the first commit: a CLI bin and a
+server bin over one implementation, serving stdio and streamable HTTP, with a test that
+fails if the two surfaces stop exposing the same tools.
+
+Every generated repository includes `wiki/environments/setup.md`, written from the same
+names the package declares, documenting installation and use for **both** CLI mode and
+server mode. That is the point of generating it: the day a repository is created is the
+only day anyone reliably writes that page.
 
 `agents_read_instruction` returns near-match suggestions when nothing resolves, and
 `agents_list_instructions` names the real folders when given an unknown one, so a wrong

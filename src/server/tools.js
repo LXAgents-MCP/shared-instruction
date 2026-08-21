@@ -25,6 +25,7 @@ import { z } from 'zod';
 
 import { buildAuditPayload, buildSetupPayload, requireEntry } from './payloads.js';
 import { resolveEntry, suggestEntries } from '../content/resolve.js';
+import { formatScaffold, scaffoldRepo, writeScaffold } from '../tools/mcp-creator.js';
 import { discoverRepos, formatRepos, selectRepos } from '../tools/mcp-repos.js';
 
 /** Wraps text in the content shape a tool result requires. */
@@ -263,6 +264,86 @@ Returns: { count, query, exact, repositories: [{ name, path, description, source
         ...text(formatRepos({ ...discovery, repositories: matches }, query ?? null)),
         structuredContent: output,
       };
+    },
+  );
+
+  server.registerTool(
+    'mcp_creator',
+    {
+      title: 'Scaffold a new MCP repository',
+      description: `Create a new MCP repository, complete and runnable, from one name.
+
+Use this to start a new MCP server rather than assembling one by hand. The generated repository is dual-purpose from the first commit — a CLI bin and a server bin over one implementation — and ships:
+
+  - package.json declaring both bins, with no build step
+  - a working MCP server over stdio and streamable HTTP, one tool registered
+  - a CLI with help, version, tools, and serve
+  - a test asserting the two surfaces expose the same tools
+  - README.md, AGENTS.md, .gitignore
+  - wiki/environments/setup.md with real install and run instructions for BOTH CLI mode and server mode, generated from this repository's own names so the commands in it are the ones that work
+
+Args:
+  - name (string, required): the repository name. A scope is accepted ("@acme/weather-mcp") and is kept for the package while the bins and server id use the last segment.
+  - description (string, optional): one line describing the repository.
+  - directory (string, optional): where to create it. Defaults to the slug, under the working directory.
+  - write (boolean, optional, default false): actually create the files. Left false, this returns the plan and touches nothing.
+  - force (boolean, optional, default false): allow writing into a directory that is not empty.
+
+Returns: the plan — package name, server id, both bin names, target directory, and every file — as markdown and as structuredContent.
+
+**Defaults to a dry run.** Call it once to see the plan, then again with write enabled once the user has agreed to the location.`,
+      inputSchema: {
+        name: z.string().min(1).describe('Repository name, optionally scoped.'),
+        description: z.string().optional().describe('One line describing the repository.'),
+        directory: z.string().optional().describe('Target directory. Defaults to the slug.'),
+        write: z.boolean().optional().describe('Create the files. Default false — plan only.'),
+        force: z.boolean().optional().describe('Allow a non-empty target directory.'),
+      },
+      outputSchema: {
+        written: z.boolean().describe('Whether the files were created'),
+        packageName: z.string(),
+        serverId: z.string(),
+        binCli: z.string(),
+        binServer: z.string(),
+        target: z.string(),
+        files: z.array(z.string()),
+      },
+      annotations: {
+        // Not read-only: with write enabled it creates files. Still not
+        // destructive — it refuses a non-empty target unless forced.
+        readOnlyHint: false,
+        destructiveHint: false,
+        idempotentHint: false,
+        openWorldHint: false,
+      },
+    },
+    async ({ name, description, directory, write = false, force = false }) => {
+      let plan;
+      try {
+        plan = scaffoldRepo({ name, description, directory });
+      } catch (error) {
+        return failure(error instanceof Error ? error.message : String(error));
+      }
+
+      if (write) {
+        try {
+          await writeScaffold(plan, { force });
+        } catch (error) {
+          return failure(error instanceof Error ? error.message : String(error));
+        }
+      }
+
+      const output = {
+        written: write,
+        packageName: plan.context.packageName,
+        serverId: plan.context.serverId,
+        binCli: plan.context.binCli,
+        binServer: plan.context.binServer,
+        target: plan.target,
+        files: plan.files.map((file) => file.path),
+      };
+
+      return { ...text(formatScaffold(plan, { written: write })), structuredContent: output };
     },
   );
 

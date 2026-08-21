@@ -63,7 +63,15 @@ lxagents-agents manifest                   # the manifest, as JSON
 
 lxagents-agents repos                      # discover MCP repositories
 lxagents-agents repos alpha --root ~/src   # narrow the search
+
+lxagents-agents create weather-mcp          # show the scaffold plan
+lxagents-agents create weather-mcp --write  # create the repository
 ```
+
+`create` plans by default and writes only with `--write`, so exploring it cannot create
+directories by accident. It refuses a target that is not empty unless `--force` is
+passed. Every repository it creates ships its own `wiki/environments/setup.md`
+documenting both modes, generated from that repository's own names.
 
 `read` accepts a frontmatter `name`, a path, or an `agents://` URI — all three resolve
 to the same file, so whichever form you are holding works.
