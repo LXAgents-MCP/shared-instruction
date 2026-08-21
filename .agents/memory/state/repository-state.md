@@ -44,7 +44,8 @@ not been checked from this repository. Confirm it before quoting it to anyone.
 **Version.** `0.6.0`. Releases so far: `0.0.0` (initial set), `0.1.0` (tool surface),
 `0.2.0` (producer/local set split), `0.3.0` (change propagation), `0.4.0` (work summary),
 `0.5.0` (always-on workflow, dual-purpose CLI, repository tools), `0.6.0` (`mcp_repos`
-withdrawn), `0.6.1` (connector surface table completed). All are merged to `master`.
+withdrawn), `0.6.1` (connector surface table completed), `0.7.0` (package renamed).
+All are merged to `master`.
 
 **Tests.** 66, all passing, across registry, server, http, manifest, tools, cli, and
 mcp-creator.

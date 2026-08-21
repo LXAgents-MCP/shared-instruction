@@ -19,6 +19,7 @@ the **Consumers must** column the only notice a repository gets, so it is never 
 
 | Version | Date | Summary | Consumers must |
 |---|---|---|---|
+| `0/7/0` | 2026-08-21 | Renames the npm package to `@lxagents-mcp/shared-instruction`. The connector id and the instruction set are unchanged. | Nothing. The connector is still `lxagents-agents-base`, so existing client configurations keep working. Only npm installs use the new package name. |
 | `0/6/1` | 2026-08-21 | Lists `mcp_creator` in the connector's published surface table, which had shown four tools since the connector began exposing five. | Nothing. Re-read `rules/mcp-connector.md` only if you want the complete tool list. |
 | `0/6/0` | 2026-08-21 | Withdraws the `mcp_repos` tool. The shared instruction set is unchanged. | Nothing, unless you called `mcp_repos` or the `repos` CLI command directly. No instruction file changed. Reconnect if your client cached the tool list. |
 | `0/5/0` | 2026-08-21 | Makes the task and git workflow apply to every request with no trigger phrase, and gates opening a pull request on the user's permission. | Re-read `rules/shared-instructions.md` §H and `planning/task-workflow.md`. Ask before opening a pull request, as you already do before merging. No trigger row changes and no override needs dropping. |
