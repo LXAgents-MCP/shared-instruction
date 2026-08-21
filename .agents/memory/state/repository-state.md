@@ -10,7 +10,8 @@ description: Current known state of LXAgents-MCP/shared-instruction — what exi
 **What this is.** A dual-purpose package that serves the LXAgents shared agent
 instruction set: an MCP server (`lxagents-agents-base`) and a CLI (`lxagents-agents`)
 over one frozen registry. Plain JavaScript, Node ESM, no build step. Published as
-`@lxagents/agents-base`.
+`@lxagents-mcp/shared-instruction`; the MCP connector id stays `lxagents-agents-base`,
+since consuming repositories name it in their client configuration.
 
 **Structure.** `content/` holds the 26 published instruction files. `.agents/` holds
 this repository's own instruction set. `wiki/` holds human documentation. `src/` and

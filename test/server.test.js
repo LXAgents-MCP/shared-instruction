@@ -23,7 +23,7 @@ test('initialize: reports the configured id, version, and routing instructions',
 
   assert.deepEqual(client.getServerVersion(), {
     name: 'lxagents-agents-base',
-    title: 'LXAgents Agents Base',
+    title: 'LXAgents Shared Instruction',
     version: '0.0.0',
   });
 
