@@ -11,6 +11,7 @@ import { parseArgs } from 'node:util';
 import {
   CommandError,
   auditProcedure,
+  createCommand,
   listInstructions,
   loadContext,
   manifest,
@@ -37,6 +38,10 @@ const OPTIONS = {
   stdio: { type: 'boolean' },
   port: { type: 'string' },
   root: { type: 'string' },
+  description: { type: 'string' },
+  directory: { type: 'string' },
+  write: { type: 'boolean' },
+  force: { type: 'boolean' },
 };
 
 export const HELP = `lxagents-agents — the LXAgents shared agent instruction set
@@ -56,6 +61,7 @@ Commands
   audit                  Print the duplicate-instruction audit procedure
   manifest               Print the manifest as JSON
   repos [query]          Discover MCP repositories, narrowed by an optional query
+  create <name>          Scaffold a new dual-purpose MCP repository
 
 Options
   --http                 serve: use the streamable HTTP transport
@@ -63,7 +69,11 @@ Options
   --port <n>             serve: HTTP port (default 3000)
   --folder <name>        list: restrict to one folder, e.g. rules, git
   --root <dir>           repos: scan this directory instead of the configured roots
-  --json                 list, read, repos: emit JSON instead of text
+  --description <text>   create: one line describing the new repository
+  --directory <dir>      create: where to create it (default: the name)
+  --write                create: actually write the files (default: plan only)
+  --force                create: allow a target directory that is not empty
+  --json                 list, read, repos, create: emit JSON instead of text
   -h, --help             Show this help
   -v, --version          Show the version
 
@@ -73,6 +83,8 @@ Examples
   lxagents-agents read agents://rules/directories.md
   lxagents-agents serve --http --port 8080
   lxagents-agents repos --root ~/src
+  lxagents-agents create weather-mcp                 # show the plan
+  lxagents-agents create weather-mcp --write         # create it
 
 Environment
   Every option above has an environment equivalent for server mode; see
@@ -173,6 +185,23 @@ export async function run(argv, { write = writeStdout } = {}) {
       case 'repos':
         write(await reposCommand({ query: rest[0] ?? null, root: values.root, json: values.json }));
         return EXIT_OK;
+      case 'create': {
+        const [name] = rest;
+        if (!name) {
+          throw new UsageError('create needs a name: lxagents-agents create <name>');
+        }
+        write(
+          await createCommand({
+            name,
+            description: values.description,
+            directory: values.directory,
+            write: values.write ?? false,
+            force: values.force ?? false,
+            json: values.json,
+          }),
+        );
+        return EXIT_OK;
+      }
       default:
         throw new UsageError(`Unknown command "${command}".`);
     }

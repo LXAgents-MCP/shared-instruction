@@ -26,7 +26,7 @@ It is both the **producer** of the shared set and a **consumer** of it. See
 | `src/content/` | Registry and frontmatter parsing — loads `content/` once at boot. | Changing how content is loaded, validated, or hashed. |
 | `src/server/` | `create-server.js`, `resources.js`, `prompts.js`, `tools.js`, `manifest.js`, `payloads.js`, `run.js`. | Changing the MCP surface or the boot sequence. |
 | `src/cli/` | `index.js`, `run.js`, `commands.js`, `output.js` — the CLI half of the dual-purpose build. | Changing what a person sees at a terminal. |
-| `src/tools/` | Tools that act on repositories rather than on content — `mcp-repos.js`. Surfaced through both MCP and the CLI. | Adding or changing a repository-level tool. |
+| `src/tools/` | Tools that act on repositories rather than on content — `mcp-repos.js`, `mcp-creator.js`. Surfaced through both MCP and the CLI. | Adding or changing a repository-level tool. |
 | `src/transport/` | `stdio.js`, `http.js`, `session-store.js`, `cluster.js`. | Changing how clients connect or how concurrency works. |
 | `test/` | `node:test` suites — registry, server, http, manifest, tools, cli. | Always. Every behavioural change ships with one. |
 

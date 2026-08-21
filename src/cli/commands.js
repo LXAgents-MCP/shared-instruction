@@ -12,6 +12,7 @@ import { loadRegistry } from '../content/registry.js';
 import { resolveEntry, suggestEntries } from '../content/resolve.js';
 import { manifestJson } from '../server/manifest.js';
 import { buildAuditPayload, buildSetupPayload } from '../server/payloads.js';
+import { formatScaffold, scaffoldRepo, writeScaffold } from '../tools/mcp-creator.js';
 import { discoverRepos, formatRepos, selectRepos } from '../tools/mcp-repos.js';
 import { resolveVersion } from '../version.js';
 
@@ -141,4 +142,50 @@ export async function reposCommand({ query = null, root = null, json = false } =
   }
 
   return formatRepos({ ...discovery, repositories: matches }, query);
+}
+
+/**
+ * `mcp-creator` — scaffolds a new MCP repository.
+ *
+ * Plans by default and writes only when asked, matching the tool surface: a
+ * command that creates a directory tree as a side effect of being explored is
+ * a command people learn to fear.
+ */
+export async function createCommand({
+  name,
+  description = null,
+  directory = null,
+  write = false,
+  force = false,
+  json = false,
+} = {}) {
+  let plan;
+  try {
+    plan = scaffoldRepo({ name, description, directory });
+  } catch (error) {
+    throw new CommandError(error instanceof Error ? error.message : String(error));
+  }
+
+  if (write) {
+    try {
+      await writeScaffold(plan, { force });
+    } catch (error) {
+      throw new CommandError(error instanceof Error ? error.message : String(error));
+    }
+  }
+
+  if (json) {
+    return JSON.stringify(
+      {
+        written: write,
+        ...plan.context,
+        target: plan.target,
+        files: plan.files.map((file) => file.path),
+      },
+      null,
+      2,
+    );
+  }
+
+  return formatScaffold(plan, { written: write });
 }

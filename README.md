@@ -23,6 +23,9 @@ instead of cloning or vendoring a copy of them.
   as the prompts, for clients that surface tools only.
 - **`mcp_repos`** — discovers the MCP repositories on this machine and narrows them to
   the one you need, from a registry file or a filesystem scan. No network calls.
+- **`mcp_creator`** — scaffolds a new dual-purpose MCP repository from one name, each
+  one shipping a `wiki/environments/setup.md` that documents both CLI and server mode.
+  Plans by default; writes only when asked.
 - **Many clients at once.** Content is loaded once into a frozen registry; each
   request or session gets its own server instance, so nothing is shared and any
   process can serve any request.
