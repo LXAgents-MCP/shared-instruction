@@ -17,7 +17,7 @@ enable it. Prefer prompts and resources where your client exposes them.
 | Field | Value |
 |---|---|
 | `name` | `lxagents-agents-base` |
-| `title` | `LXAgents Agents Base` |
+| `title` | `LXAgents Shared Instruction` |
 | `version` | from `package.json` |
 
 `initialize` also returns `instructions`, telling a client to route into the set rather

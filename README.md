@@ -6,7 +6,7 @@ commits, pull requests, task workflow, the creators, the directory architecture 
 instead of cloning or vendoring a copy of them.
 
 - **Server id:** `lxagents-agents-base`
-- **Package:** `@lxagents/agents-base`
+- **Package:** `@lxagents-mcp/shared-instruction`
 - **Surface:** MCP prompts and resources, plus five tools — four read-only, and `mcp_creator`, which writes.
 - **Dual-purpose:** the same set is reachable as a CLI (`lxagents-agents`) and as an MCP server (`lxagents-agents-base`).
 

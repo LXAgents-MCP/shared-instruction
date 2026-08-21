@@ -7,8 +7,14 @@
 /** MCP server id. Clients see this as the connector's name. */
 export const SERVER_ID = 'lxagents-agents-base';
 
-/** Human-facing title, shown by clients that render one. */
-export const SERVER_TITLE = 'LXAgents Agents Base';
+/**
+ * Human-facing title, shown by clients that render one.
+ *
+ * Distinct from SERVER_ID above, which is the wire identifier every consuming
+ * repository names in its client configuration. The title may be rebranded;
+ * the id may not, without breaking every one of those configurations.
+ */
+export const SERVER_TITLE = 'LXAgents Shared Instruction';
 
 /**
  * Fallback version, used only when package.json cannot be read (for example a

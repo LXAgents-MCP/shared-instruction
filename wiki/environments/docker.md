@@ -3,8 +3,8 @@
 ## Build and run
 
 ```bash
-docker build -t lxagents/agents-base:0.0.0 .
-docker run --rm --init -p 3000:3000 lxagents/agents-base:0.0.0
+docker build -t lxagents-mcp/shared-instruction:0.0.0 .
+docker run --rm --init -p 3000:3000 lxagents-mcp/shared-instruction:0.0.0
 ```
 
 Or with compose:

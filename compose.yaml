@@ -1,7 +1,7 @@
 services:
   agents-base:
     build: .
-    image: lxagents/agents-base:0.0.0
+    image: lxagents-mcp/shared-instruction:0.0.0
     ports:
       - "${PORT:-3000}:3000"
     environment:

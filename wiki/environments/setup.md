@@ -36,7 +36,7 @@ npm install
 npm link            # puts lxagents-agents on PATH
 
 # Or globally, from the package
-npm install -g @lxagents/agents-base
+npm install -g @lxagents-mcp/shared-instruction
 ```
 
 Without installing anything, run it straight out of the checkout:
