@@ -70,6 +70,11 @@ docker compose up --build
   [`../../rules/content-publishing.md`](../../rules/content-publishing.md).
 * **Content changes need a restart.** The registry is frozen at boot; editing markdown
   does nothing to a running process.
+* **Three files outside `content/` copy its text.** The root `AGENTS.md`, the scaffold
+  in `src/tools/mcp-creator.js`, and the contract `content/prompts/agents-setup.md`
+  dictates to consumers all reproduce set text and go stale silently. Grep for a
+  sentence you changed before committing — see
+  [`../../rules/set-mirrors.md`](../../rules/set-mirrors.md).
 * **Never write to stdout — except from the CLI.** stdout is the JSON-RPC channel on
   stdio, so the server path uses `src/logger.js`, which writes to stderr. CLI output is
   the one exception and goes through `src/cli/output.js`; `serve` prints nothing itself,
