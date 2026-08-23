@@ -27,8 +27,9 @@ connector — this repository produces the set, so the working tree is the autho
 | `name` | Local file | Replaces | Why |
 |---|---|---|---|
 
-No overrides — this repository uses the shared set unchanged. `repository-rules` and
-`content-publishing` are additions, not overrides: neither `name` exists in `content/`.
+No overrides — this repository uses the shared set unchanged. `repository-rules`,
+`content-publishing`, and `set-mirrors` are additions, not overrides: none of those
+`name`s exists in `content/`.
 
 ## Maintenance
 

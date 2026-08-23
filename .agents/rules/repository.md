@@ -67,6 +67,11 @@ Full orientation: [`../wiki/context/repository-map.md`](../wiki/context/reposito
   anywhere in `src/` is still a bug.
 * **The registry is frozen and shared.** Never mutate a registry entry, and never add a
   per-request cache keyed on shared state — that is what makes concurrent clients safe.
+* **Read set text from the registry; never hard-code it.** `src/server/payloads.js` is
+  the pattern — it reads `content/` and has never drifted. `src/tools/mcp-creator.js`
+  hard-codes instruction prose into the repositories it scaffolds and has drifted
+  because of it. A new copy is a new mirror to maintain; see
+  [`set-mirrors.md`](set-mirrors.md).
 * **One `McpServer` per session.** Never hoist a server instance to module scope.
 * **Fail at boot, not at first call.** Content problems — missing frontmatter, a
   duplicate `name` — are startup errors by design. Keep them that way.

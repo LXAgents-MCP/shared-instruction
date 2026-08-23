@@ -82,6 +82,12 @@ What a consumer must not do: remove a mirrored row, reorder them, or repoint one
 local file. Repointing is an override, and an override is declared in the override
 table of `.agents/index/root-index.md`, never by quietly editing a trigger.
 
+The exception is a row **the shared set itself removed**. When a release says to delete
+a row, deleting it *is* the sync — but check what replaced it before you do. A rule
+promoted to the mandatory standard files leaves the table and gains an always-on
+paragraph instead; deleting the row without adding that paragraph drops the rule from
+your repository altogether, which is the opposite of what the release asked for.
+
 ## The one rule that does not auto-activate
 
 [`duplicate-instruction-audit.md`](agents://rules/duplicate-instruction-audit.md) runs

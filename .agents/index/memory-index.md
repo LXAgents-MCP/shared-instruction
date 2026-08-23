@@ -26,3 +26,4 @@ the same commit that creates it.
 | [`../memory/tasks/change-propagation-rule.md`](../memory/tasks/change-propagation-rule.md) | Adding the change-propagation rule and hardening no-session-links; the `0.3.0` release. |
 | [`../memory/tasks/work-summary-rule.md`](../memory/tasks/work-summary-rule.md) | Adding the work-summary rule and closing two audit gaps found on real consumers; the `0.4.0` release. |
 | [`../memory/tasks/dual-purpose-and-workflow.md`](../memory/tasks/dual-purpose-and-workflow.md) | Repository URL migration, the always-on workflow mandate, the dual-purpose CLI, and `mcp-creator`; the `0.5.0` and `0.6.0` releases. |
+| [`../memory/tasks/discovery-protocol-always-on.md`](../memory/tasks/discovery-protocol-always-on.md) | Promoting `discovery-protocol.md` from a trigger row to a mandatory standard file; the `0.8.0` release. |

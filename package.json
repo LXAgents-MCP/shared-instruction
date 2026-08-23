@@ -1,6 +1,6 @@
 {
   "name": "@lxagents-mcp/shared-instruction",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "MCP server that delivers the LXAgents shared agent instruction set — AGENTS-SETUP and the base rules — over prompts and resources, so a repository consumes it through a connector instead of cloning it.",
   "type": "module",
   "main": "src/index.js",
