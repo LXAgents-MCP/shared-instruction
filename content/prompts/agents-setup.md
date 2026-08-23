@@ -248,8 +248,14 @@ order:
 > 4. Read [`.agents/index/memory-index.md`](.agents/index/memory-index.md) and load only
 >    the memory rows whose scope matches the current request, so you continue prior work
 >    instead of restarting it.
-> 5. Match the request against the trigger table below and load the instruction files it
+> 5. Load the four mandatory standard files, whatever the request looks like.
+> 6. Match the request against the trigger table below and load the instruction files it
 >    names, local first, shared second.
+>
+> Four files load on **every** request rather than on a trigger — the task workflow, the
+> branching strategy, the commit conventions, and the discovery protocol — along with the
+> two permission gates that ride with them: ask before opening a pull request, ask before
+> merging. See `{shared}/rules/shared-instructions.md` §H.
 >
 > If a rule conflicts with a habit, a default, or a template you would otherwise follow,
 > the rule wins. If it conflicts with an explicit instruction from the user in this
@@ -259,6 +265,12 @@ order:
 [`rules/auto-activation.md`](agents://rules/auto-activation.md) row-for-row, filled with
 the files that actually exist after §1.5. Name that file as the authority behind the
 table. In Mode C, replace every `{shared}` with `.agents`.
+
+The four mandatory standard files are not rows in this table and must not be added as
+rows — they load unconditionally, and the always-on paragraph in (c) is what carries
+them. [`rules/discovery-protocol.md`](agents://rules/discovery-protocol.md) is the one
+to watch: it has no trigger row, so a table copied without that paragraph loses the gate
+entirely.
 
 **e) Reading order:** `AGENTS.md` → resolve the shared set →
 `.agents/index/root-index.md` and nothing else at this stage → the ONE index whose scope
@@ -477,6 +489,9 @@ Report each item.
   no-session-links line — and no rule bodies.
 * The trigger table matches `rules/auto-activation.md` row-for-row, and every file it names
   exists in the set the row states.
+* The auto-activation contract names all four mandatory standard files as loading on every
+  request — the task workflow, the branching strategy, the commit conventions, and the
+  discovery protocol — and none of them is listed as a trigger row instead.
 * `README.md` is overview only and points at the wiki index for the full map.
 * The root index lists every local index, links to no leaf file, contains no rules, and
   carries the override table even when empty.

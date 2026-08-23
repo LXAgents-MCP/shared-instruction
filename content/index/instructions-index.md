@@ -22,7 +22,7 @@ index lists shared files only; a consuming repository's files are routed from it
 | [`mcp-connector.md`](agents://rules/mcp-connector.md) | Resolving this set through the connector instead of cloning it. |
 | [`no-session-links.md`](agents://rules/no-session-links.md) | Never record an assistant or tool session link. |
 | [`change-propagation.md`](agents://rules/change-propagation.md) | A change updates the documentation describing it, in the same commit. |
-| [`discovery-protocol.md`](agents://rules/discovery-protocol.md) | Propose new rules; never self-apply them. |
+| [`discovery-protocol.md`](agents://rules/discovery-protocol.md) | Propose new rules; never self-apply them. Loads on every request, not on a trigger. |
 | [`duplicate-instruction-audit.md`](agents://rules/duplicate-instruction-audit.md) | On request only — find and remove instructions a repository duplicates from this set. |
 | [`memory-policy.md`](agents://rules/memory-policy.md) | What may be written to memory, and how. |
 | [`work-summary.md`](agents://rules/work-summary.md) | Report finished work back — what changed, what was verified, what was not done. |

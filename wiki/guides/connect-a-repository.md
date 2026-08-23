@@ -44,6 +44,7 @@ invents an answer.
 
 ```
 AGENTS.md                     entry point + connector bootstrap + trigger table
+                              + the four always-on files
 README.md                     overview only
 LICENSE
 .agents/
@@ -80,6 +81,11 @@ It runs only when you invoke it. It never deletes memory, wiki pages, indexes, o
 Ask the agent to confirm:
 
 - `AGENTS.md` carries the connector bootstrap block verbatim.
+- `AGENTS.md` names the **four** files that load on every request — the task workflow,
+  the branching strategy, the commit conventions, and the discovery protocol — and does
+  **not** list any of them as a trigger row. The discovery protocol has no row by
+  design; a table copied without that paragraph loses the propose-before-you-write gate
+  entirely.
 - No `INDEX.md` exists anywhere.
 - The override table in `.agents/index/root-index.md` is present — empty is a valid and
   meaningful state.

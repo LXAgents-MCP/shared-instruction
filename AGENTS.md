@@ -41,12 +41,13 @@ At the start of every session, before doing any work:
 2. Read [`.agents/index/root-index.md`](.agents/index/root-index.md).
 3. Read [`.agents/index/memory-index.md`](.agents/index/memory-index.md) and load only
    the rows matching the request, so you continue prior work instead of restarting it.
-4. Match the request against the trigger table below and load the files it names —
+4. Load the four mandatory standard files named below, whatever the request looks like.
+5. Match the request against the trigger table below and load the files it names —
    local first, shared second.
 
-Three of those files load on **every** request rather than on a trigger — the task
-workflow, the branching strategy, and the commit conventions — along with the two
-permission gates that ride with them: ask before opening a pull request, ask before
+Four files load on **every** request rather than on a trigger — the task workflow, the
+branching strategy, the commit conventions, and the discovery protocol — along with the
+two permission gates that ride with them: ask before opening a pull request, ask before
 merging. See
 [`content/rules/shared-instructions.md`](content/rules/shared-instructions.md) §H.
 
@@ -67,7 +68,6 @@ resolves to `content/…`.
 | Write a commit message | [`content/git/commit-conventions.md`](content/git/commit-conventions.md) |
 | Open or update a pull request | [`content/git/pull-request-template.md`](content/git/pull-request-template.md) |
 | Write **any** commit, tag, PR, comment, or file that will be committed or posted | [`content/rules/no-session-links.md`](content/rules/no-session-links.md) |
-| Notice a rule worth adding | [`content/rules/discovery-protocol.md`](content/rules/discovery-protocol.md) |
 | Wonder whether something is local or shared | [`content/rules/shared-instructions.md`](content/rules/shared-instructions.md) |
 | Decide where a new file goes | [`content/rules/directories.md`](content/rules/directories.md) |
 | Change how a repository resolves this set | [`content/rules/mcp-connector.md`](content/rules/mcp-connector.md) |
