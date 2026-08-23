@@ -21,7 +21,8 @@ Before doing any work:
 4. Read `{repo}/.agents/index/memory-index.md` and load only the memory rows whose
    scope matches the current request, so you continue prior work instead of restarting
    it.
-5. Match the request against the trigger table and load the instruction files it names
+5. Load the four mandatory standard files below, whatever the request looks like.
+6. Match the request against the trigger table and load the instruction files it names
    — local first, shared second.
 
 ## Trigger table
@@ -36,7 +37,6 @@ row-for-row.
 | Write a commit message | `{shared}/git/commit-conventions.md` |
 | Open or update a pull request | `{shared}/git/pull-request-template.md` |
 | Write **any** commit, tag, PR, comment, or file that will be committed or posted | `{shared}/rules/no-session-links.md` |
-| Notice a rule worth adding, or content worth adding to an existing instruction | `{shared}/rules/discovery-protocol.md` |
 | Wonder whether something is local or shared, or need to override a shared rule | `{shared}/rules/shared-instructions.md` |
 | Decide where a new file goes | `{shared}/rules/directories.md` |
 | Resolve, connect, or fail to reach the shared set | `{shared}/rules/mcp-connector.md` |
@@ -54,14 +54,21 @@ row-for-row.
 Any row whose file is overridden locally resolves to the local copy — that is what the
 override table in `root-index.md` is for.
 
-### Three files load on every request, not on a trigger
+### Four files load on every request, not on a trigger
 
-`{shared}/planning/task-workflow.md`, `{shared}/git/branching-strategy.md`, and
-`{shared}/git/commit-conventions.md` are **mandatory standard files**. They load at the
-start of every request regardless of the rows above, because their conventions have to
-be known before the work starts — not at the moment a branch or a commit is finally
-created. The mandate, and the two permission gates that come with it, are in
+`{shared}/planning/task-workflow.md`, `{shared}/git/branching-strategy.md`,
+`{shared}/git/commit-conventions.md`, and `{shared}/rules/discovery-protocol.md` are
+**mandatory standard files**. They load at the start of every request regardless of the
+rows above, because their conventions have to be known before the work starts — not at
+the moment a branch, a commit, or an invented rule is finally in front of you. The
+mandate, and the two permission gates that come with it, are in
 [`shared-instructions.md`](agents://rules/shared-instructions.md) §H.
+
+[`discovery-protocol.md`](agents://rules/discovery-protocol.md) has no trigger row at
+all, and that is deliberate: a trigger fires only once you have recognised a finding for
+what it is, and by then writing the rule into the set yourself is one edit away. The
+gate has to be standing before the work starts, exactly like the branch and commit
+conventions it now sits beside.
 
 ### Mirroring this table in a consuming repository
 

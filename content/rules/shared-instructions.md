@@ -124,18 +124,26 @@ and that file remains the single authority for how it is carried out.
 
 | On every request you must… | Authority |
 |---|---|
-| Load the three mandatory standard files before acting | [`../git/branching-strategy.md`](agents://git/branching-strategy.md), [`../git/commit-conventions.md`](agents://git/commit-conventions.md), [`../planning/task-workflow.md`](agents://planning/task-workflow.md) |
+| Load the four mandatory standard files before acting | [`../git/branching-strategy.md`](agents://git/branching-strategy.md), [`../git/commit-conventions.md`](agents://git/commit-conventions.md), [`../planning/task-workflow.md`](agents://planning/task-workflow.md), [`discovery-protocol.md`](agents://rules/discovery-protocol.md) |
 | Refine the requirements and put a plan in front of the user **before** running code or writing a file | [`../planning/task-workflow.md`](agents://planning/task-workflow.md) §A |
 | Break the work into one or more manageable tasks and present the list before starting | [`../planning/task-workflow.md`](agents://planning/task-workflow.md) §B |
 | Isolate each task on its own branch — one task, one branch, never two on one | [`../git/branching-strategy.md`](agents://git/branching-strategy.md), [`../planning/task-workflow.md`](agents://planning/task-workflow.md) §C |
 | Ask before opening a pull request, and ask again before merging one | [`../planning/task-workflow.md`](agents://planning/task-workflow.md) §F |
+| Propose any instruction you think should exist — never write it into either set yourself | [`discovery-protocol.md`](agents://rules/discovery-protocol.md) |
 
-### The three standard files are not trigger-gated
+### The four standard files are not trigger-gated
 
 [`auto-activation.md`](agents://rules/auto-activation.md) fires most instructions from a
-trigger table. These three are the exception: they load at the start of every request,
+trigger table. These four are the exception: they load at the start of every request,
 whether or not it looks like work that will end in a branch. By the time a commit is in
 front of you, it is too late to go and learn the convention it should have followed.
+
+[`discovery-protocol.md`](agents://rules/discovery-protocol.md) is on that list for the
+same reason and carries no trigger row of its own. A trigger would fire only once you
+had already recognised a finding for what it is — the point at which writing the rule
+into the set yourself is one edit away. The gate stands from the start of the request,
+like the branch and commit conventions beside it: findings are collected and proposed,
+never self-applied, and that holds for the request that never mentions rules at all.
 
 ### The two permission gates
 

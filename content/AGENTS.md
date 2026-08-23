@@ -139,12 +139,17 @@ Source of truth: [`rules/discovery-protocol.md`](agents://rules/discovery-protoc
 
 ## Task and git workflow
 
-The task workflow, the branching strategy, and the commit conventions load on **every**
-request, with no trigger phrase, and two actions are gated on explicit user permission:
-opening a pull request, and merging one. The mandate is
-[`rules/shared-instructions.md`](agents://rules/shared-instructions.md) §H; the
+The task workflow, the branching strategy, the commit conventions, and the discovery
+protocol above load on **every** request, with no trigger phrase, and two actions are
+gated on explicit user permission: opening a pull request, and merging one. The mandate
+is [`rules/shared-instructions.md`](agents://rules/shared-instructions.md) §H; the
 procedure it points at is
 [`planning/task-workflow.md`](agents://planning/task-workflow.md).
+
+The discovery protocol carries no trigger row at all. A trigger would fire only once a
+finding had already been recognised — the point at which writing the rule into the set
+yourself is one edit away — so the gate stands from the start of every request instead.
+See [`rules/discovery-protocol.md`](agents://rules/discovery-protocol.md).
 
 ## Version rule
 
