@@ -19,6 +19,7 @@ the **Consumers must** column the only notice a repository gets, so it is never 
 
 | Version | Date | Summary | Consumers must |
 |---|---|---|---|
+| `0/8/0` | 2026-08-23 | Promotes `rules/discovery-protocol.md` from a trigger row to a mandatory standard file, so the propose-never-self-apply gate loads on every request. | Delete the discovery-protocol trigger row from your `AGENTS.md` and make the always-on paragraph beside your trigger table name four files, not three. Both edits, or the gate leaves your repository — `rules/auto-activation.md` now explicitly permits deleting a row the shared set removed. Then re-read it and `rules/shared-instructions.md` §H. |
 | `0/7/0` | 2026-08-21 | Renames the npm package to `@lxagents-mcp/shared-instruction`. The connector id and the instruction set are unchanged. | Nothing. The connector is still `lxagents-agents-base`, so existing client configurations keep working. Only npm installs use the new package name. |
 | `0/6/1` | 2026-08-21 | Lists `mcp_creator` in the connector's published surface table, which had shown four tools since the connector began exposing five. | Nothing. Re-read `rules/mcp-connector.md` only if you want the complete tool list. |
 | `0/6/0` | 2026-08-21 | Withdraws the `mcp_repos` tool. The shared instruction set is unchanged. | Nothing, unless you called `mcp_repos` or the `repos` CLI command directly. No instruction file changed. Reconnect if your client cached the tool list. |
