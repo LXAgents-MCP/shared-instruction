@@ -18,3 +18,4 @@ index lists local files only; the shared set is routed from
 |---|---|
 | [`../rules/repository.md`](../rules/repository.md) | The dual producer/consumer role, stack and commands, code conventions, what must not be introduced. |
 | [`../rules/content-publishing.md`](../rules/content-publishing.md) | Editing `content/` publishes to every consumer — boot invariants and the release obligation. |
+| [`../rules/set-mirrors.md`](../rules/set-mirrors.md) | Where this repository reproduces published set text outside `content/`, and the same-commit obligation. |
