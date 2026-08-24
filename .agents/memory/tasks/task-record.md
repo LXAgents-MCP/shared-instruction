@@ -5,7 +5,7 @@ description: Making the task record task 1 of every request, with each task appe
 
 # Task Record as Task One
 
-## 2026-08-23 — in progress
+## 2026-08-23 — shipped
 
 **Goal.** Make the task record a first-class task instead of a side-effect.
 `task-workflow.md` §B currently writes `.agents/memory/tasks/{slug}.md` once the list is
@@ -19,7 +19,7 @@ of pull request links.
 
 **Detail.** Reserved slots, not extra work: a one-task request still yields three tasks,
 because the record is what makes the work reviewable. Task 1's branch is
-`chore/{slug}-plan`. The `0.9.0` version bump is gated and not yet approved.
+`chore/{slug}-plan`. Released as `0.9.0` — minor, approved before task 4.
 
 This file is itself task 1 of the change it describes.
 
@@ -27,14 +27,15 @@ This file is itself task 1 of the change it describes.
 
 | # | Branch | Scope | PR |
 |---|---|---|---|
-| 1 | `chore/task-record-plan` | This file, and its `memory-index.md` row. | — |
-| 2 | `docs/task-workflow-slots` | `planning/task-workflow.md` §B/§C/§E/§F — the slots, task 1's branch name, the per-task append, the pull request chain mechanics. | — |
-| 3 | `docs/task-record-dependents` | Every file that restates the workflow: `prompts/branch-and-commit.md`, `creators/memory-creator.md`, `rules/memory-policy.md`, `rules/shared-instructions.md` §H, `prompts/agents-setup.md`. | — |
-| 4 | `chore/release-0-9-0` | Version, `wiki/logs/0/9/0/`, both logs indexes, repository state, and the closing entry that fills this table's PR column. | — |
+| 1 | `chore/task-record-plan` | This file, and its `memory-index.md` row. | #14 |
+| 2 | `docs/task-workflow-slots` | `planning/task-workflow.md` §B/§C/§E/§F — the slots, task 1's branch name, the per-task append, the pull request chain mechanics. | #15 |
+| 3 | `docs/task-record-dependents` | Every file that restates the workflow: `prompts/branch-and-commit.md`, `creators/memory-creator.md`, `rules/memory-policy.md`, `rules/shared-instructions.md` §H, `prompts/agents-setup.md`. | #16 |
+| 4 | `chore/release-0-9-0` | Version, `wiki/logs/0/9/0/`, both logs indexes, repository state, and the closing entry that fills this table's PR column. | #17 |
 
-The PR column is empty by design. Pull request numbers do not exist until every branch is
-pushed, and filling them in later on branch 1 would force branches 2 to 4 to be rebased.
-Task 4 writes them instead, because it is last and already contains everything.
+The PR column was empty until task 4. Pull request numbers do not exist until every
+branch is pushed, and filling them in on branch 1 afterwards would force branches 2 to 4
+to be rebased. Task 4 writes them because it is last and already contains everything —
+amending branch 4 invalidates nothing, since nothing is stacked on it.
 
 ## Per-task record
 
@@ -83,6 +84,20 @@ Every file that restates the workflow, brought into step with task 2.
 Mirror check per `.agents/rules/set-mirrors.md`: the root `AGENTS.md` and
 `src/tools/mcp-creator.js` reproduce no workflow text, so neither needed a change.
 `prompts/agents-setup.md` was the only mirror affected and is covered above.
+
+### Task 4 — `chore/release-0-9-0`
+
+`0.9.0`, minor: the set changes a convention every consumer follows but renames no file,
+changes no `name`, and removes no rule.
+
+* `wiki/logs/0/9/0/CHANGELOG.md`, with a **Consumers must** naming the four sections to
+  re-read and the one behavioural change — write the record before the work, on a
+  `chore/{slug}-plan` branch. Existing records need no migration.
+* Rows in both logs indexes, newest first.
+* `package.json` and the lockfile.
+* `repository-state.md` — the new version, the request shape, and a stale line corrected:
+  it still claimed `0.8.0` was unmerged on three branches.
+* This table's `PR` column, filled once every pull request was open, and this entry.
 
 ## Decisions worth not re-litigating
 

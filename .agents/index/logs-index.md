@@ -15,6 +15,7 @@ Because consumers read the shared set live and pick a change up on their next re
 
 | Version | Date | Summary | Consumers must |
 |---|---|---|---|
+| [`0/9/0`](../../wiki/logs/0/9/0/CHANGELOG.md) | 2026-08-23 | Task 1 is always the task record, task `n` the release, and each task appends its own entry. Built under the workflow it defines. | Re-read `planning/task-workflow.md` and `prompts/branch-and-commit.md`. Write the record before the work, on `chore/{slug}-plan`. |
 | [`0/8/0`](../../wiki/logs/0/8/0/CHANGELOG.md) | 2026-08-23 | `discovery-protocol.md` becomes the fourth mandatory standard file; its trigger row is dropped. The `mcp-creator` scaffold is corrected, `auto-activation.md` permits an upstream row removal, and `.agents/rules/set-mirrors.md` records where this repository copies set text. | Delete the discovery-protocol trigger row from your `AGENTS.md` and make the always-on paragraph name four files. Re-read `rules/auto-activation.md` and `rules/shared-instructions.md` §H. |
 | [`0/7/0`](../../wiki/logs/0/7/0/CHANGELOG.md) | 2026-08-21 | Package, image, and server title renamed to match the repository. `SERVER_ID` and both bins deliberately unchanged. | Nothing — no connector config changes. |
 | [`0/6/1`](../../wiki/logs/0/6/1/CHANGELOG.md) | 2026-08-21 | Adds `mcp_creator` to the connector surface table; fixes a matching read-only contradiction in `mcp-surface.md`. | Nothing — documentation only. |
