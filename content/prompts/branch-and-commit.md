@@ -14,20 +14,28 @@ it is always active; the user does not need to repeat it.**
 2. Confirm **Goal / Objective / Detail** —
    [`../planning/task-workflow.md`](agents://planning/task-workflow.md).
 3. Check `.agents/index/memory-index.md` for prior state on this work.
-4. Split the request into ordered tasks and get the list confirmed.
+4. Split the request into ordered tasks and get the list confirmed. **Task 1 is always
+   the task record. Task `n` is always the release. The work goes between them.**
 5. Create **one branch per task**, stacked in order: task 1 from the default branch, task
-   `k` from task `k-1`.
-6. Work tasks `1…n` strictly in order.
-7. Update the owning index for anything added, moved, or removed.
-8. Update `.agents/memory/` with progress.
-9. Commit each logical change as `type(scope): description`.
-10. **Strip any session trailer or footer your tooling appended** — before the commit, and
+   `k` from task `k-1`. Task 1's branch is `chore/{slug}-plan`.
+6. **Task 1: write the confirmed list to `.agents/memory/tasks/{slug}.md` before any of
+   it is built.** Leave its `PR` column empty; step 13 and task `n` fill it.
+7. Work tasks `2…n-1` strictly in order.
+8. Update the owning index for anything added, moved, or removed.
+9. **Append this task's own entry to the task record, in the same commit as its work** —
+   one `### Task k — {branch}` heading each, never batched at the end.
+10. Commit each logical change as `type(scope): description`.
+11. **Strip any session trailer or footer your tooling appended** — before the commit, and
     before the post.
-11. Push every branch with `git push -u origin {branch}`.
-12. Open one pull request per branch, using the pull request template.
-13. **Ask the user before merging.** Wait for an explicit yes.
-14. Merge in order `1…n`.
-15. Present any discovery-protocol findings at the end, each tagged `local` or `shared`.
+12. Push every branch with `git push -u origin {branch}`.
+13. Open one pull request per branch, using the pull request template. Then **edit task
+    1's pull request body to carry the whole chain** — it is the record, so its pull
+    request is the index of the work. A body edit, never a commit: pushing to branch 1
+    here invalidates every branch above it.
+14. **Ask the user before merging.** Wait for an explicit yes.
+15. Merge in order `1…n`.
+16. In the release task, fill the record's `PR` column and mark it done.
+17. Present any discovery-protocol findings at the end, each tagged `local` or `shared`.
 
 ## Branch names
 

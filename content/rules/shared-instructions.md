@@ -126,7 +126,8 @@ and that file remains the single authority for how it is carried out.
 |---|---|
 | Load the four mandatory standard files before acting | [`../git/branching-strategy.md`](agents://git/branching-strategy.md), [`../git/commit-conventions.md`](agents://git/commit-conventions.md), [`../planning/task-workflow.md`](agents://planning/task-workflow.md), [`discovery-protocol.md`](agents://rules/discovery-protocol.md) |
 | Refine the requirements and put a plan in front of the user **before** running code or writing a file | [`../planning/task-workflow.md`](agents://planning/task-workflow.md) §A |
-| Break the work into one or more manageable tasks and present the list before starting | [`../planning/task-workflow.md`](agents://planning/task-workflow.md) §B |
+| Break the work into tasks and present the list before starting — task 1 is the record, task `n` is the release, the work goes between | [`../planning/task-workflow.md`](agents://planning/task-workflow.md) §B |
+| Write the task record **before** the work, and append each task's own entry in the same commit as that task | [`../planning/task-workflow.md`](agents://planning/task-workflow.md) §B, §E |
 | Isolate each task on its own branch — one task, one branch, never two on one | [`../git/branching-strategy.md`](agents://git/branching-strategy.md), [`../planning/task-workflow.md`](agents://planning/task-workflow.md) §C |
 | Ask before opening a pull request, and ask again before merging one | [`../planning/task-workflow.md`](agents://planning/task-workflow.md) §F |
 | Propose any instruction you think should exist — never write it into either set yourself | [`discovery-protocol.md`](agents://rules/discovery-protocol.md) |

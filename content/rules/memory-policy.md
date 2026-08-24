@@ -21,7 +21,7 @@ shared set has no memory at all.
 
 | Situation | File |
 |---|---|
-| Ongoing work | `tasks/{slug}.md` |
+| Ongoing work | `tasks/{slug}.md` — written as task 1, before the work, and appended to by each task |
 | What happened in a working session | `sessions/{yyyy-mm-dd}-{slug}.md` |
 | A choice with consequences | `decisions/{slug}.md` |
 | Current live state of an area | `state/{area}.md`, overwritten in place |
