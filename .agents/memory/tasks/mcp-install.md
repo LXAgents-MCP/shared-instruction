@@ -38,6 +38,24 @@ guide is human documentation and is not published, so only task 2 drives the rel
 
 Created this file and registered it in `.agents/index/memory-index.md`. Nothing published.
 
+### Task 2 — `docs/task-workflow-retarget`
+
+`planning/task-workflow.md` §F gains the two halves of the finding.
+
+* Re-target **before** merging. A forge only re-targets a stacked pull request when its
+  base branch is deleted on merge; with that setting off, pull request `k` merges into
+  branch `k-1` and the default branch stays behind while every signal says success.
+* After the last merge, diff the default branch against the final branch in the chain and
+  report the result. "Merged" is a claim about a pull request, not about the default
+  branch.
+
+The closing bullet of §F now names the tree check as part of the final state, so the
+report has somewhere to land rather than being an unhomed instruction.
+
+Evidence, not theory: this cost a mis-merge in the `0.8.0` chain, where PR 2 landed on
+branch 1 and only a tree diff caught it. Applying it by hand in the `0.9.0` chain landed
+all four cleanly.
+
 ## Decisions worth not re-litigating
 
 **`./mcps/` is a runtime, not a vendored set — and the guide has to say so.**
