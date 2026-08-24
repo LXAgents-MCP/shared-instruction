@@ -37,6 +37,7 @@ reflected here in the same commit.
 | File | Purpose |
 |---|---|
 | [`../../wiki/guides/connect-a-repository.md`](../../wiki/guides/connect-a-repository.md) | Putting a repository onto the shared set, including one that already has instructions. |
+| [`../../wiki/guides/install-as-local-mcp.md`](../../wiki/guides/install-as-local-mcp.md) | Running the set from a clone under `./mcps/{owner}/{repo}/` when the deployed connector is not the right answer. |
 
 ## Child Indexes
 

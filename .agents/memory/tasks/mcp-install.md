@@ -56,6 +56,30 @@ Evidence, not theory: this cost a mis-merge in the `0.8.0` chain, where PR 2 lan
 branch 1 and only a tree diff caught it. Applying it by hand in the `0.9.0` chain landed
 all four cleanly.
 
+### Task 3 — `docs/local-mcp-install`
+
+`wiki/guides/install-as-local-mcp.md` — five steps, plus what to paste into `AGENTS.md`.
+
+* Opens with when *not* to use it: the remote connector stays the normal case, and this
+  is for a cold host, an offline machine, a client that only takes a local command, or
+  work on the set itself.
+* "The one rule that makes this safe" comes before the steps, not after: the clone is a
+  runtime, and three conditions keep it from becoming a vendored set — `mcps/` is
+  gitignored, files are read as `agents://` and never by path into the clone, and nothing
+  is copied out into `.agents/`.
+* Step 3 is the gitignore, and the page says outright that it is the step that matters.
+  Steps 1, 2, 4 and 5 are convenience; step 3 is what keeps a runtime from turning into
+  permanent drift.
+* Step 5 is the copy-paste `AGENTS.md` block, which degrades correctly: if the connector
+  already resolves, the block tells the agent to ignore the rest of it.
+* Also covers staleness — a clone is a snapshot, `git pull` does nothing to a running
+  process because the registry is frozen at boot — and removal.
+
+`wiki/guides/connect-a-repository.md` gains a pointer: it already described a local stdio
+server with an arbitrary `/path/to/shared-instruction`, so the two pages disagreed about
+where a clone lives until now. Both are `wiki/`, so fixing it here is documentation work,
+not a rule change.
+
 ## Decisions worth not re-litigating
 
 **`./mcps/` is a runtime, not a vendored set — and the guide has to say so.**
