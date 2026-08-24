@@ -156,11 +156,20 @@ behind and forces a rebase of the whole stack. §F fills the column without that
 * Once approved, merge in order `1…n`. Wait for each merge to finish before starting the
   next, and re-target the next pull request's base branch if the platform does not do it
   automatically.
+* **Re-target before merging, not after.** A forge only re-targets a stacked pull request
+  when its base branch is deleted on merge; where that setting is off, pull request `k`
+  merges into branch `k-1` and the default branch silently stays behind. The merge
+  succeeds and the pull request page says merged, so nothing signals the gap.
+* **After the last merge, verify rather than assume.** Diff the default branch against
+  the final branch in the chain and confirm the trees are identical. Report that check as
+  part of the final state below — "merged" is a claim about a pull request, not about the
+  default branch.
 * If a merge conflict appears, resolve it when the correct resolution is unambiguous; when
   resolving it would mean choosing between two behaviors, stop and ask, naming the
   conflicting files.
 * Report the final state: which pull requests merged, in which repositories, in what
-  order, and anything left open. Present any discovery findings.
+  order, the result of the tree check above, and anything left open. Present any
+  discovery findings.
 * Close out `.agents/memory/tasks/{slug}.md` in the release task's commit: fill the `PR`
   column, add the release task's own entry, and mark the record done. A record left open
   after the work merged is a record the next session has to re-verify.
