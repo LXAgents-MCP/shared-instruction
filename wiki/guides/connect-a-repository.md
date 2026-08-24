@@ -15,7 +15,11 @@ If the connector fails with a sign-in or registration error, check the path befo
 anything else. A URL without `/mcp` reaches a route that speaks no MCP, and clients
 read that failure as "this server must need authentication".
 
-**Local over stdio** — for working on the instruction set itself:
+**Local over stdio** — for working on the instruction set itself, or when the
+deployment is cold, unreachable, or your client only accepts a local command. The clone
+belongs at `./mcps/{owner}/{repo}/` and must be gitignored; the full procedure, including
+a block to paste into `AGENTS.md`, is in
+[Install as a local MCP server](install-as-local-mcp.md).
 
 ```json
 {
@@ -99,5 +103,7 @@ shared set in as a workaround.
 
 ## Related pages
 
+- [Install as a local MCP server](install-as-local-mcp.md) — running it from a clone
+  under `./mcps/` instead of the deployment.
 - [Overview](../information/overview.md)
 - [MCP surface](../reference/mcp-surface.md)
