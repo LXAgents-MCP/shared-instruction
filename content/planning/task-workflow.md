@@ -1,6 +1,6 @@
 ---
 name: task-workflow
-description: How a request becomes tasks, branches, and pull requests — intake, decomposition, stacked branches, in-order execution, and the two gates.
+description: How a request becomes tasks — the reserved record and release slots, stacked branches, in-order execution, and the two gates.
 ---
 
 # Task Workflow
@@ -35,29 +35,60 @@ refinement and the task list in §B are in front of the user.
 
 ## B. Split the request into tasks
 
-* Decide whether it is one task or several. Split it when the parts touch different
-  areas, can be reviewed independently, or must land in a particular order.
-* A single, self-contained request stays a single task. **Do not manufacture tasks.**
-* **A change that spans repositories is always more than one task** — one per repository,
-  with the shared-set change first, since consumers depend on it.
-* Append a final task for the release process, and give it its own branch and pull
-  request.
+Every request has the same shape. Two slots are reserved and always present; the work
+goes between them.
+
+| # | Slot | What it is |
+|---|---|---|
+| `1` | **The task record** | Creates `.agents/memory/tasks/{slug}.md` — the confirmed task list, written *before* any of it is built. |
+| `2…n-1` | **The work** | One task per unit of work. |
+| `n` | **The release** | Version, changelog, index rows, and the closing entry on the record. |
+
+Splitting applies to the middle only:
+
+* Split the work when the parts touch different areas, can be reviewed independently, or
+  must land in a particular order.
+* A single, self-contained piece of work stays a single work task. **Do not manufacture
+  work tasks.** The reserved slots are not manufactured — a one-item request still yields
+  three tasks, because a record nobody can read and a release nobody logged are how the
+  work stops being reviewable.
+* **A change that spans repositories is always more than one work task** — one per
+  repository, with the shared-set change first, since consumers depend on it.
 
 Present the task list **before doing any work**, numbered `1…n`, each with:
 
-| # | Title | Scope (one line) | Repository | Branch | Files / areas |
-|---|---|---|---|---|---|
+| # | Title | Scope (one line) | Repository | Branch | Files / areas | PR |
+|---|---|---|---|---|---|---|
 
 Order by dependency: if task B builds on task A, A comes first. **Two tasks that touch
 the same file are never independent** — sequence them.
 
 Wait for the user to confirm. If they change it, re-present the renumbered list before
-starting. Once confirmed, write the list to `.agents/memory/tasks/{slug}.md`.
+starting.
+
+### Why the record is task 1, not a note at the end
+
+Written first, the record states intent before a diff exists, so a reviewer can check the
+plan against the work rather than inferring the plan from it. Written last, it is a
+summary of whatever happened — which is the thing nobody needs, because the diff already
+says that.
+
+It is a task rather than a side-effect for the same reason every other task is one: it
+gets a branch, a pull request, and a review. A plan that merges without being read is not
+a plan.
+
+**The `PR` column stays empty until §F.** Pull request numbers do not exist until every
+branch is pushed, and back-filling them on branch 1 afterwards leaves every later branch
+behind and forces a rebase of the whole stack. §F fills the column without that cost.
 
 ## C. One branch per task, stacked in order
 
 * Every task gets its own branch, named per
   [`../git/branching-strategy.md`](agents://git/branching-strategy.md).
+* **Task 1's branch is `chore/{slug}-plan`.** A record is not documentation — `wiki/` and
+  `.agents/wiki/` are the documentation trees and memory is neither — so `chore` is its
+  type, and the `-plan` suffix keeps it apart from the work branches in a branch listing.
+  Work tasks are named for their own primary noun as usual.
 * **Task 1 branches from the default branch. Task `k` branches from task `k-1`'s
   branch**, not from the default branch. Stacking this way is what keeps the merges
   conflict-free — each branch already contains everything before it.
@@ -77,8 +108,18 @@ starting. Once confirmed, write the list to `.agents/memory/tasks/{slug}.md`.
 
 ## E. Record as you go
 
-* After each task, update `.agents/memory/tasks/{slug}.md`: what landed, the repository,
-  the branch, the PR, what is left.
+* **Every task appends its own entry to `.agents/memory/tasks/{slug}.md`, in the same
+  commit as its work** — never in a follow-up commit, and never batched at the end. One
+  `### Task k — {branch}` heading per task, saying what landed, what was left, and
+  anything the next task now depends on.
+
+  This is what makes the record a per-task changelog rather than a summary: `git log -p`
+  on that one file replays the work task by task, and a reviewer reading task `k`'s diff
+  sees the claim and the change in the same commit. A record written in one pass at the
+  end cannot be checked against anything.
+
+  Nothing is written to the per-task section in advance. Task 1 creates the file with the
+  plan and its own entry, and stops there.
 * Record any decision a future session would otherwise re-litigate in
   `.agents/memory/decisions/`.
 * Update the owning index in the same commit as any file you add, move, or remove.
@@ -97,6 +138,15 @@ starting. Once confirmed, write the list to `.agents/memory/tasks/{slug}.md`.
   branch. State the chain in each body:
   `Merge order: 2 of 4 — merges after #<previous PR>`. Across repositories, name the
   repository too.
+* **Once every pull request is open, edit task 1's pull request body to carry the whole
+  chain** — one row per task with its number, title, and branch. Task 1 is the record, so
+  its pull request is the index of the chain: a reviewer opens one page and sees every
+  part of the work and where each one went. This is a body edit, not a commit, which is
+  precisely why it costs nothing — pushing to branch 1 at this point would invalidate
+  every branch above it.
+* The `PR` column of `.agents/memory/tasks/{slug}.md` is filled by the **release task**,
+  not by task 1. The release task is last and already contains every branch below it, so
+  writing the numbers there rebases nothing.
 * Title and body follow
   [`../git/pull-request-template.md`](agents://git/pull-request-template.md), and carry no
   session link ([`../rules/no-session-links.md`](agents://rules/no-session-links.md)).
@@ -110,5 +160,7 @@ starting. Once confirmed, write the list to `.agents/memory/tasks/{slug}.md`.
   resolving it would mean choosing between two behaviors, stop and ask, naming the
   conflicting files.
 * Report the final state: which pull requests merged, in which repositories, in what
-  order, and anything left open. Close out the memory task file, and present any discovery
-  findings.
+  order, and anything left open. Present any discovery findings.
+* Close out `.agents/memory/tasks/{slug}.md` in the release task's commit: fill the `PR`
+  column, add the release task's own entry, and mark the record done. A record left open
+  after the work merged is a record the next session has to re-verify.

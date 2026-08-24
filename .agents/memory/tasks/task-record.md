@@ -46,6 +46,24 @@ here in advance.
 Created this file and registered it in `.agents/index/memory-index.md`. No shared file
 touched, so nothing is published by this task and it is not yet a release.
 
+### Task 2 — `docs/task-workflow-slots`
+
+`planning/task-workflow.md` now reserves the two slots and states the mechanics.
+
+* §B — the slot table, the split rule scoped to the middle only, a `PR` column on the
+  task table, and *why* the record is task 1 rather than a closing note.
+* §C — task 1's branch is `chore/{slug}-plan`, with the reasoning.
+* §E — every task appends its own `### Task k — {branch}` entry in the same commit as its
+  work. This entry is the first instance of that rule applying to itself.
+* §F — task 1's pull request body carries the whole chain once every pull request is
+  open; the release task fills the record's `PR` column.
+
+Frontmatter description and the `instructions-index.md` row updated to name the slots,
+since that row is what an agent routes on.
+
+Task 3 now depends on this: every file that restates the workflow is out of step until it
+lands.
+
 ## Decisions worth not re-litigating
 
 **The PR column is filled in two moves, not one.** Task 1's pull request *body* is edited
