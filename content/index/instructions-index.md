@@ -40,7 +40,7 @@ index lists shared files only; a consuming repository's files are routed from it
 
 | File | Purpose |
 |---|---|
-| [`task-workflow.md`](agents://planning/task-workflow.md) | Intake, decomposition, stacked branches, in-order execution, merging. |
+| [`task-workflow.md`](agents://planning/task-workflow.md) | Intake, the reserved record and release slots, stacked branches, in-order execution, merging. |
 
 ## prompts/
 
