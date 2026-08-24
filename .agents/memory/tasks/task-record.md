@@ -64,6 +64,26 @@ since that row is what an agent routes on.
 Task 3 now depends on this: every file that restates the workflow is out of step until it
 lands.
 
+### Task 3 — `docs/task-record-dependents`
+
+Every file that restates the workflow, brought into step with task 2.
+
+* `prompts/branch-and-commit.md` — the standing loop goes from 15 steps to 17: task 1
+  writes the record before the work, each task appends its own entry, and step 13 edits
+  task 1's pull request body to carry the chain.
+* `creators/memory-creator.md` — the `tasks/{slug}.md` row says the file is created as
+  task 1 and appended to by each task; "when to write" now leads with *before* the work;
+  retention points the closing entry at the release task.
+* `rules/memory-policy.md` — the same, in its own table row.
+* `rules/shared-instructions.md` §H — the §B mandate row names the reserved slots, and a
+  new row mandates the record-before-work and the per-task append.
+* `prompts/agents-setup.md` §5.4 — the seed record is named as the shape every later one
+  takes, since this prompt is what dictates the shape to a new consuming repository.
+
+Mirror check per `.agents/rules/set-mirrors.md`: the root `AGENTS.md` and
+`src/tools/mcp-creator.js` reproduce no workflow text, so neither needed a change.
+`prompts/agents-setup.md` was the only mirror affected and is covered above.
+
 ## Decisions worth not re-litigating
 
 **The PR column is filled in two moves, not one.** Task 1's pull request *body* is edited

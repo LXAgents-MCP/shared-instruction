@@ -28,7 +28,7 @@ carry a convention.
 
    | Situation | File |
    |---|---|
-   | Ongoing work | `tasks/{slug}.md` |
+   | Ongoing work | `tasks/{slug}.md` — created as **task 1** of the work it plans, then appended to by every task after it. See [`../planning/task-workflow.md`](agents://planning/task-workflow.md) §B. |
    | What happened in a session | `sessions/{yyyy-mm-dd}-{slug}.md` |
    | A choice with consequences | `decisions/{slug}.md` |
    | Current live state of an area | `state/{area}.md`, overwritten in place |
@@ -42,7 +42,9 @@ carry a convention.
 
 ## When to write, without being asked
 
-* At the end of a task.
+* **Before** the work, as task 1 — the task record, holding the confirmed list.
+* At the end of every task, as that task's own entry in the record, in the same commit as
+  its work.
 * When a decision is made that a future session would otherwise re-litigate.
 * When work is left unfinished.
 * When something surprising is learned about the codebase.
@@ -71,7 +73,10 @@ commit as your work.
 
 ## Retention
 
-* When a task ships, mark its `tasks/` file `status: done` with a closing entry.
+* When a task ships, mark its `tasks/` file `status: done` with a closing entry. For a
+  multi-task request this happens in the **release task**, which also fills the record's
+  `PR` column — see [`../planning/task-workflow.md`](agents://planning/task-workflow.md)
+  §F.
 * At each release, fold `sessions/` files older than that release into one digest under the
   release's log directory, then delete the originals and their rows in `memory-index.md` —
   see [`changelog-creator.md`](agents://creators/changelog-creator.md).

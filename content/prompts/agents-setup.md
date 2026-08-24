@@ -433,6 +433,12 @@ Exactly two real memory files, both registered in `.agents/index/memory-index.md
   connector, selected instruction files), and what was proposed but not selected. **No
   session link** — describe the work, do not point at the conversation.
 
+  This is the repository's first task record, and it is the shape every later one takes:
+  a task table with a `PR` column, then one `### Task k — {branch}` entry per task. From
+  the next request onward the record is written as **task 1**, before the work, and each
+  task appends its own entry in the same commit — see
+  [`planning/task-workflow.md`](agents://planning/task-workflow.md) §B and §E.
+
 No other memory files. No empty `{type}` folders.
 
 ### 5.5 First log entry
