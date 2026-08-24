@@ -5,7 +5,7 @@ description: The §F retarget rule, and a wiki guide for running this repository
 
 # Local MCP Install and the Retarget Rule
 
-## 2026-08-23 — in progress
+## 2026-08-23 — shipped to pull request, not merged
 
 **Goal.** Two unrelated changes in one chain.
 
@@ -30,7 +30,7 @@ guide is human documentation and is not published, so only task 2 drives the rel
 | 1 | `chore/mcp-install-plan` | This file, and its `memory-index.md` row. | — |
 | 2 | `docs/task-workflow-retarget` | `planning/task-workflow.md` §F — retarget before merging, verify after. | — |
 | 3 | `docs/local-mcp-install` | `wiki/guides/install-as-local-mcp.md` and its `project-wiki-index.md` row. | — |
-| 4 | `chore/release-{version}` | Version, log, both logs indexes, state, and this table's PR column. | — |
+| 4 | `chore/release-0-10-0` | Version, log, both logs indexes, state, and this table's PR column. | — |
 
 ## Per-task record
 
@@ -79,6 +79,22 @@ all four cleanly.
 server with an arbitrary `/path/to/shared-instruction`, so the two pages disagreed about
 where a clone lives until now. Both are `wiki/`, so fixing it here is documentation work,
 not a rule change.
+
+### Task 4 — `chore/release-0-10-0`
+
+`0.10.0`, minor: §F gains a required action that did not exist before — verify the default
+branch after the last merge — which is more than the clarification a patch would cover.
+
+* `wiki/logs/0/10/0/CHANGELOG.md`, with a **Consumers must** naming the one section to
+  re-read and the two steps to change.
+* Rows in both logs indexes, newest first.
+* `package.json` and the lockfile.
+* `repository-state.md` — the new version, the `./mcps/` layout, and the open
+  `mcp-connector.md` gap recorded under what is not built yet.
+* This table's `PR` column, and this entry.
+
+**Not merged.** The user withheld the merge gate for this round explicitly. All four pull
+requests are open and stacked; nothing has landed on `master`.
 
 ## Decisions worth not re-litigating
 
