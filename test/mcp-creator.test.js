@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { mkdtemp, readFile, readdir, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -24,6 +24,18 @@ const SETUP_DOC = 'wiki/environments/setup.md';
 
 async function tempDir() {
   return mkdtemp(join(tmpdir(), 'mcp-creator-'));
+}
+
+/**
+ * A scratch directory *inside* the working directory.
+ *
+ * The MCP tool pins its target inside `process.cwd()` on purpose — a model
+ * fills that argument in, so it does not get to name an absolute path — which
+ * means the tool cannot be exercised against `os.tmpdir()` the way the library
+ * can.
+ */
+async function tempDirInCwd() {
+  return mkdtemp(join(process.cwd(), '.mcp-creator-test-'));
 }
 
 test('buildContext: a scope stays on the package but never on the bins', () => {
@@ -127,8 +139,9 @@ test('the generated JavaScript actually parses', async () => {
   assert.equal(pkg.type, 'module');
 });
 
-test('mcp_creator tool: dry by default, and writes only when asked', async () => {
-  const root = await tempDir();
+test('mcp_creator tool: dry by default, and writes only when asked', async (t) => {
+  const root = await tempDirInCwd();
+  t.after(() => rm(root, { recursive: true, force: true }));
   const registry = await loadRegistry();
   const server = createServer({ registry, version: '0.0.0' });
   const client = new Client({ name: 'test-client', version: '0.0.0' });
@@ -157,6 +170,85 @@ test('mcp_creator tool: dry by default, and writes only when asked', async () =>
   // A bad name is a message the model can act on, not a thrown exception.
   const bad = await client.callTool({ name: 'mcp_creator', arguments: { name: '!!!' } });
   assert.equal(bad.isError, true);
+
+  await server.close();
+});
+
+test('scaffoldRepo: a directory that climbs out of the working directory is refused', async () => {
+  const root = await tempDir();
+
+  // Relative means "inside the working directory". Climbing out of it is
+  // traversal, and the plan is where it has to be caught: every filesystem
+  // call downstream reads plan.target.
+  assert.throws(
+    () => scaffoldRepo({ name: 'weather-mcp', directory: '../../etc', cwd: root }),
+    /escapes the working directory/,
+  );
+  assert.throws(
+    () => scaffoldRepo({ name: 'weather-mcp', directory: 'a/../../../etc', cwd: root }),
+    /escapes the working directory/,
+  );
+  assert.throws(
+    () => scaffoldRepo({ name: 'weather-mcp', directory: 'ok\u0000/../../etc', cwd: root }),
+    /null byte/,
+  );
+  assert.throws(
+    () => scaffoldRepo({ name: 'weather-mcp', directory: '   ', cwd: root }),
+    /non-empty path/,
+  );
+  assert.throws(
+    () => scaffoldRepo({ name: 'weather-mcp', directory: '/', cwd: root }),
+    /filesystem root/,
+  );
+
+  // A sibling whose name merely starts with dots is not a climb.
+  const dotty = scaffoldRepo({ name: 'weather-mcp', directory: '..config', cwd: root });
+  assert.equal(dotty.target, join(root, '..config'));
+
+  // An absolute directory stays allowed: that is what the CLI flag is for.
+  const explicit = join(root, 'elsewhere');
+  assert.equal(scaffoldRepo({ name: 'weather-mcp', directory: explicit, cwd: root }).target, explicit);
+
+  // Unless a boundary is pinned, which is what the MCP tool does.
+  assert.throws(
+    () => scaffoldRepo({ name: 'weather-mcp', directory: '/tmp/anywhere', cwd: root, root }),
+    /resolves outside/,
+  );
+});
+
+test('writeScaffold: a plan entry cannot write outside its own target', async () => {
+  const root = await tempDir();
+  const plan = scaffoldRepo({ name: 'weather-mcp', directory: join(root, 'weather-mcp') });
+
+  // A plan is a plain object and can be built by hand, so the write loop
+  // re-checks rather than trusting that scaffoldRepo produced it.
+  const tampered = {
+    ...plan,
+    files: [{ path: '../../escaped.js', contents: 'nope' }],
+  };
+  await assert.rejects(() => writeScaffold(tampered), /escapes/);
+  assert.deepEqual(await readdir(root), [], 'the refused write still created something');
+});
+
+test('mcp_creator tool: refuses a directory outside the working directory', async () => {
+  const registry = await loadRegistry();
+  const server = createServer({ registry, version: '0.0.0' });
+  const client = new Client({ name: 'test-client', version: '0.0.0' });
+  const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+  await Promise.all([server.connect(serverTransport), client.connect(clientTransport)]);
+
+  // The model picks this argument, so an absolute path is not its to pick.
+  const escaped = await client.callTool({
+    name: 'mcp_creator',
+    arguments: { name: 'weather-mcp', directory: '../../escaped', write: true },
+  });
+  assert.equal(escaped.isError, true);
+
+  const absolute = await client.callTool({
+    name: 'mcp_creator',
+    arguments: { name: 'weather-mcp', directory: join(tmpdir(), 'escaped-mcp'), write: true },
+  });
+  assert.equal(absolute.isError, true);
 
   await server.close();
 });

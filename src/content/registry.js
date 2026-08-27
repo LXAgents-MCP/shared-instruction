@@ -41,6 +41,20 @@ function toUri(relativePath) {
 }
 
 /**
+ * Orders paths by UTF-16 code unit.
+ *
+ * Passed explicitly rather than leaning on `Array.prototype.sort`'s default,
+ * which sorts by string only as an accident of coercion. It is deliberately
+ * not `localeCompare`: this order fixes the order of `manifest.json`, whose
+ * entries are hashed, so a collation that varies with the host's locale or ICU
+ * build would make two machines serving the same set disagree.
+ */
+function byCodeUnit(a, b) {
+  if (a < b) return -1;
+  return a > b ? 1 : 0;
+}
+
+/**
  * Lists the markdown files the loader is willing to serve.
  *
  * Only the declared instruction folders and the declared root files are walked.
@@ -75,7 +89,7 @@ async function collectPaths(contentDir) {
     }
   }
 
-  return paths.sort();
+  return paths.sort(byCodeUnit);
 }
 
 /** Reads and validates one instruction file into a frozen entry. */

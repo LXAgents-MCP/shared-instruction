@@ -64,6 +64,11 @@ The one tool here that is not read-only. It **defaults to a dry run**: called wi
 litter a filesystem. It is still non-destructive — it refuses a target directory that is
 not empty unless `force` is passed.
 
+`directory` is resolved **inside the server's working directory**, and one that climbs
+out of it is refused rather than created. The argument is filled in by a model, so it
+does not get to name an absolute path; the CLI's `--directory` flag, which an operator
+types, still accepts one.
+
 The repository it generates is dual-purpose from the first commit: a CLI bin and a
 server bin over one implementation, serving stdio and streamable HTTP, with a test that
 fails if the two surfaces stop exposing the same tools.

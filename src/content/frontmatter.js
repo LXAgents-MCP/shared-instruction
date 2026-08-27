@@ -10,6 +10,13 @@
 
 const FRONTMATTER = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/;
 
+// The first `# ` heading. Every part is greedy and nothing that follows can
+// fail, so it never backtracks: `[^\n]+` stops at the line end, which is
+// exactly where multiline `$` wants to be. The `\s+(.+?)\s*$` it replaces was
+// quadratic twice over — a lazy group grown one character at a time against a
+// trailing `\s*`, retried at every line in the file.
+const HEADING = /^#[ \t]+([^\n]+)$/m;
+
 /** Strips one layer of matching quotes from a scalar. */
 function unquote(value) {
   if (value.length >= 2) {
@@ -51,6 +58,32 @@ export function parseFrontmatter(raw) {
 }
 
 /**
+ * Drops trailing spaces and tabs from one line.
+ *
+ * A scan rather than `/[ \t]+$/`, which is quadratic: the engine retries the
+ * match at every position in the line, and at each one it consumes the whole
+ * run of blanks before `$` fails and it gives them back one at a time. This
+ * runs over every line of every instruction file at boot, so the difference is
+ * not academic.
+ *
+ * Deliberately not `trimEnd`, which would also strip `\r`, `\v`, `\f` and the
+ * Unicode spaces. The result is hashed, so widening what counts as trailing
+ * whitespace would silently change every manifest hash.
+ *
+ * @param {string} line
+ * @returns {string}
+ */
+function trimTrailingSpace(line) {
+  let end = line.length;
+  while (end > 0) {
+    const code = line.charCodeAt(end - 1);
+    if (code !== 32 && code !== 9) break;
+    end -= 1;
+  }
+  return end === line.length ? line : line.slice(0, end);
+}
+
+/**
  * Normalizes a body for hashing.
  *
  * Two files that differ only in line endings or trailing whitespace are the
@@ -64,7 +97,7 @@ export function normalizeBody(body) {
   return body
     .replace(/\r\n/g, '\n')
     .split('\n')
-    .map((line) => line.replace(/[ \t]+$/, ''))
+    .map(trimTrailingSpace)
     .join('\n')
     .trim();
 }
@@ -76,6 +109,6 @@ export function normalizeBody(body) {
  * @returns {string|null}
  */
 export function extractTitle(body) {
-  const match = /^#\s+(.+?)\s*$/m.exec(body);
-  return match ? match[1] : null;
+  const match = HEADING.exec(body);
+  return match ? trimTrailingSpace(match[1]) : null;
 }

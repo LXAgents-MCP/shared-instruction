@@ -22,7 +22,82 @@
  */
 
 import { mkdir, readdir, writeFile } from 'node:fs/promises';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
+
+/**
+ * True when `child` sits strictly underneath `parent`.
+ *
+ * Both sides must already be canonical. The test is done on the *result* of
+ * `relative` rather than by scanning the input for `..`, because scanning is
+ * what encoding tricks defeat: once both paths are resolved there is nothing
+ * left to encode, and a child that climbs out shows up as a leading `..`
+ * segment. The segment is matched with a separator so that a sibling named
+ * `..config` is not mistaken for a climb.
+ */
+function isInside(parent, child) {
+  const step = relative(parent, child);
+  if (step === '' || isAbsolute(step)) return false;
+  return step !== '..' && !step.startsWith(`..${sep}`);
+}
+
+/** `isInside`, plus the directory itself. */
+function isContained(parent, child) {
+  return parent === child || isInside(parent, child);
+}
+
+/**
+ * Canonicalises the scaffold target, and refuses one that escapes.
+ *
+ * `directory` is untrusted on both paths that reach here — a `--directory`
+ * flag on the CLI, and a tool argument a model fills in over MCP — and every
+ * filesystem call downstream (`readdir`, `mkdir`, `writeFile`) consumes the
+ * value this function returns. Validating once, here, is what keeps those
+ * three sinks from each needing their own check.
+ *
+ * Two boundaries, because the two callers do not deserve the same trust:
+ *
+ * * a **relative** directory is a location *within* the working directory, so
+ *   one that climbs out of it (`../../etc`) is traversal and is refused;
+ * * an **absolute** directory is an explicit choice, which is the CLI's whole
+ *   point — so it is allowed unless the caller passes `root`, which pins a
+ *   boundary the target must sit inside. The MCP tool passes one.
+ */
+function resolveTarget({ cwd, directory, slug, root = null }) {
+  const base = resolve(cwd);
+  const boundary = root === null ? null : resolve(base, root);
+
+  if (directory === null || directory === undefined) {
+    // `slug` is already reduced to [a-z0-9-] and cannot traverse.
+    return join(boundary ?? base, slug);
+  }
+
+  if (typeof directory !== 'string' || directory.trim() === '') {
+    throw new Error('directory must be a non-empty path');
+  }
+
+  // A NUL truncates the path inside libuv, so the string that was validated
+  // and the string that gets opened would not be the same one.
+  if (directory.includes('\0')) {
+    throw new Error('directory must not contain a null byte');
+  }
+
+  const target = resolve(base, directory);
+
+  // `resolve` on a root returns the root, so this is the fixed point.
+  if (target === resolve(target, '..')) {
+    throw new Error(`${target} is a filesystem root and cannot be a scaffold target`);
+  }
+
+  if (!isAbsolute(directory) && !isContained(base, target)) {
+    throw new Error(`"${directory}" escapes the working directory`);
+  }
+
+  if (boundary !== null && !isContained(boundary, target)) {
+    throw new Error(`"${directory}" resolves outside ${boundary}`);
+  }
+
+  return target;
+}
 
 /** Strips a scope and anything that cannot sit in a bin name or a URI. */
 function slugify(value) {
@@ -30,8 +105,13 @@ function slugify(value) {
   const slug = withoutScope
     .trim()
     .toLowerCase()
+    // Every run of non-alphanumerics collapses to exactly one dash, so the
+    // result never holds two adjacent dashes.
     .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
+    // Which is why trimming the ends needs no quantifier: `-+` here could only
+    // ever match one character anyway, and the anchored `-+$` form backtracks
+    // quadratically over a long run of dashes before it fails.
+    .replace(/^-|-$/g, '');
   return slug;
 }
 
@@ -615,12 +695,20 @@ function buildGitignore() {
 /**
  * Plans a new repository without touching the disk.
  *
- * @param {{ name: string, description?: string|null, directory?: string|null, cwd?: string }} options
+ * @param {{ name: string, description?: string|null, directory?: string|null, cwd?: string, root?: string|null }} options
  * @returns {{ context: object, target: string, files: {path: string, contents: string}[] }}
  */
-export function scaffoldRepo({ name, description = null, directory = null, cwd = process.cwd() }) {
+export function scaffoldRepo({
+  name,
+  description = null,
+  directory = null,
+  cwd = process.cwd(),
+  root = null,
+}) {
   const context = buildContext(name, { description });
-  const target = resolve(cwd, directory ?? context.slug);
+  // Validated here so the plan carries a checked path: planning is the only
+  // place `directory` is read, and writing consumes the plan.
+  const target = resolveTarget({ cwd, directory, slug: context.slug, root });
 
   const files = [
     { path: 'package.json', contents: buildPackageJson(context) },
@@ -660,21 +748,29 @@ async function isEmptyDir(path) {
  * @returns {Promise<{ target: string, written: string[] }>}
  */
 export async function writeScaffold(plan, { force = false } = {}) {
-  if (!force && !(await isEmptyDir(plan.target))) {
+  const target = resolve(plan.target);
+
+  if (!force && !(await isEmptyDir(target))) {
     throw new Error(
-      `${plan.target} already exists and is not empty. Choose another directory, or pass force to overwrite.`,
+      `${target} already exists and is not empty. Choose another directory, or pass force to overwrite.`,
     );
   }
 
   const written = [];
   for (const file of plan.files) {
-    const absolute = join(plan.target, file.path);
+    const absolute = resolve(target, file.path);
+    // `scaffoldRepo` validated the target, but a plan is a plain object that
+    // can be built or edited by hand between the two calls. Re-check each
+    // entry here, where it turns into a write.
+    if (!isInside(target, absolute)) {
+      throw new Error(`"${file.path}" escapes ${target}`);
+    }
     await mkdir(dirname(absolute), { recursive: true });
     await writeFile(absolute, file.contents, 'utf8');
     written.push(file.path);
   }
 
-  return { target: plan.target, written };
+  return { target, written };
 }
 
 /** Renders a plan for a terminal or a tool result. */

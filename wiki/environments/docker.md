@@ -21,7 +21,8 @@ curl -s http://localhost:3000/readyz
 
 ## What the image contains
 
-Two stages. The first installs production dependencies (`npm ci --omit=dev`); the
+Two stages. The first installs production dependencies (`npm ci --omit=dev
+--ignore-scripts`, so no dependency's install hook runs as root at build time); the
 second copies `node_modules`, `src/`, `content/`, `package.json`, and `LICENSE`. Tests,
 wiki, and git metadata are excluded by `.dockerignore`.
 

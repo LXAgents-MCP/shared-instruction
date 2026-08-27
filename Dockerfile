@@ -10,7 +10,11 @@ WORKDIR /app
 # Copied alone so a source change does not invalidate the dependency layer.
 COPY package.json package-lock.json ./
 
-RUN npm ci --omit=dev --no-audit --no-fund
+# --ignore-scripts: a dependency's install hook would otherwise run as root at
+# build time, with the whole tree and the network in reach. Nothing here needs
+# one — every runtime dependency is plain JavaScript with no native build — so
+# the hooks are off rather than merely trusted.
+RUN npm ci --omit=dev --no-audit --no-fund --ignore-scripts
 
 
 FROM node:22-alpine AS runtime

@@ -111,6 +111,96 @@ async function commandServe(values) {
 }
 
 /**
+ * Runs one command, having already established that there is one.
+ *
+ * Split out of `run` so that argument handling and command dispatch are two
+ * readable functions rather than one long one: everything here has a command
+ * name in hand, and everything in `run` is still deciding whether there is one.
+ *
+ * Throws `UsageError` for a command line the user can correct, and
+ * `CommandError` for a request that was understood and failed.
+ *
+ * @param {{ command: string, rest: string[], values: object, write: (text: string) => void }} invocation
+ * @returns {Promise<number>} the process exit code
+ */
+async function dispatch({ command, rest, values, write }) {
+  if (command === 'serve') return commandServe(values);
+  if (command === 'help') {
+    write(HELP);
+    return EXIT_OK;
+  }
+
+  // Everything below reads content, so it pays for the registry once here.
+  const { registry, version } = await loadContext();
+
+  switch (command) {
+    case 'list':
+      write(listInstructions(registry, { folder: values.folder, json: values.json }));
+      return EXIT_OK;
+    case 'read': {
+      const [identifier] = rest;
+      if (!identifier) {
+        throw new UsageError('read needs an instruction: lxagents-agents read <instruction>');
+      }
+      write(readInstruction(registry, identifier, { json: values.json }));
+      return EXIT_OK;
+    }
+    case 'setup':
+      write(setupProcedure(registry));
+      return EXIT_OK;
+    case 'audit':
+      write(auditProcedure(registry, version));
+      return EXIT_OK;
+    case 'manifest':
+      write(manifest(registry, version));
+      return EXIT_OK;
+    case 'create': {
+      const [name] = rest;
+      if (!name) {
+        throw new UsageError('create needs a name: lxagents-agents create <name>');
+      }
+      write(
+        await createCommand({
+          name,
+          description: values.description,
+          directory: values.directory,
+          write: values.write ?? false,
+          force: values.force ?? false,
+          json: values.json,
+        }),
+      );
+      return EXIT_OK;
+    }
+    default:
+      throw new UsageError(`Unknown command "${command}".`);
+  }
+}
+
+/**
+ * Turns a thrown value into a message on stderr and an exit code.
+ *
+ * The three cases are the CLI's whole error contract — a wrong command line
+ * exits 2, a failed request exits 1, and anything unexpected is still reported
+ * as a message rather than a stack trace — so they are kept together and out
+ * of the dispatch path.
+ *
+ * @param {unknown} error
+ * @returns {number} the process exit code
+ */
+function reportFailure(error) {
+  if (error instanceof UsageError) {
+    writeError(`${error.message}\n\nRun "lxagents-agents --help" for usage.`);
+    return EXIT_USAGE;
+  }
+  if (error instanceof CommandError) {
+    writeError(error.message);
+    return EXIT_ERROR;
+  }
+  writeError(error instanceof Error ? error.message : String(error));
+  return EXIT_ERROR;
+}
+
+/**
  * @param {string[]} argv arguments after the executable and script
  * @param {{ write?: (text: string) => void }} [io]
  * @returns {Promise<number>} the process exit code
@@ -147,66 +237,8 @@ export async function run(argv, { write = writeStdout } = {}) {
   }
 
   try {
-    if (command === 'serve') return await commandServe(values);
-    if (command === 'help') {
-      write(HELP);
-      return EXIT_OK;
-    }
-
-    // Everything below reads content, so it pays for the registry once here.
-    const { registry, version } = await loadContext();
-
-    switch (command) {
-      case 'list':
-        write(listInstructions(registry, { folder: values.folder, json: values.json }));
-        return EXIT_OK;
-      case 'read': {
-        const [identifier] = rest;
-        if (!identifier) {
-          throw new UsageError('read needs an instruction: lxagents-agents read <instruction>');
-        }
-        write(readInstruction(registry, identifier, { json: values.json }));
-        return EXIT_OK;
-      }
-      case 'setup':
-        write(setupProcedure(registry));
-        return EXIT_OK;
-      case 'audit':
-        write(auditProcedure(registry, version));
-        return EXIT_OK;
-      case 'manifest':
-        write(manifest(registry, version));
-        return EXIT_OK;
-      case 'create': {
-        const [name] = rest;
-        if (!name) {
-          throw new UsageError('create needs a name: lxagents-agents create <name>');
-        }
-        write(
-          await createCommand({
-            name,
-            description: values.description,
-            directory: values.directory,
-            write: values.write ?? false,
-            force: values.force ?? false,
-            json: values.json,
-          }),
-        );
-        return EXIT_OK;
-      }
-      default:
-        throw new UsageError(`Unknown command "${command}".`);
-    }
+    return await dispatch({ command, rest, values, write });
   } catch (error) {
-    if (error instanceof UsageError) {
-      writeError(`${error.message}\n\nRun "lxagents-agents --help" for usage.`);
-      return EXIT_USAGE;
-    }
-    if (error instanceof CommandError) {
-      writeError(error.message);
-      return EXIT_ERROR;
-    }
-    writeError(error instanceof Error ? error.message : String(error));
-    return EXIT_ERROR;
+    return reportFailure(error);
   }
 }
