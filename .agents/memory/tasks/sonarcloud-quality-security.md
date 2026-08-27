@@ -87,8 +87,19 @@ is now a `trimTrailingSpace` scan. Deliberately not `trimEnd`, which also strips
 `\v`, `\f` and the Unicode spaces — the result is hashed, so widening what counts as
 trailing whitespace would silently change every manifest hash.
 
-`extractTitle`'s `/^#\s+(.+?)\s*$/m` is now `/^#[ \t]+([^\n]+)$/m` plus the same trim.
-Every part is greedy and nothing after can fail, so it never backtracks.
+`extractTitle`'s `/^#\s+(.+?)\s*$/m` is now `/^#[ \t]+([^ \t\n][^\n]*)$/m` plus the same
+trim.
+
+The first replacement for it — `/^#[ \t]+([^\n]+)$/m` — was **wrong, and SonarCloud
+caught it on the pull request**: `[ \t]` and `[^\n]` intersect, so the boundary between
+the two quantifiers is ambiguous and the engine explores every way to split a run of
+blanks. Excluding blanks from the title's first character makes the classes disjoint and
+the split unique.
+
+Unlike the other two, this one is a **structural** fix, not a measured speedup: V8
+optimises both forms to ~0.1 ms on an 80 000-blank input, so the win is that the
+backtracking shape is gone by construction, not that anything got faster. Worth knowing
+before anyone "simplifies" it back.
 
 Equivalence was checked before committing, not assumed: both functions were run against
 the old implementations over all 64 markdown files in the repository, and `slugify` over

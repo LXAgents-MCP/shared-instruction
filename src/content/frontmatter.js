@@ -10,12 +10,19 @@
 
 const FRONTMATTER = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/;
 
-// The first `# ` heading. Every part is greedy and nothing that follows can
-// fail, so it never backtracks: `[^\n]+` stops at the line end, which is
-// exactly where multiline `$` wants to be. The `\s+(.+?)\s*$` it replaces was
-// quadratic twice over — a lazy group grown one character at a time against a
-// trailing `\s*`, retried at every line in the file.
-const HEADING = /^#[ \t]+([^\n]+)$/m;
+// The first `# ` heading.
+//
+// The title class excludes blanks at its first character so that it cannot
+// overlap the `[ \t]+` before it. Two adjacent quantifiers whose classes
+// intersect — `[ \t]+` then `[^\n]+`, where a space is both — leave the
+// boundary between them ambiguous, and the engine explores every way to split
+// a run of blanks. Disjoint classes give it exactly one, so the match is
+// linear; after the first title character `[^\n]*` is greedy with nothing
+// after it that can fail.
+//
+// It replaces `\s+(.+?)\s*$`, which was worse: a lazy group grown one
+// character at a time against a trailing `\s*`, retried at every line.
+const HEADING = /^#[ \t]+([^ \t\n][^\n]*)$/m;
 
 /** Strips one layer of matching quotes from a scalar. */
 function unquote(value) {
