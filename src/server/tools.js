@@ -217,7 +217,7 @@ Use this to start a new MCP server rather than assembling one by hand. The gener
 Args:
   - name (string, required): the repository name. A scope is accepted ("@acme/weather-mcp") and is kept for the package while the bins and server id use the last segment.
   - description (string, optional): one line describing the repository.
-  - directory (string, optional): where to create it. Defaults to the slug, under the working directory.
+  - directory (string, optional): where to create it, relative to the working directory. Defaults to the slug. It must resolve inside the working directory — a path that climbs out of it is refused.
   - write (boolean, optional, default false): actually create the files. Left false, this returns the plan and touches nothing.
   - force (boolean, optional, default false): allow writing into a directory that is not empty.
 
@@ -227,7 +227,10 @@ Returns: the plan — package name, server id, both bin names, target directory,
       inputSchema: {
         name: z.string().min(1).describe('Repository name, optionally scoped.'),
         description: z.string().optional().describe('One line describing the repository.'),
-        directory: z.string().optional().describe('Target directory. Defaults to the slug.'),
+        directory: z
+          .string()
+          .optional()
+          .describe('Target directory, inside the working directory. Defaults to the slug.'),
         write: z.boolean().optional().describe('Create the files. Default false — plan only.'),
         force: z.boolean().optional().describe('Allow a non-empty target directory.'),
       },
@@ -252,7 +255,10 @@ Returns: the plan — package name, server id, both bin names, target directory,
     async ({ name, description, directory, write = false, force = false }) => {
       let plan;
       try {
-        plan = scaffoldRepo({ name, description, directory });
+        // `root` pins the target inside the working directory. The CLI may
+        // scaffold anywhere the operator names; a model filling in this
+        // argument may not.
+        plan = scaffoldRepo({ name, description, directory, root: process.cwd() });
       } catch (error) {
         return failure(error instanceof Error ? error.message : String(error));
       }

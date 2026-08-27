@@ -29,3 +29,4 @@ the same commit that creates it.
 | [`../memory/tasks/discovery-protocol-always-on.md`](../memory/tasks/discovery-protocol-always-on.md) | Promoting `discovery-protocol.md` from a trigger row to a mandatory standard file; the `0.8.0` release. |
 | [`../memory/tasks/task-record.md`](../memory/tasks/task-record.md) | Making the task record task 1 of every request, with each task appending its own entry; the `0.9.0` release. |
 | [`../memory/tasks/mcp-install.md`](../memory/tasks/mcp-install.md) | The §F retarget rule, and a wiki guide for running this repository as a local MCP server from `./mcps/`. |
+| [`../memory/tasks/sonarcloud-quality-security.md`](../memory/tasks/sonarcloud-quality-security.md) | Clearing the SonarCloud findings in both repositories — path traversal, three super-linear regexes, an implicit sort, Docker install hooks, and a CLI refactor. |

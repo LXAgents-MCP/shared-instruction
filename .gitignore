@@ -18,3 +18,6 @@ npm-debug.log*
 # Runtime
 coverage/
 *.pid
+
+# Scratch targets from the mcp-creator tests, which must sit inside cwd
+.mcp-creator-test-*/
