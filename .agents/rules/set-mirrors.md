@@ -18,7 +18,7 @@ of it — a consuming repository is forbidden from copying shared files at all, 
 
 | Mirror | What it reproduces |
 |---|---|
-| [`AGENTS.md`](../../AGENTS.md) (repository root) | The trigger table, row-for-row, and the always-on paragraph. This repository consumes its own set, so its entry point goes stale exactly like a consumer's. |
+| [`AGENTS.md`](../../AGENTS.md) (repository root) | The trigger table, row-for-row; the always-on paragraph; and the *Using the connector* section, which summarises [`content/rules/mcp-connector.md`](../../content/rules/mcp-connector.md) — the read sequence, the transports, and the unavailable-connector obligation. This repository consumes its own set, so its entry point goes stale exactly like a consumer's. |
 | [`src/tools/mcp-creator.js`](../../src/tools/mcp-creator.js) | `buildAgentsDoc` hard-codes the always-on paragraph into every `AGENTS.md` the tool scaffolds. |
 | [`content/prompts/agents-setup.md`](../../content/prompts/agents-setup.md) | Dictates the auto-activation contract a new consuming repository writes into its own `AGENTS.md`. Published, but a mirror all the same. |
 
