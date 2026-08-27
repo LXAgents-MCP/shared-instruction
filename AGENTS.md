@@ -38,11 +38,14 @@ standing orders, not as optional reference material.
 At the start of every session, before doing any work:
 
 1. Read `AGENTS.md` (this file).
-2. Read [`.agents/index/root-index.md`](.agents/index/root-index.md).
-3. Read [`.agents/index/memory-index.md`](.agents/index/memory-index.md) and load only
+2. Resolve the shared set — see [Using the connector](#using-the-connector). Here that
+   is `content/` in the working tree, and the step is still not skippable: it is where
+   you find out whether the connector is reachable, which you have to say either way.
+3. Read [`.agents/index/root-index.md`](.agents/index/root-index.md).
+4. Read [`.agents/index/memory-index.md`](.agents/index/memory-index.md) and load only
    the rows matching the request, so you continue prior work instead of restarting it.
-4. Load the four mandatory standard files named below, whatever the request looks like.
-5. Match the request against the trigger table below and load the files it names —
+5. Load the four mandatory standard files named below, whatever the request looks like.
+6. Match the request against the trigger table below and load the files it names —
    local first, shared second.
 
 Four files load on **every** request rather than on a trigger — the task workflow, the
@@ -54,6 +57,54 @@ merging. See
 If a rule conflicts with a habit, a default, or a template you would otherwise follow,
 the rule wins. If it conflicts with an explicit instruction from the user in this
 session, the user wins — and you say out loud which rule you are setting aside.
+
+## Using the connector
+
+Authority: [`content/rules/mcp-connector.md`](content/rules/mcp-connector.md). Setup, in
+full: [`wiki/guides/install-as-local-mcp.md`](wiki/guides/install-as-local-mcp.md).
+
+This repository **is** the server. It publishes `content/` as `lxagents-agents-base`, so
+here the connector is the thing being edited, not the thing being consulted — read
+`content/` in the working tree and treat a deployed snapshot as possibly older than your
+branch. Everywhere else, read `agents://`.
+
+### Register it
+
+| Transport | How |
+|---|---|
+| Local stdio | `command: node`, `args: ["src/index.js"]`, `cwd:` this checkout |
+| Local HTTP | `npm run start:http`, then `http://localhost:3000/mcp` |
+| Remote | Settings → Connectors → Add custom connector → `https://<host>/mcp` |
+
+The `/mcp` path is not optional on either HTTP form. Without it the handshake fails, and
+most clients report that as a sign-in error rather than a wrong address.
+
+### Read from it
+
+1. `agents://manifest.json` once — every file with its `name`, path, description, and
+   hash. One read instead of twenty.
+2. `agents://index/root-index.md`, then route. Never bulk-read the set.
+3. Address any file as `agents://{folder}/{file}.md`.
+
+Prefer prompts and resources; the `agents_*` tools return identical text and exist for
+clients that only enumerate tools. `mcp_creator` is not part of reading the set.
+
+### When it will not resolve
+
+**Registering a server does not reach a session that is already running.** The client
+loads connectors at session start, so `claude mcp add` mid-session leaves a server that
+reports healthy and is still absent from the tool surface until the session restarts.
+That is the common case, and it looks like a broken server rather than a stale session.
+
+Either way the rule is the same, and it is a speaking obligation: **say plainly, in your
+first message, that the connector is unavailable and which conventions you could not
+read.** Then work from the local set. Never reconstruct the missing rules from memory,
+and never clone or paste the shared set into a repository as a workaround — an
+unavailable connector is temporary, a vendored copy is permanent drift.
+
+From a checkout of this repository, `npm run cli -- read <name>` and
+`npm run cli -- list` serve the same registry; `test/cli.test.js` pins that output as
+byte-identical to the resource an MCP client receives.
 
 ## Trigger table
 
