@@ -14,15 +14,15 @@ second.
 Recorded because they are deliberate, and because the next session should not read them
 as drift:
 
-* **Branch name.** The work is on `claude/sonarcloud-quality-security-m3fw86` in both
-  repositories, which `git/branching-strategy.md` forbids twice over — a tool-preset
-  prefix and a generated suffix. The branch was designated by the user for this session,
-  and an explicit instruction outranks the convention.
-* **One branch, not a stack.** `planning/task-workflow.md` §C gives every task its own
-  stacked branch. All of this work is on the one designated branch instead, for the same
-  reason.
 * **No version bump.** `rules/versioning.md` gates it, and it was not asked for. The
   changes are behavioural and warrant one — see *Open* below.
+
+The work first went to `claude/sonarcloud-quality-security-m3fw86`, a branch the harness
+designated, which `git/branching-strategy.md` forbids twice over — a tool-preset prefix
+and a generated suffix. The user then asked for the convention instead, so the branches
+were re-cut as `fix/sonarcloud-findings` and `docs/connector-usage`, stacked per
+`planning/task-workflow.md` §C. The original branch still exists on the remote; only the
+local copy was removed.
 
 ## Plan
 
@@ -35,7 +35,7 @@ as drift:
 | 5 | CLI cognitive complexity | shared-instruction | `src/cli/run.js` |
 | 6 | Missing lock file | template | `package-lock.json` |
 
-## Task 1 — `claude/sonarcloud-quality-security-m3fw86`
+## Task 1 — `fix/sonarcloud-findings`
 
 **Path traversal (CWE-22).** `scaffoldRepo` built its target with
 `resolve(cwd, directory ?? slug)` and handed it straight to `readdir`, `mkdir`, and
@@ -62,7 +62,7 @@ exactly equivalent and has no quantifier to backtrack over.
 
 Three tests added, pinning the refusals and the absolute-path allowance.
 
-## Task 2 — `claude/sonarcloud-quality-security-m3fw86`
+## Task 2 — `fix/sonarcloud-findings`
 
 `collectPaths` ended `return paths.sort()`. Now `paths.sort(byCodeUnit)`.
 
@@ -71,13 +71,13 @@ fixes the order of `manifest.json`, whose entries are hashed, so a collation tha
 with the host's locale or ICU build would make two machines serving the same set
 disagree. A code-unit comparison is byte-identical to the default it replaces.
 
-## Task 3 — `claude/sonarcloud-quality-security-m3fw86`
+## Task 3 — `fix/sonarcloud-findings`
 
 `npm ci` in the deps stage gained `--ignore-scripts`. Verified first that nothing needs a
 hook: the dependency tree has no `install` or `postinstall` script and no native build —
 only `prepare`/`prepublish` entries, which npm does not run for registry tarballs.
 
-## Task 4 — `claude/sonarcloud-quality-security-m3fw86`
+## Task 4 — `fix/sonarcloud-findings`
 
 Both regexes in `frontmatter.js`.
 
@@ -94,7 +94,7 @@ Equivalence was checked before committing, not assumed: both functions were run 
 the old implementations over all 64 markdown files in the repository, and `slugify` over
 11 edge cases. Zero differences.
 
-## Task 5 — `claude/sonarcloud-quality-security-m3fw86`
+## Task 5 — `fix/sonarcloud-findings`
 
 `run()` measured 18. Two cohesive blocks came out: `dispatch()` (the command switch) and
 `reportFailure()` (the error-to-exit-code contract). `run` is now argument handling only.
@@ -109,5 +109,22 @@ the pre-change file — *"from 18 to the 15 allowed"* — and is clean after. Me
   was: an absolute path over MCP is now refused. That is a behaviour change for
   consumers, so it reads as a **minor** bump with a `wiki/logs/` entry naming it. Both
   are gated on the user by `rules/versioning.md` and neither was done.
-* The connector was registered from this working tree as a local stdio server, per
-  `wiki/guides/install-as-local-mcp.md`.
+## How the shared set was resolved this session
+
+Recorded because it is the part most likely to be misread later.
+
+`lxagents-agents-base` was registered as a local stdio server per
+`wiki/guides/install-as-local-mcp.md` and reports healthy, but the **registration does
+not reach a session already running** — the connector never appeared in the tool surface,
+so no `agents://` read was possible.
+
+Per `rules/mcp-connector.md` that had to be stated plainly in the first message, and it
+was not. The set was routed on anyway, two ways that are both legitimate here:
+
+* For this repository, `AGENTS.md` and `.agents/rules/repository.md` are explicit that
+  `{shared}` resolves to `content/` **in the working tree**, not the deployed connector.
+  That is the authority for the producer, and it is what was read.
+* Cross-checked through `npm run cli -- read <name>`, which `test/cli.test.js` pins as
+  byte-identical to `client.readResource({ uri })` for every entry in the registry.
+
+So the bytes were the connector's bytes. What was skipped was saying so.
