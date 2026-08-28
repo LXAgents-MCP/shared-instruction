@@ -4,28 +4,39 @@
  * Prompts and resources are the correct primitives for an instruction set, but
  * several clients enumerate a connector by its tools alone: a server exposing
  * only prompts and resources shows up as "no tools available" and cannot be
- * enabled at all. These four tools are the compatibility layer that makes the
- * set reachable there.
+ * enabled at all. The read-only tools here are the compatibility layer that
+ * makes the set reachable there.
  *
- * They add no content and hold no logic of their own. The two procedure tools
- * return exactly what the matching prompt returns (`payloads.js`), and the two
- * access tools read the same frozen registry the resources do. If a client
- * supports prompts and resources, prefer those — nothing is lost either way.
+ * They add no content. The procedure tools return exactly what the matching
+ * prompt returns (`payloads.js`), and the access tools read the same frozen
+ * registry the resources do. If a client supports prompts and resources, prefer
+ * those — nothing is lost either way.
+ *
+ * `model_name_format` is the one read-only tool that computes rather than
+ * returns. It applies the published naming convention instead of reprinting it,
+ * so an integration gets one answer rather than re-deriving the rule at every
+ * call site — but its text still lives in `content/`, not here.
  *
  * On argument schemas: the SDK validates `tools/call` arguments against the
  * declared shape and an object schema rejects `undefined`, exactly as it does
  * for prompts. The risk profile differs, though — a tool is called by a model
  * that has the schema in hand and emits an arguments object, whereas a prompt is
- * invoked by a person clicking a button with nothing to send. So the two
- * zero-argument tools declare no schema at all, and the two that take arguments
- * declare one.
+ * invoked by a person clicking a button with nothing to send. So the
+ * zero-argument tools declare no schema at all, and the ones that take
+ * arguments declare one.
  */
 
 import { z } from 'zod';
 
-import { buildAuditPayload, buildSetupPayload, requireEntry } from './payloads.js';
+import {
+  buildAuditPayload,
+  buildModelNamingPayload,
+  buildSetupPayload,
+  requireEntry,
+} from './payloads.js';
 import { resolveEntry, suggestEntries } from '../content/resolve.js';
 import { formatScaffold, scaffoldRepo, writeScaffold } from '../tools/mcp-creator.js';
+import { formatModelName } from '../tools/model-name.js';
 
 /** Wraps text in the content shape a tool result requires. */
 function text(value) {
@@ -200,6 +211,81 @@ Errors: if nothing matches, returns the closest available names so you can retry
   );
 
   server.registerTool(
+    'model_naming_convention',
+    {
+      title: 'Read the model naming convention',
+      description: `Return the convention every stored model identifier follows: \`{platform}/{model}\`, lowercased before the write.
+
+Use this before adding a platform, storing an embedding, or writing anything into a model_name column — and when adding multi-platform support, so a direct API integration and a gateway such as OpenRouter produce the same string for the same model rather than two names nothing downstream can compare.
+
+Takes no arguments.
+
+Returns: the full rule as markdown, ending in the four-point checklist a stored name must satisfy.
+
+Call model_name_format to build a compliant name instead of assembling one by hand.`,
+      annotations: READ_ONLY,
+    },
+    async () => text(buildModelNamingPayload(registry)),
+  );
+
+  server.registerTool(
+    'model_name_format',
+    {
+      title: 'Build a compliant model name',
+      description: `Compose a stored model identifier from a platform and that platform's own model id, applying the naming convention: lowercase both, join with a single "/".
+
+Use this at every call site that writes a model_name, on a direct API integration as much as on a gateway route — one platform means one spelling only if the same function produces it. Read model_naming_convention first if you need the reasoning.
+
+Args:
+  - platform (string, required): the provider, e.g. "OpenAI". One segment, no "/".
+  - platform_model (string, required): that provider's own identifier, e.g. "text-embedding-3-small". No platform prefix.
+
+Returns: { model_name, platform, model, normalized } — normalized is true when trimming or lowercasing changed what you passed.
+
+Errors: refuses a blank segment, and refuses a platform_model that already carries its platform prefix rather than silently doubling it.`,
+      inputSchema: {
+        platform: z.string().min(1).describe('The provider, e.g. "openai". One segment, no "/".'),
+        platform_model: z
+          .string()
+          .min(1)
+          .describe('The provider\'s own model id, e.g. "text-embedding-3-small". No prefix.'),
+      },
+      outputSchema: {
+        model_name: z.string().describe('The value to store, {platform}/{model}, lowercased'),
+        platform: z.string().describe('The normalized platform segment'),
+        model: z.string().describe('The normalized model segment'),
+        normalized: z.boolean().describe('Whether trimming or lowercasing changed the input'),
+      },
+      annotations: READ_ONLY,
+    },
+    async ({ platform, platform_model: platformModel }) => {
+      let composed;
+      try {
+        composed = formatModelName({ platform, platformModel });
+      } catch (error) {
+        return failure(error instanceof Error ? error.message : String(error));
+      }
+
+      const output = {
+        model_name: composed.modelName,
+        platform: composed.platform,
+        model: composed.model,
+        normalized: composed.normalized,
+      };
+
+      const lines = [
+        output.model_name,
+        '',
+        output.normalized
+          ? 'Normalized from the values given. Store this string as it stands — the convention lowercases before the write, not on read.'
+          : 'The values given were already normalized. Store this string as it stands.',
+      ];
+
+      return { ...text(lines.join('\n')), structuredContent: output };
+    },
+  );
+
+  server.registerTool(
     'mcp_creator',
     {
       title: 'Scaffold a new MCP repository',
@@ -289,4 +375,5 @@ Returns: the plan — package name, server id, both bin names, target directory,
   // first call, matching how the registry validates content at boot.
   requireEntry(registry, 'agents://prompts/agents-setup.md');
   requireEntry(registry, 'agents://rules/duplicate-instruction-audit.md');
+  requireEntry(registry, 'agents://rules/model-naming-convention.md');
 }
