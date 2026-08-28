@@ -52,6 +52,27 @@ export const INSTRUCTION_FOLDERS = Object.freeze([
   'index',
 ]);
 
+/**
+ * The four files that load on every request rather than on a trigger.
+ *
+ * Named here rather than in the tool that serves them so the list has one
+ * home: `rules/auto-activation.md` is the authority on *why* they are
+ * mandatory, and this is the authority on *which*. A change to the set is one
+ * edit, and a URI that stops resolving fails at boot instead of silently
+ * shipping a shorter activation payload.
+ *
+ * Order matters — it is the order the rule names them in.
+ */
+export const MANDATORY_STANDARD_FILES = Object.freeze([
+  `${RESOURCE_SCHEME}://planning/task-workflow.md`,
+  `${RESOURCE_SCHEME}://git/branching-strategy.md`,
+  `${RESOURCE_SCHEME}://git/commit-conventions.md`,
+  `${RESOURCE_SCHEME}://rules/discovery-protocol.md`,
+]);
+
+/** The rule that governs session start, served whole by the activation tool. */
+export const AUTO_ACTIVATION_URI = `${RESOURCE_SCHEME}://rules/auto-activation.md`;
+
 /** Files allowed to sit at the content root rather than inside a folder. */
 export const ROOT_CONTENT_FILES = Object.freeze(['AGENTS.md']);
 
