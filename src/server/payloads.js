@@ -52,6 +52,28 @@ ${procedure.text}`;
 }
 
 /**
+ * The model naming convention.
+ *
+ * Returned whole rather than summarised. The rule ends in a four-point
+ * checklist a caller is expected to apply, and a summary is precisely the form
+ * in which a checklist stops being checkable.
+ *
+ * @param {Readonly<object>} registry
+ * @returns {string}
+ */
+export function buildModelNamingPayload(registry) {
+  const rule = requireEntry(registry, 'agents://rules/model-naming-convention.md');
+
+  return `Apply the convention below to every model identifier this repository stores, on every platform it integrates.
+
+${CONNECTOR_PREAMBLE}
+
+---
+
+${rule.text}`;
+}
+
+/**
  * The duplicate-instruction audit, with the manifest inlined.
  *
  * The manifest is inlined rather than linked because the audit's first step is

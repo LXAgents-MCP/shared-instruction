@@ -28,6 +28,8 @@ test('tools/list: publishes every tool, each described and non-destructive', asy
     'agents_read_instruction',
     'agents_setup',
     'mcp_creator',
+    'model_name_format',
+    'model_naming_convention',
   ]);
 
   for (const tool of tools) {
@@ -43,7 +45,9 @@ test('every content tool is read-only', async () => {
   const { client, server } = await connect();
 
   const { tools } = await client.listTools();
-  for (const tool of tools.filter((candidate) => candidate.name.startsWith('agents_'))) {
+  // Every tool but the one writer, rather than the `agents_` prefix alone —
+  // a new tool must opt into writing deliberately, not by being named freely.
+  for (const tool of tools.filter((candidate) => candidate.name !== 'mcp_creator')) {
     assert.equal(tool.annotations?.readOnlyHint, true, `${tool.name} must be read-only`);
   }
 
@@ -54,11 +58,15 @@ test('every content tool is read-only', async () => {
   await server.close();
 });
 
-test('the two entry-point tools declare no required arguments', async () => {
+test('the zero-argument tools declare no required arguments', async () => {
   const { client, server } = await connect();
 
   const { tools } = await client.listTools();
-  for (const name of ['agents_setup', 'agents_check_duplicate_instructions']) {
+  for (const name of [
+    'agents_setup',
+    'agents_check_duplicate_instructions',
+    'model_naming_convention',
+  ]) {
     const tool = tools.find((candidate) => candidate.name === name);
     assert.deepEqual(tool.inputSchema.required ?? [], [], `${name} must be callable with no args`);
   }
@@ -203,12 +211,123 @@ test('agents_read_instruction points at the listing when nothing is close', asyn
   await server.close();
 });
 
+test('model_naming_convention returns the published rule verbatim', async () => {
+  const { client, server, registry } = await connect();
+
+  const result = await client.callTool({ name: 'model_naming_convention', arguments: {} });
+
+  assert.notEqual(result.isError, true);
+  // Served from the registry, not restated in the tool — the whole point of
+  // keeping the text in content/ is that these two cannot drift.
+  const rule = registry.get('agents://rules/model-naming-convention.md');
+  assert.ok(result.content[0].text.endsWith(rule.text));
+  assert.match(result.content[0].text, /\{platform\}\/\{model\}/);
+
+  await server.close();
+});
+
+test('model_naming_convention is callable with arguments omitted entirely', async () => {
+  const { client, server } = await connect();
+
+  const result = await client.callTool({ name: 'model_naming_convention' });
+
+  assert.notEqual(result.isError, true);
+  await server.close();
+});
+
+test('model_name_format lowercases both segments and joins them with one slash', async () => {
+  const { client, server } = await connect();
+
+  const result = await client.callTool({
+    name: 'model_name_format',
+    arguments: { platform: 'OpenAI', platform_model: 'Text-Embedding-3-Small' },
+  });
+
+  assert.notEqual(result.isError, true);
+  assert.deepEqual(result.structuredContent, {
+    model_name: 'openai/text-embedding-3-small',
+    platform: 'openai',
+    model: 'text-embedding-3-small',
+    normalized: true,
+  });
+  assert.match(result.content[0].text, /^openai\/text-embedding-3-small\n/);
+
+  await server.close();
+});
+
+test('model_name_format reports input that was already normalized', async () => {
+  const { client, server } = await connect();
+
+  const result = await client.callTool({
+    name: 'model_name_format',
+    arguments: { platform: 'openai', platform_model: 'text-embedding-3-small' },
+  });
+
+  assert.equal(result.structuredContent.normalized, false);
+  assert.equal(result.structuredContent.model_name, 'openai/text-embedding-3-small');
+
+  await server.close();
+});
+
+test('model_name_format output satisfies the rule it implements', async () => {
+  const { client, server } = await connect();
+
+  // The rule's checklist, applied to the tool's own output. If the two ever
+  // disagree, one of them is wrong and this is where it shows.
+  for (const args of [
+    { platform: 'OPENAI', platform_model: '  Text-Embedding-3-Small  ' },
+    { platform: 'Anthropic', platform_model: 'Claude-Sonnet' },
+    { platform: 'voyage', platform_model: 'voyage-3' },
+  ]) {
+    const result = await client.callTool({ name: 'model_name_format', arguments: args });
+    const value = result.structuredContent.model_name;
+
+    assert.equal(value.split('/').length, 2, `${value}: exactly one separator`);
+    assert.ok(value.split('/').every((part) => part.length > 0), `${value}: no empty segment`);
+    assert.equal(value, value.toLowerCase(), `${value}: lowercase throughout`);
+  }
+
+  await server.close();
+});
+
+test('model_name_format refuses a blank segment', async () => {
+  const { client, server } = await connect();
+
+  const result = await client.callTool({
+    name: 'model_name_format',
+    arguments: { platform: 'openai', platform_model: '   ' },
+  });
+
+  assert.equal(result.isError, true);
+  assert.match(result.content[0].text, /platform_model is required/);
+
+  await server.close();
+});
+
+test('model_name_format refuses a model id that already carries its platform', async () => {
+  const { client, server } = await connect();
+
+  // Silently composing this would store openai/openai/text-embedding-3-small,
+  // which is exactly the uncomparable name the convention exists to prevent.
+  const result = await client.callTool({
+    name: 'model_name_format',
+    arguments: { platform: 'OpenAI', platform_model: 'openai/text-embedding-3-small' },
+  });
+
+  assert.equal(result.isError, true);
+  assert.match(result.content[0].text, /already carries the "openai\/" prefix/);
+  assert.match(result.content[0].text, /text-embedding-3-small/);
+
+  await server.close();
+});
+
 test('initialize instructions cover both surfaces and the on-request audit', async () => {
   const { client, server } = await connect();
 
   const instructions = client.getInstructions();
   assert.match(instructions, /agents_setup/);
   assert.match(instructions, /agents_list_instructions/);
+  assert.match(instructions, /model_naming_convention/);
   assert.match(instructions, /only when the user asks/);
   assert.match(instructions, /same text/);
 

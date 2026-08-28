@@ -37,6 +37,7 @@ function buildInstructions(registry) {
     '- Call `agents_list_instructions` (or read `agents://manifest.json`) once to learn what exists — one call instead of many.',
     '- Then read one file at a time with `agents_read_instruction`, or the matching `agents://` resource.',
     '- `agents://AGENTS.md` is the federation contract a consuming repository relies on.',
+    '- `model_naming_convention` returns the `{platform}/{model}` rule for stored model identifiers, and `model_name_format` builds one — use them when adding support for another platform.',
     '',
     'The prompts and the tools deliver the same text. Prefer prompts and resources where your',
     'client exposes them; the tools exist for clients that only enumerate tools.',

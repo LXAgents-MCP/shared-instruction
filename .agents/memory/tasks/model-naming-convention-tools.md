@@ -92,3 +92,44 @@ the rule never fires here. `content/AGENTS.md` gains a row in the shared/local s
 `content-publishing.md` — frontmatter, a unique `name`, a description of 139 of the 140
 permitted characters, and a declared folder — are all enforced at registry load, so a bad
 file would have failed the suite rather than shipped.
+
+### Task 3 — `feat/model-naming-tools`
+
+Two read-only tools, named for the content they serve:
+
+| Tool | Args | Returns |
+|---|---|---|
+| `model_naming_convention` | none | The published rule, whole, from the registry. |
+| `model_name_format` | `platform`, `platform_model` | `{ model_name, platform, model, normalized }`. |
+
+`buildModelNamingPayload` in `payloads.js` follows `buildSetupPayload` exactly: it reads
+`agents://rules/model-naming-convention.md` through `requireEntry` and prefixes the
+connector preamble. No rule text is written into `src/`, so `set-mirrors.md` gains no new
+row — that was the constraint the whole shape was chosen for.
+
+`src/tools/model-name.js` holds the composition, beside `mcp-creator.js`. It is a pure
+function: no I/O, no clock, no filesystem, same output for the same input, which is what
+lets `model_name_format` claim `readOnlyHint` and `idempotentHint` honestly rather than by
+assertion.
+
+**It refuses rather than guesses.** A `platform_model` that already carries its platform
+prefix is an error naming the segment to pass instead, because the silent alternative
+writes `openai/openai/text-embedding-3-small` — a name nothing downstream can compare,
+which is the exact failure the convention exists to prevent. A blank segment is refused on
+the same grounds.
+
+Three tests earn their place beyond the happy path:
+
+* the payload **ends with** the registry entry's own text, so the tool cannot drift from
+  the published rule without failing;
+* the rule's four-point checklist is run against the tool's output across three inputs, so
+  the rule and its implementation cannot disagree silently;
+* the read-only sweep now covers every tool except `mcp_creator`, instead of only names
+  starting with `agents_`. The old filter would have passed a new tool that quietly
+  declared itself a writer.
+
+`buildInstructions` in `create-server.js` names both tools, so a client sees them at
+`initialize` rather than having to enumerate the surface first — which is the point, for an
+IDE deciding how to store a model identifier.
+
+76 tests pass, up from 69.
