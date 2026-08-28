@@ -57,3 +57,20 @@ Considered and deliberately not done: adding a matching pointer at
 `content-publishing.md` line 41, which is where the misleading instruction actually
 fires. It is a second file and outside the finding the user selected, so it is raised as an
 option rather than taken.
+
+### Task 2 — `docs/npm-install-before-test`
+
+`.agents/rules/repository.md` gains a paragraph under **Stack and commands**, between the
+command table and the orientation link — beside the two commands it sequences, not in a
+list of code conventions where it would not be read in time.
+
+It names the failure signature rather than just the instruction. "Run `npm install` first"
+is advice anyone would skip; "six of seven files fail with `ERR_MODULE_NOT_FOUND`, and that
+is not broken code" is the sentence that stops the wrong debugging session, because it
+matches what the reader is looking at when they need it.
+
+It also names `content-publishing.md` as the caller that walks into the trap, so the two
+rules point at each other instead of one quietly undermining the other.
+
+`npm test` passes 69/69 — on an installed tree, which is the joke this rule exists to
+prevent.
