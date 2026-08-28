@@ -75,3 +75,28 @@ The comment stays in the file rather than being moved here. It answers the quest
 place it gets asked — someone opening `.claude/CLAUDE.md` and finding two lines — and
 `AGENTS.md`'s own iron rule about entry points not carrying detail does not reach a
 comment that exists to stop the file being "fixed".
+
+### Task 3 — `chore/claude-md-import-close`
+
+Closes the record. **No version bump, no changelog, no `wiki/logs/` directory, and no row
+in either logs index.**
+
+That is deliberate rather than an omission, and it is the same call the
+install-before-test round made. `content/` is untouched, so no consuming repository sees
+anything on its next read, and `content-publishing.md` scopes the release obligation to
+`content/**`. The reserved slot is named "the release" and the pull on a slot with that
+name is to find something to release; there was nothing, and inventing a `0.12.1` to fill
+it would be an unapproved version claim under `versioning.md` — a version is a claim made
+to everyone downstream, and downstream saw nothing here.
+
+80 tests pass, unchanged and untouched by this round: nothing in `src/`, `content/`, or
+`test/` moved. The run confirms the tree is clean rather than clearing the change.
+
+**Pull requests.** The user asked in the same message to merge the chain in order, which
+is both gates given at once — `task-workflow.md` §F treats permission already given as the
+yes, so neither was asked again.
+
+## Record closed
+
+`.claude/CLAUDE.md` imports the root `AGENTS.md`. One source of instructions, two readers.
+Nothing published, nothing versioned, nothing left open.
