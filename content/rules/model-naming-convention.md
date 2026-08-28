@@ -39,6 +39,24 @@ spellings of one model.
 and must never both exist as rows. Normalizing at the write is what makes that true
 without a migration later.
 
+## The format is OpenRouter's, deliberately
+
+Nothing here is invented. `{platform}/{model}` is how OpenRouter already addresses a
+model, and matching it is the whole point rather than a coincidence:
+
+* **A repository running OpenRouter as its core AI API passes a stored `model_name`
+  straight through.** No mapping table, no translation step, no second column recording
+  which spelling this row used.
+* **A repository calling a provider directly produces the same string** from the values
+  it already holds — which is what the construction line below is for.
+* **Moving a model between the two is configuration, not migration.** Rows written by a
+  direct integration and rows written through the gateway are already the same shape, so
+  switching route, or adding a platform, touches no stored data.
+
+Direct API support is therefore not an exception to the convention. It is the case the
+convention is built around: one name per model, whichever route reached it, so the route
+can change and the data does not have to.
+
 ## Direct API integrations
 
 An integration that calls a provider's API directly still stores the same shape as one
@@ -54,9 +72,8 @@ integration is the point at which the two routes start disagreeing.
 
 ## Why this is a rule and not a preference
 
-* **Cross-provider compatibility.** A gateway such as OpenRouter already addresses models
-  as `{platform}/{model}`. Storing that shape means a repository can move a model behind
-  a gateway, or out from behind one, without rewriting stored rows.
+* **Cross-provider compatibility.** The section above — a stored name that a gateway and
+  a direct integration both accept, so the route is free to change.
 * **Collision prevention.** Model identifiers are only unique within a provider. Without
   the platform segment, two providers shipping the same model name are indistinguishable
   once stored.
