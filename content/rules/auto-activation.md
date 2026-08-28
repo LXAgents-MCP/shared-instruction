@@ -47,6 +47,7 @@ row-for-row.
 | Record progress, a decision, or session state | `{shared}/creators/memory-creator.md` |
 | Touch anything that carries a version number | `{shared}/rules/versioning.md` |
 | Record a release | `{shared}/creators/changelog-creator.md` |
+| Store, read, or construct a model identifier — any `model_name` column | `{shared}/rules/model-naming-convention.md` |
 | Report finished work back to the user | `{shared}/rules/work-summary.md` |
 | Need project facts, commands, or orientation | `{repo}/.agents/wiki/context/repository-map.md` |
 | Do anything at all in this project | `{repo}/.agents/rules/repository.md` |
