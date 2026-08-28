@@ -34,9 +34,9 @@ consumer relies on moves — `versioning.md` calls that a clarification. Approve
 
 | # | Branch | Scope | PR |
 |---|---|---|---|
-| 1 | `chore/shared-instructions-agent-urls-plan` | This file, and its `memory-index.md` row. | not opened |
-| 2 | `docs/shared-instructions-agent-urls` | `content/rules/shared-instructions.md` line 14. | not opened |
-| 3 | `chore/release-0-10-1` | Version, log, both logs indexes, state, and this table's PR column. | not opened |
+| 1 | `chore/shared-instructions-agent-urls-plan` | This file, and its `memory-index.md` row. | #24 |
+| 2 | `docs/shared-instructions-agent-urls` | `content/rules/shared-instructions.md` line 14. | #25 |
+| 3 | `chore/release-0-10-1` | Version, log, both logs indexes, state, and this table's PR column. | #26 |
 
 ## Per-task record
 
@@ -98,9 +98,16 @@ Released `0.10.1`, a patch approved before the work started.
 `compose.yaml` is left at image tag `0.0.0`, matching every release before this one — it
 is a local development tag, not a version carrier that tracks `package.json`.
 
-**The `PR` column reads `not opened`, not a number.** Task-workflow §F gates opening a
-pull request on the user's explicit permission, and it was not asked for in this round.
-The three branches are pushed and stack cleanly; whoever opens them fills the column in.
+**Pull requests #24, #25 and #26**, opened after the user asked for the chain to be
+merged — the request for a merge is the permission both §F gates need, so neither was
+asked twice. #24 carries the chain table, since the record's pull request is the index of
+the chain.
+
+Each pull request is re-targeted to `master` **before** it merges, not after. That is the
+`0.10.0` rule applied to its own first chain: a forge only re-targets a stacked pull
+request when its base branch is deleted on merge, and where that setting is off, pull
+request `k` merges into branch `k-1` while `master` stays behind and every signal still
+says success.
 
 **State correction.** The state file claimed `0.10.0` was unmerged with four branches
 outstanding. It merged as PR #21, with #22 and #23 after it, and `master` is at `dd87eee`
