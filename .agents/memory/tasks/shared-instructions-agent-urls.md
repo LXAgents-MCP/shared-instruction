@@ -34,9 +34,9 @@ consumer relies on moves — `versioning.md` calls that a clarification. Approve
 
 | # | Branch | Scope | PR |
 |---|---|---|---|
-| 1 | `chore/shared-instructions-agent-urls-plan` | This file, and its `memory-index.md` row. | — |
-| 2 | `docs/shared-instructions-agent-urls` | `content/rules/shared-instructions.md` line 14. | — |
-| 3 | `chore/release-0-10-1` | Version, log, both logs indexes, state, and this table's PR column. | — |
+| 1 | `chore/shared-instructions-agent-urls-plan` | This file, and its `memory-index.md` row. | #24 |
+| 2 | `docs/shared-instructions-agent-urls` | `content/rules/shared-instructions.md` line 14. | #25 |
+| 3 | `chore/release-0-10-1` | Version, log, both logs indexes, state, and this table's PR column. | #26 |
 
 ## Per-task record
 
@@ -82,3 +82,39 @@ discovering it.
 
 Task 3 now owes the release: this is a `content/` change, so consumers pick it up on
 their next read with no upgrade step and the log entry is the only notice they get.
+
+### Task 3 — `chore/release-0-10-1`
+
+Released `0.10.1`, a patch approved before the work started.
+
+| File | Change |
+|---|---|
+| `package.json`, `package-lock.json` | `0.10.0` → `0.10.1`. |
+| `wiki/logs/0/10/1/CHANGELOG.md` | New. **Consumers must: nothing.** |
+| `content/index/logs-index.md` | `0/10/1` row, newest first. |
+| `.agents/index/logs-index.md` | Same row, local form. |
+| `.agents/memory/state/repository-state.md` | Version paragraph, and the `0.10.0` merge-state correction. |
+
+`compose.yaml` is left at image tag `0.0.0`, matching every release before this one — it
+is a local development tag, not a version carrier that tracks `package.json`.
+
+**Pull requests #24, #25 and #26**, opened after the user asked for the chain to be
+merged — the request for a merge is the permission both §F gates need, so neither was
+asked twice. #24 carries the chain table, since the record's pull request is the index of
+the chain.
+
+Each pull request is re-targeted to `master` **before** it merges, not after. That is the
+`0.10.0` rule applied to its own first chain: a forge only re-targets a stacked pull
+request when its base branch is deleted on merge, and where that setting is off, pull
+request `k` merges into branch `k-1` while `master` stays behind and every signal still
+says success.
+
+**State correction.** The state file claimed `0.10.0` was unmerged with four branches
+outstanding. It merged as PR #21, with #22 and #23 after it, and `master` is at `dd87eee`
+— which is where task 1 branched from. Corrected in this commit, with the commit named so
+the next session can check it rather than trust it.
+
+## Record closed
+
+The work in this record is done: line 14 addresses the shared set as `agents://` alone,
+and `0.10.1` is logged. Nothing is left open except the pull request gate above.
