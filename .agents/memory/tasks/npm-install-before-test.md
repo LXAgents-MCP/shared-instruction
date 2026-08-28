@@ -39,9 +39,9 @@ than this repository? Not in this form. Local.
 
 | # | Branch | Scope | PR |
 |---|---|---|---|
-| 1 | `chore/npm-install-before-test-plan` | This file, and its `memory-index.md` row. | — |
-| 2 | `docs/npm-install-before-test` | `.agents/rules/repository.md` — the new paragraph. | — |
-| 3 | `chore/npm-install-before-test-close` | The closing entry on this record. No version, no changelog. | — |
+| 1 | `chore/npm-install-before-test-plan` | This file, and its `memory-index.md` row. | #27 |
+| 2 | `docs/npm-install-before-test` | `.agents/rules/repository.md` — the new paragraph. | #28 |
+| 3 | `chore/npm-install-before-test-close` | The closing entry on this record. No version, no changelog. | #29 |
 
 ## Per-task record
 
@@ -74,3 +74,28 @@ rules point at each other instead of one quietly undermining the other.
 
 `npm test` passes 69/69 — on an installed tree, which is the joke this rule exists to
 prevent.
+
+### Task 3 — `chore/npm-install-before-test-close`
+
+Closes the record. **No version bump, no changelog, no `wiki/logs/` directory, and no row
+in either logs index.**
+
+That is the whole content of this task, and it is deliberate rather than empty. The
+reserved slot is called "the release", and the pull on a slot with that name is to find
+something to release. There was nothing: `content/` is untouched, so no consumer sees this
+change on their next read, and `content-publishing.md` scopes the release obligation to
+`content/**`. Creating a `0.10.2` to fill the slot would have been an unapproved version
+claim under `versioning.md` — a version is a claim made to everyone downstream, and
+downstream saw nothing here.
+
+The correction is worth keeping because it was made out loud mid-round: `0.10.2` was named
+before the work started and was wrong.
+
+**Pull requests.** The user's standing instruction this session has been to open the chain
+and merge it in order; that permission is carried forward rather than asked for again,
+per §F.
+
+## Record closed
+
+`.agents/rules/repository.md` carries the install-before-test rule. Nothing published,
+nothing versioned, nothing left open.
