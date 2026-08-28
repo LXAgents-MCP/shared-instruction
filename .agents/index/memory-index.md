@@ -33,3 +33,4 @@ the same commit that creates it.
 | [`../memory/tasks/shared-instructions-agent-urls.md`](../memory/tasks/shared-instructions-agent-urls.md) | Narrowing the two-sets table in `shared-instructions.md` to address the shared set as `agents://` only; the `0.10.1` release. |
 | [`../memory/tasks/npm-install-before-test.md`](../memory/tasks/npm-install-before-test.md) | Adding the npm-install-before-npm-test rule, after a fresh checkout made an uninstalled tree look like broken code. |
 | [`../memory/tasks/model-naming-convention-tools.md`](../memory/tasks/model-naming-convention-tools.md) | Publishing the `{platform}/{model}` naming convention and the two read-only tools that serve it; the `0.11.0` release. |
+| [`../memory/tasks/agents-auto-activation-tool.md`](../memory/tasks/agents-auto-activation-tool.md) | One read-only tool that activates a session in a single call: the activation rule, the four mandatory files, and the routing table. |
