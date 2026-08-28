@@ -48,11 +48,11 @@ as a bump.
 
 | # | Branch | Scope | PR |
 |---|---|---|---|
-| 1 | `chore/model-naming-convention-tools-plan` | This file, and its `memory-index.md` row. | |
-| 2 | `feat/model-naming-convention` | `content/rules/model-naming-convention.md`, its index row, its trigger row, and both `AGENTS.md` mirrors. | |
-| 3 | `feat/model-naming-tools` | `model_naming_convention` and `model_name_format`, the payload builder behind them, and their tests. | |
-| 4 | `docs/model-naming-surface` | Every place that lists the tool surface: the connector rule, `mcp-surface.md`, `overview.md`, `README.md`, the state file. | |
-| 5 | `chore/release-0-11-0` | Version, changelog, both logs indexes, and the closing entry here. | |
+| 1 | `chore/model-naming-convention-tools-plan` | This file, and its `memory-index.md` row. | #30 |
+| 2 | `feat/model-naming-convention` | `content/rules/model-naming-convention.md`, its index row, its trigger row, and both `AGENTS.md` mirrors. | #31 |
+| 3 | `feat/model-naming-tools` | `model_naming_convention` and `model_name_format`, the payload builder behind them, and their tests. | #32 |
+| 4 | `docs/model-naming-surface` | Every place that lists the tool surface: the connector rule, `mcp-surface.md`, `overview.md`, `README.md`, the state file. | #33 |
+| 5 | `chore/release-0-11-0` | Version, changelog, both logs indexes, and the closing entry here. | #34 |
 
 ## Per-task record
 
@@ -160,3 +160,41 @@ already serves the rule from the same registry, so the convention is reachable i
 without a new command; `model_name_format` computes rather than serving set text, and
 `cli.test.js` pins CLI/MCP parity only for the payloads both surfaces deliver. Adding a
 command would be new surface, not parity. Raised as an option, not taken.
+
+### Task 5 — `chore/release-0-11-0`
+
+`0.11.0`, approved by the user before anything was staged: a **minor** bump, because the
+round adds a rule and a file and removes nothing. `package.json`, `package-lock.json`, a
+new `wiki/logs/0/11/0/CHANGELOG.md`, and a row in both logs indexes.
+
+The **Consumers must** line is the whole point of the entry and it names one action: add
+the `model_name` trigger row to `AGENTS.md`, after the "Record a release" row so the
+mirrored table stays in order, then read the rule before writing to a `model_name` column.
+`auto-activation.md` forbids reordering mirrored rows, so naming the position is not
+pedantry — a consumer who appends it anywhere else has a table that no longer mirrors the
+authority.
+
+No session digest: `.agents/memory/sessions/` is empty, so `changelog-creator.md`'s
+fold-and-delete step had nothing to fold.
+
+`compose.yaml` still tags the image `0.0.0` and was left alone — a deliberate local-build
+placeholder since the first release, not an oversight this round should quietly fix.
+
+The state file's merge paragraph was corrected as well as advanced: it claimed `master` was
+at `dd87eee` with `0.10.1` unmerged, which stopped being true when `0.10.1` and the
+install-before-test round landed. That paragraph is the one a next session plans a branch
+point from, so a stale one is worse than none.
+
+## Open — awaiting the merge gate
+
+Five pull requests are open, #30 through #34, each targeting the branch below it. #30 is
+the record, so its body carries the chain table: a reviewer opens one page and sees every
+part of the work.
+
+The record is **not closed**. §F gates merging on the user's explicit yes, and that has not
+been given — the pull request permission was, and the two are separate gates. When the
+chain merges, in order `1…5`, what remains is: re-target each pull request to `master`
+**before** merging it rather than after, diff `master` against `chore/release-0-11-0` to
+confirm the trees are identical, and add the closing entry here. `0.10.0` exists because
+that re-target step was skipped once and both the API and the pull request page reported
+success anyway.

@@ -15,6 +15,7 @@ Because consumers read the shared set live and pick a change up on their next re
 
 | Version | Date | Summary | Consumers must |
 |---|---|---|---|
+| [`0/11/0`](../../wiki/logs/0/11/0/CHANGELOG.md) | 2026-08-28 | `rules/model-naming-convention.md` is published, with `model_naming_convention` and `model_name_format` serving it. The tools read the rule from the registry, so no new mirror. | Add the `model_name` trigger row to your `AGENTS.md` and read the new rule before writing a `model_name`. |
 | [`0/10/1`](../../wiki/logs/0/10/1/CHANGELOG.md) | 2026-08-28 | The two-sets table in `rules/shared-instructions.md` drops the `{shared}` alternative and addresses the shared set as `agents://` alone. | Nothing — `{shared}` stays valid everywhere it is defined, including the trigger table. |
 | [`0/10/0`](../../wiki/logs/0/10/0/CHANGELOG.md) | 2026-08-23 | §F: re-target before merging, verify the default branch after. Ships `wiki/guides/install-as-local-mcp.md` alongside, which is not published. | Re-read `planning/task-workflow.md` §F. Re-target before merging, then diff the default branch against the last branch in the chain. |
 | [`0/9/0`](../../wiki/logs/0/9/0/CHANGELOG.md) | 2026-08-23 | Task 1 is always the task record, task `n` the release, and each task appends its own entry. Built under the workflow it defines. | Re-read `planning/task-workflow.md` and `prompts/branch-and-commit.md`. Write the record before the work, on `chore/{slug}-plan`. |

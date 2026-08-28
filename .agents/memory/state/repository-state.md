@@ -5,7 +5,7 @@ description: Current known state of LXAgents-MCP/shared-instruction — what exi
 
 # Repository State
 
-## 2026-08-23
+## 2026-08-28
 
 **What this is.** A dual-purpose package that serves the LXAgents shared agent
 instruction set: an MCP server (`lxagents-agents-base`) and a CLI (`lxagents-agents`)
@@ -49,16 +49,20 @@ cost a debugging round and is now written into `content/rules/mcp-connector.md`.
 Render still serves that name after the move to `LXAgents-MCP/shared-instruction` has
 not been checked from this repository. Confirm it before quoting it to anyone.
 
-**Version.** `0.10.1`. Releases so far: `0.0.0` (initial set), `0.1.0` (tool surface),
+**Version.** `0.11.0`. Releases so far: `0.0.0` (initial set), `0.1.0` (tool surface),
 `0.2.0` (producer/local set split), `0.3.0` (change propagation), `0.4.0` (work summary),
 `0.5.0` (always-on workflow, dual-purpose CLI, repository tools), `0.6.0` (`mcp_repos`
 withdrawn), `0.6.1` (connector surface table completed), `0.7.0` (package renamed),
 `0.8.0` (discovery protocol always on), `0.9.0` (task record as task 1), `0.10.0`
-(re-target before merging), `0.10.1` (`agents://` alone in the two-sets table).
+(re-target before merging), `0.10.1` (`agents://` alone in the two-sets table), `0.11.0`
+(the model naming convention and its two tools).
 
-Everything up to `0.10.0` is merged to `master`, which is at `dd87eee`. `0.10.1` is
-unmerged: three stacked branches, `chore/shared-instructions-agent-urls-plan`,
-`docs/shared-instructions-agent-urls`, and `chore/release-0-10-1`, in that merge order.
+Everything up to `0.10.1` is merged to `master`, which is at `1e39070` — that includes
+the install-before-test rule, which shipped without a version because it touched
+`.agents/` only. `0.11.0` is unmerged: five stacked branches,
+`chore/model-naming-convention-tools-plan`, `feat/model-naming-convention`,
+`feat/model-naming-tools`, `docs/model-naming-surface`, and `chore/release-0-11-0`, in
+that merge order.
 
 The `0.10.0` entry above said "unmerged, deliberately not merged this round" until
 `0.10.1` corrected it. It merged as pull request #21, with #22 (`fix/sonarcloud-findings`)
@@ -82,8 +86,9 @@ every request. The discovery protocol has **no trigger row** — it was delibera
 removed, so an `AGENTS.md` that mirrors the table must carry the always-on paragraph or
 it loses the gate entirely.
 
-**Tests.** 66, all passing, across registry, server, http, manifest, tools, cli, and
-mcp-creator.
+**Tests.** 76, all passing, across registry, server, http, manifest, tools, cli, and
+mcp-creator. A fresh checkout has no `node_modules` and six of the seven files then fail
+with `ERR_MODULE_NOT_FOUND` — run `npm install` first, per `.agents/rules/repository.md`.
 
 **Not built yet.**
 
