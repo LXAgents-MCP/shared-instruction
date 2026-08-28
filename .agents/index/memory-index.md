@@ -31,3 +31,4 @@ the same commit that creates it.
 | [`../memory/tasks/mcp-install.md`](../memory/tasks/mcp-install.md) | The §F retarget rule, and a wiki guide for running this repository as a local MCP server from `./mcps/`. |
 | [`../memory/tasks/sonarcloud-quality-security.md`](../memory/tasks/sonarcloud-quality-security.md) | Clearing the SonarCloud findings in both repositories — path traversal, three super-linear regexes, an implicit sort, Docker install hooks, and a CLI refactor. |
 | [`../memory/tasks/shared-instructions-agent-urls.md`](../memory/tasks/shared-instructions-agent-urls.md) | Narrowing the two-sets table in `shared-instructions.md` to address the shared set as `agents://` only; the `0.10.1` release. |
+| [`../memory/tasks/npm-install-before-test.md`](../memory/tasks/npm-install-before-test.md) | Adding the npm-install-before-npm-test rule, after a fresh checkout made an uninstalled tree look like broken code. |
