@@ -7,7 +7,7 @@ instead of cloning or vendoring a copy of them.
 
 - **Server id:** `lxagents-agents-base`
 - **Package:** `@lxagents-mcp/shared-instruction`
-- **Surface:** MCP prompts and resources, plus five tools — four read-only, and `mcp_creator`, which writes.
+- **Surface:** MCP prompts and resources, plus seven tools — six read-only, and `mcp_creator`, which writes.
 - **Dual-purpose:** the same set is reachable as a CLI (`lxagents-agents`) and as an MCP server (`lxagents-agents-base`).
 
 ## Key features
@@ -16,11 +16,14 @@ instead of cloning or vendoring a copy of them.
   `AGENTS.md`, `.agents/` tree, wiki, and memory.
 - **`check-duplicate-agents-instruction` prompt** — finds instructions a repository
   duplicates from the shared set and removes them. Runs **only when asked**.
-- **26 instruction resources** under `agents://`, plus `agents://manifest.json`
+- **27 instruction resources** under `agents://`, plus `agents://manifest.json`
   listing every file with a content hash — one read instead of walking the set.
 - **Read-only tools** — `agents_setup`, `agents_check_duplicate_instructions`,
   `agents_list_instructions`, `agents_read_instruction` — delivering the same content
   as the prompts, for clients that surface tools only.
+- **Model naming** — `model_naming_convention` returns the `{platform}/{model}` rule
+  every stored model identifier follows; `model_name_format` builds one, so a direct
+  API integration and a gateway route store the same string for the same model.
 - **`mcp_creator`** — scaffolds a new dual-purpose MCP repository from one name, each
   one shipping a `wiki/environments/setup.md` that documents both CLI and server mode.
   Plans by default; writes only when asked.

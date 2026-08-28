@@ -133,3 +133,30 @@ Three tests earn their place beyond the happy path:
 IDE deciding how to store a model identifier.
 
 76 tests pass, up from 69.
+
+### Task 4 — `docs/model-naming-surface`
+
+Every place that lists the tool surface, updated in one commit rather than left to be
+found later:
+
+| File | What was stale |
+|---|---|
+| `content/rules/mcp-connector.md` | The published surface table — two Tool rows. |
+| `wiki/reference/mcp-surface.md` | The tools table, the resource list, and a new section on the two tools. |
+| `wiki/information/overview.md` | The surface table, and "26 of them" for the instruction files. |
+| `README.md` | "five tools — four read-only", and the resource count. |
+| `.agents/memory/state/repository-state.md` | 26 files, 27 resources, 5 tools. |
+
+The counts were the part most likely to be missed, and `0.6.1` exists because they were:
+that release shipped only because the connector surface table had said four tools since
+the day it began exposing five. Grepping for `26 files`, `five tools`, and `four read-only`
+found the last stale count in the state file, which no table of contents points at.
+
+`content/rules/mcp-connector.md` is published, so this task is part of the same release as
+task 2 — a consumer reading the connector rule sees the two new tools listed there.
+
+**Deliberately not changed:** the CLI. `lxagents-agents read model-naming-convention`
+already serves the rule from the same registry, so the convention is reachable in CLI mode
+without a new command; `model_name_format` computes rather than serving set text, and
+`cli.test.js` pins CLI/MCP parity only for the payloads both surfaces deliver. Adding a
+command would be new surface, not parity. Raised as an option, not taken.

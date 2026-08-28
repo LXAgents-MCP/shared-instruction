@@ -13,19 +13,24 @@ over one frozen registry. Plain JavaScript, Node ESM, no build step. Published a
 `@lxagents-mcp/shared-instruction`; the MCP connector id stays `lxagents-agents-base`,
 since consuming repositories name it in their client configuration.
 
-**Structure.** `content/` holds the 26 published instruction files. `.agents/rules/`
+**Structure.** `content/` holds the 27 published instruction files. `.agents/rules/`
 holds three local rules: `repository.md`, `content-publishing.md`, and `set-mirrors.md`,
 the last naming every place outside `content/` that copies published set text. `.agents/`
 holds
 this repository's own instruction set. `wiki/` holds human documentation. `src/` and
 `test/` hold the server and the CLI.
 
-**Surface.** 2 prompts (`agents-setup`, `check-duplicate-agents-instruction`), 27
-resources (26 instruction files plus `agents://manifest.json`), and 5 tools — 4
+**Surface.** 2 prompts (`agents-setup`, `check-duplicate-agents-instruction`), 28
+resources (27 instruction files plus `agents://manifest.json`), and 7 tools — 6
 read-only (`agents_setup`, `agents_check_duplicate_instructions`,
-`agents_list_instructions`, `agents_read_instruction`) and one that writes
-(`mcp_creator`, which plans by default). Prompts and tools deliver identical text from
-`src/server/payloads.js`.
+`agents_list_instructions`, `agents_read_instruction`, `model_naming_convention`,
+`model_name_format`) and one that writes (`mcp_creator`, which plans by default).
+Prompts and tools deliver identical text from `src/server/payloads.js`.
+
+`model_name_format` is the only read-only tool that computes rather than returns text. It
+applies `rules/model-naming-convention.md` — lowercase both segments, join with one `/` —
+and `test/tools.test.js` runs that rule's checklist against its output, so the two cannot
+drift apart silently.
 
 **Two modes.** The package is dual-purpose as of `0.5.0`: `lxagents-agents` is a CLI over
 the same frozen registry, `lxagents-agents-base` is the MCP server. Both boot through

@@ -109,6 +109,8 @@ way, check the path first.
 | Tool | `agents_check_duplicate_instructions` | Same text as the audit prompt, manifest inlined. **On request only.** |
 | Tool | `agents_list_instructions` | The manifest, optionally filtered to one folder. |
 | Tool | `agents_read_instruction` | One file, by `name`, path, or URI. |
+| Tool | `model_naming_convention` | The `{platform}/{model}` rule for stored model identifiers, whole. |
+| Tool | `model_name_format` | Builds one compliant `model_name` from a platform and that platform's model id. |
 | Tool | `mcp_creator` | Scaffolds a new MCP repository. **Not part of reading this set** — listed so you know the capability is there. Plans by default; creates files only when asked. |
 
 **Prefer the prompts and resources.** They are the right primitives for standing
