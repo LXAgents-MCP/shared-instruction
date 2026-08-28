@@ -226,3 +226,40 @@ Not applied on the agent's own initiative. It was proposed, the user selected it
 then was it written — which is the whole shape `discovery-protocol.md` asks for.
 
 76 tests still pass.
+
+## Record closed
+
+`0.11.0` is on `master`. Six pull requests, merged in order `1…6`:
+
+| # | PR | Merge commit |
+|---|---|---|
+| 1 | #30 | `43d2725` |
+| 2 | #31 | `ef4e15d` |
+| 3 | #32 | `b61c9a5` |
+| 4 | #33 | `38d2c1a` |
+| 5 | #34 | `ddeffdd` |
+| 6 | #35 | merged last, carrying this entry |
+
+Each of #31 through #35 was **re-targeted to `master` before** being merged, not after —
+`task-workflow.md` §F, and the reason `0.10.0` exists. After #34, `git diff master
+chore/release-0-11-0` returned empty: the trees are identical, so `master` actually
+carries the release rather than merely reporting five merged pull requests.
+
+**Shipped.** `content/rules/model-naming-convention.md` published as
+`agents://rules/model-naming-convention.md`; `model_naming_convention` and
+`model_name_format` on the connector, both read-only; the surface documented in five
+places; `0.11.0` logged in both logs indexes. 76 tests pass.
+
+**Left for consumers.** One row each in their `AGENTS.md`, after "Record a release", then
+the rule before writing to a `model_name` column. Nothing else — no rename, no removal, no
+override to drop.
+
+**Not done, deliberately.** No CLI command for either tool: `lxagents-agents read
+model-naming-convention` already serves the rule from the same registry, and
+`model_name_format` computes rather than serving set text, so a command would be new
+surface rather than the CLI/MCP parity `cli.test.js` pins. `compose.yaml` still tags the
+image `0.0.0`, unchanged since the first release.
+
+**Still open, not this round's.** `origin/claude/model-naming-convention-tools-rzudan`
+exists at `1e39070` with no commits of its own — the branch this session was configured to
+use before the convention was applied. Inert, and left for the user to delete.
