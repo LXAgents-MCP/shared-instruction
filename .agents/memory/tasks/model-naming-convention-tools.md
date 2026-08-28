@@ -160,3 +160,27 @@ already serves the rule from the same registry, so the convention is reachable i
 without a new command; `model_name_format` computes rather than serving set text, and
 `cli.test.js` pins CLI/MCP parity only for the payloads both surfaces deliver. Adding a
 command would be new surface, not parity. Raised as an option, not taken.
+
+### Task 5 — `chore/release-0-11-0`
+
+`0.11.0`, approved by the user before anything was staged: a **minor** bump, because the
+round adds a rule and a file and removes nothing. `package.json`, `package-lock.json`, a
+new `wiki/logs/0/11/0/CHANGELOG.md`, and a row in both logs indexes.
+
+The **Consumers must** line is the whole point of the entry and it names one action: add
+the `model_name` trigger row to `AGENTS.md`, after the "Record a release" row so the
+mirrored table stays in order, then read the rule before writing to a `model_name` column.
+`auto-activation.md` forbids reordering mirrored rows, so naming the position is not
+pedantry — a consumer who appends it anywhere else has a table that no longer mirrors the
+authority.
+
+No session digest: `.agents/memory/sessions/` is empty, so `changelog-creator.md`'s
+fold-and-delete step had nothing to fold.
+
+`compose.yaml` still tags the image `0.0.0` and was left alone — a deliberate local-build
+placeholder since the first release, not an oversight this round should quietly fix.
+
+The state file's merge paragraph was corrected as well as advanced: it claimed `master` was
+at `dd87eee` with `0.10.1` unmerged, which stopped being true when `0.10.1` and the
+install-before-test round landed. That paragraph is the one a next session plans a branch
+point from, so a stale one is worse than none.
