@@ -47,7 +47,8 @@ that leave them out.
 ## Tools
 
 Every tool is non-destructive. All are read-only and idempotent except `mcp_creator`,
-which creates files when asked and says so in its annotations.
+which creates files when asked and says so in its annotations. `test/tools.test.js`
+asserts that, so a new tool has to declare itself a writer deliberately.
 
 | Tool | Arguments | Returns |
 |---|---|---|
@@ -55,7 +56,29 @@ which creates files when asked and says so in its annotations.
 | `agents_check_duplicate_instructions` | none | The duplicate audit with the manifest inlined — identical to the audit prompt. **On request only.** |
 | `agents_list_instructions` | `folder` (optional) | Every file with its description and `sha256`, as text and as `structuredContent`. |
 | `agents_read_instruction` | `instruction` (required) | One file verbatim. Accepts a frontmatter `name`, a path, or an `agents://` URI. |
+| `model_naming_convention` | none | The `{platform}/{model}` rule for stored model identifiers, read from the registry. |
+| `model_name_format` | `platform` (required), `platform_model` (required) | `{ model_name, platform, model, normalized }` — the composed name, as text and as `structuredContent`. |
 | `mcp_creator` | `name` (required), `description`, `directory`, `write`, `force` | The plan for a new dual-purpose MCP repository, and — with `write` — the repository itself. |
+
+### The model naming tools
+
+`model_naming_convention` returns `agents://rules/model-naming-convention.md` whole,
+through the same payload builder shape the setup procedure uses — the text lives in
+`content/`, never in `src/`.
+
+`model_name_format` is the one read-only tool that computes rather than returns. It
+lowercases `platform` and `platform_model` and joins them with a single `/`, which is the
+rule's own construction line applied once instead of at every call site. It is pure — no
+I/O, no clock — so its `readOnlyHint` and `idempotentHint` are facts rather than claims.
+
+It refuses two inputs rather than guessing: a blank segment, and a `platform_model` that
+already carries its platform prefix. The second matters — composing it silently would
+store `openai/openai/text-embedding-3-small`, a name nothing downstream can compare
+against, which is the failure the convention exists to prevent. The error names the
+segment to pass instead.
+
+`test/tools.test.js` runs the rule's four-point checklist against the tool's output, so
+the published rule and the implementation cannot disagree without the suite failing.
 
 ### `mcp_creator`
 
@@ -119,6 +142,7 @@ a hash exactly rather than guess at it.
 | `agents://rules/memory-policy.md` | `memory-policy` |
 | `agents://rules/work-summary.md` | `work-summary` |
 | `agents://rules/versioning.md` | `versioning-rules` |
+| `agents://rules/model-naming-convention.md` | `model-naming-convention` |
 | `agents://git/branching-strategy.md` | `branching-strategy` |
 | `agents://git/commit-conventions.md` | `commit-conventions` |
 | `agents://git/pull-request-template.md` | `pull-request-template` |
