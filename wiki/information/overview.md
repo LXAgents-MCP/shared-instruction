@@ -36,6 +36,7 @@ to vendor by mistake, and every repository reads the same bytes.
 | Resource | `agents://manifest.json` | Every file with its `name`, path, description, and content hash. |
 | Resource | `agents://AGENTS.md` | The federation contract consuming repositories rely on. |
 | Resource | `agents://{folder}/{file}.md` | Any instruction file — 27 of them. |
+| Tool | `agents_auto_activation` | The shared half of session start in one call. Called first. |
 | Tool | `agents_setup`, `agents_check_duplicate_instructions` | The two procedures, for clients that expose tools but not prompts. |
 | Tool | `agents_list_instructions`, `agents_read_instruction` | Discover and read the set without a prompt surface. |
 | Tool | `model_naming_convention`, `model_name_format` | The `{platform}/{model}` rule for stored model identifiers, and a builder that applies it. |

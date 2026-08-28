@@ -21,10 +21,17 @@ this repository's own instruction set. `wiki/` holds human documentation. `src/`
 `test/` hold the server and the CLI.
 
 **Surface.** 2 prompts (`agents-setup`, `check-duplicate-agents-instruction`), 28
-resources (27 instruction files plus `agents://manifest.json`), and 7 tools — 6
-read-only (`agents_setup`, `agents_check_duplicate_instructions`,
-`agents_list_instructions`, `agents_read_instruction`, `model_naming_convention`,
-`model_name_format`) and one that writes (`mcp_creator`, which plans by default).
+resources (27 instruction files plus `agents://manifest.json`), and 8 tools — 7
+read-only (`agents_auto_activation`, `agents_setup`,
+`agents_check_duplicate_instructions`, `agents_list_instructions`,
+`agents_read_instruction`, `model_naming_convention`, `model_name_format`) and one that
+writes (`mcp_creator`, which plans by default).
+
+`agents_auto_activation` is the session-start entry point as of `0.12.0`: one call returns
+`rules/auto-activation.md`, the four mandatory standard files whole, and a routing table
+built by subtracting what was inlined. It cannot return the three local reads — the
+repository's own `AGENTS.md`, root index, and memory index — and says so before anything
+else.
 Prompts and tools deliver identical text from `src/server/payloads.js`.
 
 `model_name_format` is the only read-only tool that computes rather than returns text. It

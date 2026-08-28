@@ -7,11 +7,15 @@ instead of cloning or vendoring a copy of them.
 
 - **Server id:** `lxagents-agents-base`
 - **Package:** `@lxagents-mcp/shared-instruction`
-- **Surface:** MCP prompts and resources, plus seven tools — six read-only, and `mcp_creator`, which writes.
+- **Surface:** MCP prompts and resources, plus eight tools — seven read-only, and `mcp_creator`, which writes.
 - **Dual-purpose:** the same set is reachable as a CLI (`lxagents-agents`) and as an MCP server (`lxagents-agents-base`).
 
 ## Key features
 
+- **`agents_auto_activation`** — one call at the start of a session returns the
+  activation rule, the four files that load on every request, and a routing table for
+  the rest. Six reads become one; the three local files it cannot return are named in
+  the payload.
 - **`agents-setup` prompt** — the full setup procedure that builds a repository's
   `AGENTS.md`, `.agents/` tree, wiki, and memory.
 - **`check-duplicate-agents-instruction` prompt** — finds instructions a repository

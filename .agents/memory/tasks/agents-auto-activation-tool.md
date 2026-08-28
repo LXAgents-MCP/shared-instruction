@@ -98,3 +98,33 @@ Four tests, each pinning a way this could rot:
   losing it removes the propose-never-self-apply gate entirely.
 
 80 tests pass, up from 76.
+
+### Task 3 — `docs/auto-activation-one-call`
+
+Seven places name the tool, and the choice of *where* mattered more than the wording:
+
+| File | Why it is in scope | Published? |
+|---|---|---|
+| `content/rules/auto-activation.md` | The authority on the sequence. A shortcut the authority does not mention is a shortcut nobody trusts. | Yes |
+| `content/rules/mcp-connector.md` | The bootstrap block is reproduced **verbatim** into every consuming repository's `AGENTS.md`. The highest-leverage line in the round. | Yes |
+| `content/prompts/agents-setup.md` | Dictates the auto-activation contract a *new* repository writes for itself. | Yes |
+| `AGENTS.md` | This repository's own mirror of both. | No |
+| `src/tools/mcp-creator.js` | Hard-codes the block into every repository the tool scaffolds. | No |
+| `wiki/reference/mcp-surface.md`, `wiki/information/overview.md`, `README.md` | The surface tables and counts. | No |
+| `.agents/memory/state/repository-state.md` | 7 tools, 6 read-only. | No |
+
+`set-mirrors.md` names three of those, and `mcp-creator.js` is the one that would have been
+missed: it is source, not documentation, and the text is a string array rather than
+markdown, so it does not turn up in a search for prose. That mirror exists in the table
+precisely because `0.8.0` shipped a stale count through it into every scaffolded repository.
+
+**The sequence was extended, not rewritten.** Six steps stay six steps everywhere. The
+one-call note is an addition beneath them, which is what keeps four mirrors from needing
+a coordinated renumbering — and keeps a consuming repository whose `AGENTS.md` still
+carries the old block correct rather than merely out of date.
+
+The scaffold block got the strongest version of the warning, because a newly created
+repository has no one to notice the omission: it says call the tool first, then read the
+local files, **because the tool cannot see files in this repository**.
+
+80 tests pass, unchanged from task 2 — this task touches prose and one string array.

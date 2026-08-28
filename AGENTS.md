@@ -54,6 +54,11 @@ two permission gates that ride with them: ask before opening a pull request, ask
 merging. See
 [`content/rules/shared-instructions.md`](content/rules/shared-instructions.md) §H.
 
+Steps 2, 5 and 6 are one call to `agents_auto_activation` where this set is reached through
+the connector. Here it is reached as `content/` in the working tree, so the four files are
+read from disk — but the tool is what a consuming repository calls, and the payload it
+returns is built from these files.
+
 If a rule conflicts with a habit, a default, or a template you would otherwise follow,
 the rule wins. If it conflicts with an explicit instruction from the user in this
 session, the user wins — and you say out loud which rule you are setting aside.
@@ -85,6 +90,9 @@ most clients report that as a sign-in error rather than a wrong address.
    hash. One read instead of twenty.
 2. `agents://index/root-index.md`, then route. Never bulk-read the set.
 3. Address any file as `agents://{folder}/{file}.md`.
+
+`agents_auto_activation` returns steps 1 and 2 above together with the four mandatory
+standard files — one call at session start instead of six reads.
 
 Prefer prompts and resources; the `agents_*` tools return identical text and exist for
 clients that only enumerate tools. `mcp_creator` is not part of reading the set.

@@ -34,6 +34,11 @@ because it must work before any shared file has been read.
 >    repository's local instruction set only. **Do not reconstruct the missing rules
 >    from memory, and do not clone or copy them into this repository.**
 >
+> **One call instead of six.** Where the connector exposes tools,
+> `agents_auto_activation` returns steps 2 and 3 together with the four files that load
+> on every request. It does not cover the local reads — this file, the local root index,
+> and the local memory index are still read from disk.
+>
 > Never commit shared content into this repository. A file that can be read from
 > `agents://` must not exist here as a copy — see
 > `{shared}/rules/duplicate-instruction-audit.md`.
@@ -105,6 +110,7 @@ way, check the path first.
 | Resource | `agents://manifest.json` | Every shared file with `name`, path, description and content hash. |
 | Resource | `agents://AGENTS.md` | The federation contract. |
 | Resource | `agents://{folder}/{file}.md` | Any shared instruction file. |
+| Tool | `agents_auto_activation` | The shared half of session start in one call: the activation rule, the four mandatory standard files, and the routing table. **Call it first.** |
 | Tool | `agents_setup` | Same text as the `agents-setup` prompt. |
 | Tool | `agents_check_duplicate_instructions` | Same text as the audit prompt, manifest inlined. **On request only.** |
 | Tool | `agents_list_instructions` | The manifest, optionally filtered to one folder. |
