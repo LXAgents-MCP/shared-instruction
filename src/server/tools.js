@@ -28,7 +28,10 @@
 
 import { z } from 'zod';
 
+import { AUTO_ACTIVATION_URI, MANDATORY_STANDARD_FILES } from '../constants.js';
+
 import {
+  buildActivationPayload,
   buildAuditPayload,
   buildModelNamingPayload,
   buildSetupPayload,
@@ -62,6 +65,24 @@ const READ_ONLY = Object.freeze({
  * @param {string} version
  */
 export function registerTools(server, registry, version) {
+  server.registerTool(
+    'agents_auto_activation',
+    {
+      title: 'Activate the instruction set for this session',
+      description: `Return the shared half of the session-start sequence in one call: the auto-activation rule, the four files that load on every request (task workflow, branching strategy, commit conventions, discovery protocol), and a routing table for everything else.
+
+**Call this first, at the start of every session, before doing any work.** One call instead of six reads. The instruction set is always active — it applies whether or not the user mentions it — so this is not optional and does not need a trigger phrase.
+
+It does NOT return everything. Three steps of the sequence read files on the caller's own filesystem, which no connector can see: {repo}/AGENTS.md, {repo}/.agents/index/root-index.md, and {repo}/.agents/index/memory-index.md. The payload names them; read them yourself after this call.
+
+Takes no arguments.
+
+Returns: roughly 31,000 characters of markdown — the activation rule and four instruction files in full, then a table of every remaining shared file with the description to route on.`,
+      annotations: READ_ONLY,
+    },
+    async () => text(buildActivationPayload(registry)),
+  );
+
   server.registerTool(
     'agents_setup',
     {
@@ -376,4 +397,6 @@ Returns: the plan — package name, server id, both bin names, target directory,
   requireEntry(registry, 'agents://prompts/agents-setup.md');
   requireEntry(registry, 'agents://rules/duplicate-instruction-audit.md');
   requireEntry(registry, 'agents://rules/model-naming-convention.md');
+  requireEntry(registry, AUTO_ACTIVATION_URI);
+  for (const uri of MANDATORY_STANDARD_FILES) requireEntry(registry, uri);
 }

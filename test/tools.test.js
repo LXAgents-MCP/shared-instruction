@@ -4,6 +4,7 @@ import { test } from 'node:test';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 
+import { AUTO_ACTIVATION_URI, MANDATORY_STANDARD_FILES } from '../src/constants.js';
 import { loadRegistry } from '../src/content/registry.js';
 import { createServer } from '../src/server/create-server.js';
 
@@ -23,6 +24,7 @@ test('tools/list: publishes every tool, each described and non-destructive', asy
   const names = tools.map((tool) => tool.name).sort();
 
   assert.deepEqual(names, [
+    'agents_auto_activation',
     'agents_check_duplicate_instructions',
     'agents_list_instructions',
     'agents_read_instruction',
@@ -66,6 +68,7 @@ test('the zero-argument tools declare no required arguments', async () => {
     'agents_setup',
     'agents_check_duplicate_instructions',
     'model_naming_convention',
+    'agents_auto_activation',
   ]) {
     const tool = tools.find((candidate) => candidate.name === name);
     assert.deepEqual(tool.inputSchema.required ?? [], [], `${name} must be callable with no args`);
@@ -211,6 +214,71 @@ test('agents_read_instruction points at the listing when nothing is close', asyn
   await server.close();
 });
 
+test('agents_auto_activation inlines the rule and every mandatory standard file', async () => {
+  const { client, server, registry } = await connect();
+
+  const result = await client.callTool({ name: 'agents_auto_activation', arguments: {} });
+  const body = result.content[0].text;
+
+  assert.notEqual(result.isError, true);
+
+  // Whole files, not summaries: a caller that got a paraphrase of the task
+  // workflow is activated wrong and cannot tell.
+  for (const uri of [AUTO_ACTIVATION_URI, ...MANDATORY_STANDARD_FILES]) {
+    const entry = registry.get(uri);
+    assert.ok(body.includes(entry.text), `${uri} must be inlined whole`);
+  }
+
+  await server.close();
+});
+
+test('agents_auto_activation names the local files it cannot return', async () => {
+  const { client, server } = await connect();
+
+  const body = (await client.callTool({ name: 'agents_auto_activation' })).content[0].text;
+
+  // The failure this guards: one call, a caller who believes it finished, and
+  // three steps of the sequence silently skipped.
+  assert.match(body, /This call does not finish the job/);
+  for (const local of [
+    '{repo}/AGENTS.md',
+    '{repo}/.agents/index/root-index.md',
+    '{repo}/.agents/index/memory-index.md',
+  ]) {
+    assert.ok(body.includes(local), `${local} must be named as a local read`);
+  }
+
+  await server.close();
+});
+
+test('agents_auto_activation routes to every file it did not inline', async () => {
+  const { client, server, registry } = await connect();
+
+  const body = (await client.callTool({ name: 'agents_auto_activation' })).content[0].text;
+  const inlined = new Set([AUTO_ACTIVATION_URI, ...MANDATORY_STANDARD_FILES]);
+
+  // Inlined or routed to — no shared file may be unreachable after one call.
+  for (const entry of registry.entries) {
+    if (inlined.has(entry.uri)) continue;
+    assert.ok(body.includes(`\`${entry.path}\``), `${entry.path} must appear in the routing table`);
+  }
+
+  await server.close();
+});
+
+test('agents_auto_activation carries the discovery gate, which has no trigger row', async () => {
+  const { client, server } = await connect();
+
+  const body = (await client.callTool({ name: 'agents_auto_activation' })).content[0].text;
+
+  // discovery-protocol.md is deliberately absent from the trigger table, so a
+  // payload that dropped it would leave the gate unreachable at session start.
+  assert.match(body, /do NOT create or edit it yourself/);
+  assert.match(body, /Never batch-apply, never apply silently/);
+
+  await server.close();
+});
+
 test('model_naming_convention returns the published rule verbatim', async () => {
   const { client, server, registry } = await connect();
 
@@ -327,6 +395,7 @@ test('initialize instructions cover both surfaces and the on-request audit', asy
   const instructions = client.getInstructions();
   assert.match(instructions, /agents_setup/);
   assert.match(instructions, /agents_list_instructions/);
+  assert.match(instructions, /agents_auto_activation/);
   assert.match(instructions, /model_naming_convention/);
   assert.match(instructions, /only when the user asks/);
   assert.match(instructions, /same text/);

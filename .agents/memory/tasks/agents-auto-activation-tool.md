@@ -60,3 +60,41 @@ rewritten.** The tempting version of this request is to replace the six-step seq
 the local reads, and working at all when the connector is unreachable, which
 `rules/auto-activation.md` has a whole section about. So the sequence stands and the tool
 serves it.
+
+### Task 2 — `feat/agents-auto-activation`
+
+`agents_auto_activation`, read-only, no arguments. Registered **first** in `tools.js`, which
+is the order a client lists them in and therefore the order a model reads them.
+
+`buildActivationPayload` composes from the registry: `rules/auto-activation.md`, then the
+four files named by `MANDATORY_STANDARD_FILES`, then a routing table built by *subtraction*
+— every entry not already inlined. Subtraction rather than a hand-kept list is what makes
+the payload correct after the next file is added to the set: it appears in the table on the
+next boot with no code change.
+
+The constant lives in `constants.js`, not in the tool. `rules/auto-activation.md` is the
+authority on **why** those four are mandatory; the constant is the authority on **which**,
+and `requireEntry` runs over it at registration so a URI that stops resolving fails at boot
+rather than shipping a quietly shorter activation.
+
+**The payload leads with what it does not contain.** Three steps of the sequence read files
+on the caller's filesystem, and one tool that looks complete is worse than six reads that
+look like six: a caller who believes the job is done is activated wrong with nothing to
+signal it. `## This call does not finish the job` is the second heading, before the rule
+itself.
+
+31,058 characters — the same order as `agents_setup` at ~27,000, which is the precedent for
+a payload of this size being the right trade against six round trips.
+
+Four tests, each pinning a way this could rot:
+
+* every inlined file appears **whole**, compared against the registry entry — a paraphrase
+  would activate a caller wrongly and invisibly;
+* the three local paths are named;
+* every file *not* inlined appears in the routing table, so nothing in the set becomes
+  unreachable after one call;
+* the discovery-protocol gate text is present. That one is not redundant: the rule has **no
+  trigger row** by design, so it is the file most easily lost from a bootstrap payload, and
+  losing it removes the propose-never-self-apply gate entirely.
+
+80 tests pass, up from 76.

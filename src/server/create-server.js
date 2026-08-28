@@ -33,6 +33,7 @@ function buildInstructions(registry) {
     '',
     'It is a set of standing orders, not reference material. Route into it; do not read it all.',
     '',
+    '- **Call `agents_auto_activation` first, at the start of every session.** One call returns the activation rule, the four files that load on every request, and the routing table for the rest.',
     `- Invoke the \`${PROMPT_AGENTS_SETUP}\` prompt, or call the \`agents_setup\` tool, to set up or adopt the instruction system in a repository.`,
     '- Call `agents_list_instructions` (or read `agents://manifest.json`) once to learn what exists — one call instead of many.',
     '- Then read one file at a time with `agents_read_instruction`, or the matching `agents://` resource.',

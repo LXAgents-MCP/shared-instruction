@@ -9,7 +9,7 @@
  * neither surface owns it.
  */
 
-import { MANIFEST_URI } from '../constants.js';
+import { AUTO_ACTIVATION_URI, MANDATORY_STANDARD_FILES, MANIFEST_URI } from '../constants.js';
 import { manifestJson } from './manifest.js';
 
 /** What the connector is, and how to read it. Prefixes every payload. */
@@ -49,6 +49,79 @@ ${CONNECTOR_PREAMBLE}
 ---
 
 ${procedure.text}`;
+}
+
+/**
+ * The shared half of the session-start sequence, in one payload.
+ *
+ * Composed from registry entries rather than written out here, for the reason
+ * `.agents/rules/set-mirrors.md` gives: a hard-coded copy of set text is a
+ * mirror, and mirrors drift. Adding a file to `MANDATORY_STANDARD_FILES` is
+ * therefore the whole change — nothing here names the four individually.
+ *
+ * The payload leads with what it does *not* contain. Three steps of the
+ * sequence read local files that no connector can see, and a caller who
+ * believes one tool finished the job is activated wrong in a way nothing
+ * signals afterwards.
+ *
+ * @param {Readonly<object>} registry
+ * @returns {string}
+ */
+export function buildActivationPayload(registry) {
+  const rule = requireEntry(registry, AUTO_ACTIVATION_URI);
+  const mandatory = MANDATORY_STANDARD_FILES.map((uri) => requireEntry(registry, uri));
+
+  const routing = registry.entries
+    .filter((entry) => entry.uri !== rule.uri && !MANDATORY_STANDARD_FILES.includes(entry.uri))
+    .map((entry) => `| \`${entry.path}\` | \`${entry.name}\` | ${entry.description} |`);
+
+  return `# Session activation
+
+The shared instruction set is now active for this session. It is a set of standing orders:
+it applies to every task from here on, whether or not the user mentions it.
+
+${CONNECTOR_PREAMBLE}
+
+## This call does not finish the job
+
+Three steps of the sequence below read files on **your** filesystem, which no connector can
+see. Read them yourself, now:
+
+1. \`{repo}/AGENTS.md\` — the repository's entry point (step 1).
+2. \`{repo}/.agents/index/root-index.md\` — its router (step 3).
+3. \`{repo}/.agents/index/memory-index.md\` — and load only the rows matching the request,
+   so you continue prior work instead of restarting it (step 4).
+
+Everything shared — steps 2, 5 and 6 — is below, in full. Nothing else needs reading before
+you start.
+
+---
+
+${rule.text}
+
+---
+
+# The four mandatory standard files
+
+These load on every request, not on a trigger, and they are reproduced here whole so that
+activation is one call. ${mandatory.length} files, in the order the rule names them.
+
+${mandatory.map((entry) => `---\n\n${entry.text}`).join('\n\n')}
+
+---
+
+# Routing table for everything else
+
+Every remaining shared file. Route on the description; read one at a time with
+\`agents_read_instruction\` when a trigger fires. Do not bulk-read the set.
+
+| Path | name | Purpose |
+|---|---|---|
+${routing.join('\n')}
+
+---
+
+You are activated. Read the three local files named above, then begin.`;
 }
 
 /**
