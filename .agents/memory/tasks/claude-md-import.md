@@ -1,0 +1,59 @@
+---
+name: memory-tasks-claude-md-import
+description: Adding .claude/CLAUDE.md as an import of the root AGENTS.md, so Claude Code and every other agent read one file rather than two.
+---
+
+# CLAUDE.md as an Import, Not a Copy
+
+## 2026-08-28 — planned
+
+**Goal.** Claude Code looks for `CLAUDE.md`. This repository's instructions are in the
+root `AGENTS.md`, which every other agent reads directly. Without a `CLAUDE.md`, Claude
+Code starts a session in this repository with none of the auto-activation contract, the
+trigger table, or the discovery gate.
+
+**Objective.** `.claude/CLAUDE.md` exists and contains an import of `../AGENTS.md` and
+nothing else — no copied content.
+
+**Detail.**
+
+* **The file is an import, deliberately.** A second copy of `AGENTS.md` is the exact
+  failure `rules/duplicate-instruction-audit.md` and `rules/shared-instructions.md` §A
+  exist to prevent: the copy goes stale and then quietly overrides the original. That the
+  copy would be local rather than shared does not change the mechanism.
+* **The path is `../AGENTS.md`, not `AGENTS.md`.** Claude Code resolves an `@import`
+  relative to the file that contains it, so from `.claude/` a bare `@AGENTS.md` would
+  resolve to `.claude/AGENTS.md`, which does not exist. The user's comment records this,
+  which is why the comment is worth keeping in the file rather than only here.
+* **Not a third documentation tree.** `directories.md` forbids one, but `.claude/` is tool
+  configuration in the same category as `.github/` — it holds no instruction content of its
+  own, only the pointer. Had it carried a copy, it would have been a third tree and
+  forbidden.
+* **Not published, not a release.** Nothing under `content/` changes, so no consuming
+  repository is affected, and no version carrier moves: no `package.json` bump, no
+  `wiki/logs/` directory, no changelog. Creating any of those would be an unapproved
+  version claim under `versioning.md`.
+
+**The one thing worth flagging.** `.claude/CLAUDE.md` is a project memory location Claude
+Code reads, alongside a root `CLAUDE.md`. If a future session finds the file is not being
+picked up, the fix is to move it to the repository root with the import path changed to
+`@AGENTS.md` — not to paste the content in.
+
+## Tasks
+
+| # | Branch | Scope | PR |
+|---|---|---|---|
+| 1 | `chore/claude-md-import-plan` | This file, and its `memory-index.md` row. | |
+| 2 | `chore/claude-md-import` | `.claude/CLAUDE.md`. | |
+| 3 | `chore/claude-md-import-close` | The closing entry here. No version, no changelog. | |
+
+## Per-task record
+
+### Task 1 — `chore/claude-md-import-plan`
+
+Created this file and registered it in `.agents/index/memory-index.md`. Nothing published.
+
+Recorded because the interesting decision is one a diff cannot show: the file is two lines
+and a comment, and the reason it is not two hundred lines is the whole point. Anyone
+looking at `.claude/CLAUDE.md` later and thinking it looks unhelpfully thin should find
+this entry before they "improve" it by pasting `AGENTS.md` into it.
