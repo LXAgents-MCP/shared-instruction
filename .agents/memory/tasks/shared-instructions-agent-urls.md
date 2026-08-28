@@ -34,9 +34,9 @@ consumer relies on moves — `versioning.md` calls that a clarification. Approve
 
 | # | Branch | Scope | PR |
 |---|---|---|---|
-| 1 | `chore/shared-instructions-agent-urls-plan` | This file, and its `memory-index.md` row. | — |
-| 2 | `docs/shared-instructions-agent-urls` | `content/rules/shared-instructions.md` line 14. | — |
-| 3 | `chore/release-0-10-1` | Version, log, both logs indexes, state, and this table's PR column. | — |
+| 1 | `chore/shared-instructions-agent-urls-plan` | This file, and its `memory-index.md` row. | not opened |
+| 2 | `docs/shared-instructions-agent-urls` | `content/rules/shared-instructions.md` line 14. | not opened |
+| 3 | `chore/release-0-10-1` | Version, log, both logs indexes, state, and this table's PR column. | not opened |
 
 ## Per-task record
 
@@ -82,3 +82,32 @@ discovering it.
 
 Task 3 now owes the release: this is a `content/` change, so consumers pick it up on
 their next read with no upgrade step and the log entry is the only notice they get.
+
+### Task 3 — `chore/release-0-10-1`
+
+Released `0.10.1`, a patch approved before the work started.
+
+| File | Change |
+|---|---|
+| `package.json`, `package-lock.json` | `0.10.0` → `0.10.1`. |
+| `wiki/logs/0/10/1/CHANGELOG.md` | New. **Consumers must: nothing.** |
+| `content/index/logs-index.md` | `0/10/1` row, newest first. |
+| `.agents/index/logs-index.md` | Same row, local form. |
+| `.agents/memory/state/repository-state.md` | Version paragraph, and the `0.10.0` merge-state correction. |
+
+`compose.yaml` is left at image tag `0.0.0`, matching every release before this one — it
+is a local development tag, not a version carrier that tracks `package.json`.
+
+**The `PR` column reads `not opened`, not a number.** Task-workflow §F gates opening a
+pull request on the user's explicit permission, and it was not asked for in this round.
+The three branches are pushed and stack cleanly; whoever opens them fills the column in.
+
+**State correction.** The state file claimed `0.10.0` was unmerged with four branches
+outstanding. It merged as PR #21, with #22 and #23 after it, and `master` is at `dd87eee`
+— which is where task 1 branched from. Corrected in this commit, with the commit named so
+the next session can check it rather than trust it.
+
+## Record closed
+
+The work in this record is done: line 14 addresses the shared set as `agents://` alone,
+and `0.10.1` is logged. Nothing is left open except the pull request gate above.
