@@ -63,6 +63,7 @@ there is nothing to keep in sync and nothing to accidentally commit.
 | Task workflow, planning, standing prompts | Shared |
 | The five creators | Shared |
 | Directory architecture, auto-activation, versioning, memory policy, no-session-links, discovery protocol, connector resolution, duplicate audit, work summary | Shared |
+| The model naming convention for stored model identifiers | Shared |
 | This set's own index and release log | Shared |
 | A repository's rules (`repository.md`) and any override | Local |
 | A repository's indexes | Local |

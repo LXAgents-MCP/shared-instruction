@@ -128,6 +128,7 @@ resolves to `content/…`.
 | Change code or structure that a document describes | [`content/rules/change-propagation.md`](content/rules/change-propagation.md) |
 | Touch anything that carries a version number | [`content/rules/versioning.md`](content/rules/versioning.md) |
 | Record a release | [`content/creators/changelog-creator.md`](content/creators/changelog-creator.md) |
+| Store, read, or construct a model identifier — any `model_name` column | [`content/rules/model-naming-convention.md`](content/rules/model-naming-convention.md) |
 | Edit anything under `content/` | [`.agents/rules/content-publishing.md`](.agents/rules/content-publishing.md) |
 | Change text that `content/` publishes and this repository also reproduces | [`.agents/rules/set-mirrors.md`](.agents/rules/set-mirrors.md) |
 | Record progress, a decision, or session state | [`content/creators/memory-creator.md`](content/creators/memory-creator.md) |

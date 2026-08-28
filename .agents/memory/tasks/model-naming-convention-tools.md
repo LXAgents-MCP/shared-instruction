@@ -65,3 +65,30 @@ first and the tools are written second**, not the other way round. The request a
 tools; the tools cannot be built correctly without deciding where their text lives, and the
 answer that keeps them from drifting is "in `content/`, read at boot". Task 2 therefore
 publishes a file that nothing calls yet, and task 3 calls it.
+
+### Task 2 — `feat/model-naming-convention`
+
+`content/rules/model-naming-convention.md` is published: the `{platform}/{model}` format,
+lowercase-before-the-write, and the construction line for a direct API integration.
+
+Placed in `rules/` rather than a new folder. `directories.md` §B offers `database/` and
+`api/`, and both are near misses — this is not a schema rule and not an API design
+standard, it is a naming convention for a value that crosses both. `rules/` is the folder
+for repository-wide rules, and creating a folder for one file would have needed a row in
+`directories.md` §B and its own index besides.
+
+The rule ends in a four-point checklist because `instruction-creator.md` requires a reader
+to be able to tell whether they complied. "Follow the convention" is not checkable; "exactly
+one `/`, both segments non-empty, all lowercase, normalized before the write" is — and it is
+what task 3's `model_name_format` implements, so the rule and the tool cannot disagree
+without a test failing.
+
+Registered in `content/index/instructions-index.md`, given a trigger row in
+`auto-activation.md`, and mirrored into the root `AGENTS.md` trigger table in the same
+commit — `set-mirrors.md` names that table as a mirror, so the row exists in both places or
+the rule never fires here. `content/AGENTS.md` gains a row in the shared/local split table.
+
+69 tests still pass. That is the meaningful check for this task: the four boot invariants in
+`content-publishing.md` — frontmatter, a unique `name`, a description of 139 of the 140
+permitted characters, and a declared folder — are all enforced at registry load, so a bad
+file would have failed the suite rather than shipped.

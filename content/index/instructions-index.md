@@ -27,6 +27,7 @@ index lists shared files only; a consuming repository's files are routed from it
 | [`memory-policy.md`](agents://rules/memory-policy.md) | What may be written to memory, and how. |
 | [`work-summary.md`](agents://rules/work-summary.md) | Report finished work back — what changed, what was verified, what was not done. |
 | [`versioning.md`](agents://rules/versioning.md) | Never bump a version without asking. |
+| [`model-naming-convention.md`](agents://rules/model-naming-convention.md) | Every stored model identifier is `{platform}/{model}`, lowercase, built the same way on every route. |
 
 ## git/
 
