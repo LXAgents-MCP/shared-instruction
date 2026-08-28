@@ -25,6 +25,21 @@ Before doing any work:
 6. Match the request against the trigger table and load the instruction files it names
    — local first, shared second.
 
+### Steps 2, 5 and 6 in one call
+
+Where the set is reached through the connector, `agents_auto_activation` returns the shared
+half of this sequence in a single call: this file, the four mandatory standard files in
+full, and a routing table for the rest.
+
+**It does not replace the sequence, and it does not cover steps 1, 3 and 4.** Those read
+files in the repository itself, which no connector can see. A session that calls the tool
+and stops has skipped its own `AGENTS.md`, its router, and its memory — and nothing about
+the result looks incomplete, which is what makes the shortcut worth stating rather than
+assuming.
+
+Where the client exposes no tools, the sequence is unchanged: read `agents://manifest.json`,
+then `agents://index/root-index.md`, then load the four files named below.
+
 ## Trigger table
 
 This file is the source of truth. A consuming repository's `AGENTS.md` mirrors it

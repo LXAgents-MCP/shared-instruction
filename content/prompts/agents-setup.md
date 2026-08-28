@@ -257,6 +257,9 @@ order:
 > two permission gates that ride with them: ask before opening a pull request, ask before
 > merging. See `{shared}/rules/shared-instructions.md` §H.
 >
+> Steps 2, 5 and 6 are one call to `agents_auto_activation` where the connector exposes
+> tools. Steps 1, 3 and 4 read files in this repository and are still read from disk.
+>
 > If a rule conflicts with a habit, a default, or a template you would otherwise follow,
 > the rule wins. If it conflicts with an explicit instruction from the user in this
 > session, the user wins — and you say out loud which rule you are setting aside.

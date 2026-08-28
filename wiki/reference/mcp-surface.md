@@ -52,6 +52,7 @@ asserts that, so a new tool has to declare itself a writer deliberately.
 
 | Tool | Arguments | Returns |
 |---|---|---|
+| `agents_auto_activation` | none | The activation rule, the four mandatory standard files whole, and a routing table for the rest. **Called first, at session start.** |
 | `agents_setup` | none | The AGENTS-SETUP procedure — identical to the `agents-setup` prompt. |
 | `agents_check_duplicate_instructions` | none | The duplicate audit with the manifest inlined — identical to the audit prompt. **On request only.** |
 | `agents_list_instructions` | `folder` (optional) | Every file with its description and `sha256`, as text and as `structuredContent`. |
@@ -59,6 +60,27 @@ asserts that, so a new tool has to declare itself a writer deliberately.
 | `model_naming_convention` | none | The `{platform}/{model}` rule for stored model identifiers, read from the registry. |
 | `model_name_format` | `platform` (required), `platform_model` (required) | `{ model_name, platform, model, normalized }` — the composed name, as text and as `structuredContent`. |
 | `mcp_creator` | `name` (required), `description`, `directory`, `write`, `force` | The plan for a new dual-purpose MCP repository, and — with `write` — the repository itself. |
+
+### `agents_auto_activation`
+
+One call in place of the six reads a session start otherwise costs. It returns
+`rules/auto-activation.md`, the four files named by `MANDATORY_STANDARD_FILES` in
+`src/constants.js`, and a routing table of every remaining shared file — about 31,000
+characters, the same order as `agents_setup`.
+
+The routing table is built by **subtraction**: every registry entry that was not inlined.
+A file added to the set therefore appears in it on the next boot with no code change.
+
+**It deliberately leads with what it does not contain.** Steps 1, 3 and 4 of the sequence
+read `{repo}/AGENTS.md`, `{repo}/.agents/index/root-index.md`, and
+`{repo}/.agents/index/memory-index.md` — files on the caller's own filesystem. One tool
+that looked complete would be worse than six reads that look like six, because a caller
+who stops there is activated wrong and nothing afterwards signals it.
+
+`test/tools.test.js` asserts each inlined file appears whole rather than paraphrased, that
+the three local paths are named, that nothing in the set is missing from the routing table,
+and that the discovery-protocol gate text survives — that rule has no trigger row, so it is
+the one most easily lost from a bootstrap payload.
 
 ### The model naming tools
 
