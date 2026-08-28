@@ -59,3 +59,26 @@ Also found while reading memory: `.agents/memory/state/repository-state.md` clai
 `0.10.0` is unmerged with four stacked branches outstanding. It is merged — PR #21
 carried `chore/release-0-10-0`, and #22 and #23 landed after it, leaving `master` at
 `dd87eee`. Task 3 corrects the state file.
+
+### Task 2 — `docs/shared-instructions-agent-urls`
+
+Line 14 of `content/rules/shared-instructions.md` now addresses the shared set as
+`agents://` alone:
+
+```
+| **Shared** | The `lxagents-agents-base` MCP server, addressed as `agents://` | Everything true across repositories. |
+```
+
+One line, one cell, nothing else touched. `{shared}` is untouched on line 25 of the same
+file and everywhere it is defined, so the placeholder is still a live notation — this
+narrows how the two-sets table addresses the set, it does not retire the placeholder.
+Anyone reading the change as a deprecation of `{shared}` is reading more into it than it
+says.
+
+`npm test` passes 69/69, which covers the four boot invariants in
+`content-publishing.md`: the frontmatter is untouched, the `name` is unchanged, and the
+file has not moved, so none of them was ever at risk — the run confirms it rather than
+discovering it.
+
+Task 3 now owes the release: this is a `content/` change, so consumers pick it up on
+their next read with no upgrade step and the log entry is the only notice they get.

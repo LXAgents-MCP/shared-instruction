@@ -11,7 +11,7 @@ Open this the moment you are unsure whether something is local or universal.
 
 | Set | Where it lives | What it holds |
 |---|---|---|
-| **Shared** | The `lxagents-agents-base` MCP server, addressed as `{shared}` / `agents://` | Everything true across repositories. |
+| **Shared** | The `lxagents-agents-base` MCP server, addressed as `agents://` | Everything true across repositories. |
 | **Local** | `{repo}/.agents/` | Everything true of exactly one repository. |
 
 Memory, indexes, both wikis, and `rules/repository.md` are **always local**. Everything
