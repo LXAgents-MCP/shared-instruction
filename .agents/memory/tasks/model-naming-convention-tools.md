@@ -53,6 +53,7 @@ as a bump.
 | 3 | `feat/model-naming-tools` | `model_naming_convention` and `model_name_format`, the payload builder behind them, and their tests. | #32 |
 | 4 | `docs/model-naming-surface` | Every place that lists the tool surface: the connector rule, `mcp-surface.md`, `overview.md`, `README.md`, the state file. | #33 |
 | 5 | `chore/release-0-11-0` | Version, changelog, both logs indexes, and the closing entry here. | #34 |
+| 6 | `docs/model-naming-openrouter` | The OpenRouter rationale on the rule, the approved `work-summary` mirror row, and the changelog fold-in. | #35 |
 
 ## Per-task record
 
@@ -185,16 +186,43 @@ at `dd87eee` with `0.10.1` unmerged, which stopped being true when `0.10.1` and 
 install-before-test round landed. That paragraph is the one a next session plans a branch
 point from, so a stale one is worse than none.
 
-## Open — awaiting the merge gate
+## Task 6 — `docs/model-naming-openrouter`
 
-Five pull requests are open, #30 through #34, each targeting the branch below it. #30 is
-the record, so its body carries the chain table: a reviewer opens one page and sees every
-part of the work.
+Added after the chain was already open, on the user's instruction, and stacked on top of
+the release rather than pushed into task 2. Pushing to `feat/model-naming-convention` would
+have invalidated the three branches above it and forced a rebase of the whole stack; a new
+branch on top costs nothing, which is the same reasoning §F gives for never pushing to
+branch 1 to back-fill pull request numbers.
 
-The record is **not closed**. §F gates merging on the user's explicit yes, and that has not
-been given — the pull request permission was, and the two are separate gates. When the
-chain merges, in order `1…5`, what remains is: re-target each pull request to `master`
-**before** merging it rather than after, diff `master` against `chore/release-0-11-0` to
-confirm the trees are identical, and add the closing entry here. `0.10.0` exists because
-that re-target step was skipped once and both the API and the pull request page reported
-success anyway.
+**The consequence, stated rather than hidden:** the release is task 5 and the work is task
+6, so for this record the reserved release slot is not last. Folding the changelog
+amendment into task 6 is what keeps that honest — `0.11.0` is unmerged, so this is
+amending an unreleased entry, not rewriting a released one, which `changelog-creator.md`
+forbids.
+
+### The content
+
+The user's note said the project uses OpenRouter as its core AI API. **That sentence was
+generalised rather than copied.** `directories.md` forbids anything repository-specific in
+the shared set, and this file is published to every consumer — most of which do not use
+OpenRouter. What is universal is the design fact underneath it: the format *is*
+OpenRouter's, deliberately, so a repository using it as a core passes a stored name
+straight through, a direct integration builds the same string, and switching between them
+is configuration rather than a migration.
+
+The new section sits **before** `## Direct API integrations` because it is the reason that
+section exists. The overlapping bullet under "Why this is a rule and not a preference" was
+trimmed to a pointer rather than left to say the same thing twice.
+
+### The finding
+
+`AGENTS.md` gains the `work-summary` trigger row, which the user selected from the finding
+raised at the end of the previous round. It had been missing since `0.4.0`: `set-mirrors.md`
+calls that table a row-for-row mirror of `auto-activation.md`, and it was one row short — so
+the rule telling an agent to report finished work never fired from a trigger in the
+repository that publishes that rule.
+
+Not applied on the agent's own initiative. It was proposed, the user selected it, and only
+then was it written — which is the whole shape `discovery-protocol.md` asks for.
+
+76 tests still pass.

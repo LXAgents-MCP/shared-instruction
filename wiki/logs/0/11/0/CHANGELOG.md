@@ -30,10 +30,17 @@ was removed, and no existing row moved, so no override needs dropping.
   **before the write**, not on read; and a direct call builds the name from the two values
   it already holds rather than hard-coding a literal.
 
-  The point is cross-provider compatibility. A gateway such as OpenRouter already addresses
-  models as `{platform}/{model}`, so storing that shape means a repository can move a model
-  behind a gateway, or out from behind one, without rewriting stored rows — and two
-  providers shipping the same model name stay distinguishable once stored.
+  The point is cross-provider compatibility, and the format is not invented here:
+  `{platform}/{model}` is how OpenRouter already addresses a model. Matching it means a
+  repository running OpenRouter as its core AI API passes a stored `model_name` straight
+  through with no mapping table, while a direct integration builds the same string from the
+  values it already holds. Moving a model between the two routes, or adding a platform, is
+  then configuration rather than a data migration — and two providers shipping the same
+  model name stay distinguishable once stored.
+
+  Direct API support is not an exception to the convention. It is the case the convention
+  is built around: one name per model, whichever route reached it, so the route can change
+  and the data does not have to.
 
   The rule ends in a four-point checklist, because a convention a reader cannot check
   against is a preference.
@@ -60,6 +67,11 @@ was removed, and no existing row moved, so no override needs dropping.
 - `wiki/reference/mcp-surface.md`, `wiki/information/overview.md`, `README.md` — the tool
   and resource counts, and a section on the two tools. Not published; corrected in the same
   round so no count outlives the release that changed it.
+- `AGENTS.md` — the root trigger table gains the `work-summary` row it had been missing
+  since `0.4.0`. Not published; local to this repository. `.agents/rules/set-mirrors.md`
+  names that table as a row-for-row mirror of `rules/auto-activation.md`, and it was one
+  row short, so the rule telling an agent to report finished work never fired from a
+  trigger in the repository that publishes it.
 - `test/tools.test.js` — the read-only sweep now covers every tool except `mcp_creator`,
   rather than only names beginning with `agents_`. A new tool has to declare itself a
   writer deliberately; it can no longer become one by being named outside the prefix.
@@ -81,6 +93,9 @@ was removed, and no existing row moved, so no override needs dropping.
   serves the rule from the same registry, and `cli.test.js` pins CLI/MCP parity for the
   payloads both surfaces deliver, not for every tool. A `format` command would be new
   surface rather than parity, so it was raised as an option and not taken.
+- **Nothing consumers must do for the `AGENTS.md` fix.** It corrects this repository's own
+  mirror. A consuming repository that is also missing its `work-summary` row has been
+  missing it since `0.4.0` and should check, but that is not new in this release.
 - 76 tests, up from 69, all passing. The four boot invariants in `content-publishing.md`
   were enforced throughout: the new file's description is 139 of the 140 permitted
   characters.
