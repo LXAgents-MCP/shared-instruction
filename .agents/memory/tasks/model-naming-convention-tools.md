@@ -48,11 +48,11 @@ as a bump.
 
 | # | Branch | Scope | PR |
 |---|---|---|---|
-| 1 | `chore/model-naming-convention-tools-plan` | This file, and its `memory-index.md` row. | |
-| 2 | `feat/model-naming-convention` | `content/rules/model-naming-convention.md`, its index row, its trigger row, and both `AGENTS.md` mirrors. | |
-| 3 | `feat/model-naming-tools` | `model_naming_convention` and `model_name_format`, the payload builder behind them, and their tests. | |
-| 4 | `docs/model-naming-surface` | Every place that lists the tool surface: the connector rule, `mcp-surface.md`, `overview.md`, `README.md`, the state file. | |
-| 5 | `chore/release-0-11-0` | Version, changelog, both logs indexes, and the closing entry here. | |
+| 1 | `chore/model-naming-convention-tools-plan` | This file, and its `memory-index.md` row. | #30 |
+| 2 | `feat/model-naming-convention` | `content/rules/model-naming-convention.md`, its index row, its trigger row, and both `AGENTS.md` mirrors. | #31 |
+| 3 | `feat/model-naming-tools` | `model_naming_convention` and `model_name_format`, the payload builder behind them, and their tests. | #32 |
+| 4 | `docs/model-naming-surface` | Every place that lists the tool surface: the connector rule, `mcp-surface.md`, `overview.md`, `README.md`, the state file. | #33 |
+| 5 | `chore/release-0-11-0` | Version, changelog, both logs indexes, and the closing entry here. | #34 |
 
 ## Per-task record
 
@@ -184,3 +184,17 @@ The state file's merge paragraph was corrected as well as advanced: it claimed `
 at `dd87eee` with `0.10.1` unmerged, which stopped being true when `0.10.1` and the
 install-before-test round landed. That paragraph is the one a next session plans a branch
 point from, so a stale one is worse than none.
+
+## Open — awaiting the merge gate
+
+Five pull requests are open, #30 through #34, each targeting the branch below it. #30 is
+the record, so its body carries the chain table: a reviewer opens one page and sees every
+part of the work.
+
+The record is **not closed**. §F gates merging on the user's explicit yes, and that has not
+been given — the pull request permission was, and the two are separate gates. When the
+chain merges, in order `1…5`, what remains is: re-target each pull request to `master`
+**before** merging it rather than after, diff `master` against `chore/release-0-11-0` to
+confirm the trees are identical, and add the closing entry here. `0.10.0` exists because
+that re-target step was skipped once and both the API and the pull request page reported
+success anyway.
