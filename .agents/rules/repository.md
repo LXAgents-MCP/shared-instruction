@@ -55,6 +55,13 @@ do not introduce TypeScript, a bundler, or a transpiler without agreement.
 | Inspect the MCP surface | `npm run inspect` |
 | Container | `docker compose up --build` |
 
+**`npm install` before `npm test`, once per checkout.** A fresh clone has no
+`node_modules`, and the suite does not say so: six of the seven test files fail with
+`ERR_MODULE_NOT_FOUND`, which reads as broken code rather than an uninstalled tree.
+That matters here because [`content-publishing.md`](content-publishing.md) sends you to
+`npm test` before any commit under `content/` — so the first test result an agent sees in
+a new session is the one most likely to be a lie. Install first, then trust the number.
+
 Full orientation: [`../wiki/context/repository-map.md`](../wiki/context/repository-map.md).
 
 ## Code conventions the codebase already follows
