@@ -128,3 +128,19 @@ repository has no one to notice the omission: it says call the tool first, then 
 local files, **because the tool cannot see files in this repository**.
 
 80 tests pass, unchanged from task 2 — this task touches prose and one string array.
+
+### Task 4 — `chore/release-0-12-0`
+
+`0.12.0`, approved before anything was staged: a **minor** bump — a tool added, three
+published files extended, nothing renamed or removed.
+
+The **Consumers must** line is one edit: re-read the bootstrap block in
+`rules/mcp-connector.md` and update the copy in `AGENTS.md`. It also says the thing a
+release entry usually cannot — **doing nothing stays correct.** The six-step sequence is
+unchanged, so a repository that ignores this release is out of date rather than wrong. That
+is only true because task 3 extended the sequence instead of rewriting it, and it is worth
+stating plainly: a consumer reading "must" for something optional starts discounting the
+column.
+
+`compose.yaml` still tags the image `0.0.0` — unchanged since the first release, still
+deliberate. No session digest: `.agents/memory/sessions/` is empty.
