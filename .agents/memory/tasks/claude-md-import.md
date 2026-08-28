@@ -57,3 +57,21 @@ Recorded because the interesting decision is one a diff cannot show: the file is
 and a comment, and the reason it is not two hundred lines is the whole point. Anyone
 looking at `.claude/CLAUDE.md` later and thinking it looks unhelpfully thin should find
 this entry before they "improve" it by pasting `AGENTS.md` into it.
+
+### Task 2 — `chore/claude-md-import`
+
+`.claude/CLAUDE.md`: one import line, one blank line, and the comment explaining itself.
+21 lines, and the count is the point.
+
+`@../AGENTS.md` resolves — checked, not assumed: `.claude/../AGENTS.md` is the 11,956-byte
+root entry point. The failure this guards against is silent, since a `CLAUDE.md` whose
+import misses does not error, it just supplies nothing.
+
+Not gitignored. Checked with `git check-ignore` before writing, because `.gitignore`
+already covers `.idea/` and `.vscode/`, and a tool-config directory that turned out to be
+ignored would have produced a file that works locally and does not exist for anyone else.
+
+The comment stays in the file rather than being moved here. It answers the question at the
+place it gets asked — someone opening `.claude/CLAUDE.md` and finding two lines — and
+`AGENTS.md`'s own iron rule about entry points not carrying detail does not reach a
+comment that exists to stop the file being "fixed".
