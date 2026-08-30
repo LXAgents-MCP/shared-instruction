@@ -7,6 +7,7 @@ import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { AUTO_ACTIVATION_URI, MANDATORY_STANDARD_FILES } from '../src/constants.js';
 import { loadRegistry } from '../src/content/registry.js';
 import { createServer } from '../src/server/create-server.js';
+import { requireEntry } from '../src/server/payloads.js';
 
 async function connect() {
   const registry = await loadRegistry();
@@ -275,6 +276,83 @@ test('agents_auto_activation carries the discovery gate, which has no trigger ro
   // payload that dropped it would leave the gate unreachable at session start.
   assert.match(body, /do NOT create or edit it yourself/);
   assert.match(body, /Never batch-apply, never apply silently/);
+
+  await server.close();
+});
+
+test('MANDATORY_STANDARD_FILES pins the four files, in order, and every one resolves', async () => {
+  const registry = await loadRegistry();
+
+  // Written out literally rather than derived from the constant it guards.
+  // Every other activation test iterates MANDATORY_STANDARD_FILES, so a URI
+  // dropped from it takes its own coverage with it: the payload gets shorter,
+  // the dropped file quietly reappears in the routing table as though it had
+  // never been mandatory, and all 80 tests still pass. This assertion is the
+  // only thing that fails in that case.
+  assert.deepEqual(
+    [...MANDATORY_STANDARD_FILES],
+    [
+      'agents://planning/task-workflow.md',
+      'agents://git/branching-strategy.md',
+      'agents://git/commit-conventions.md',
+      'agents://rules/discovery-protocol.md',
+    ],
+  );
+
+  // The lookup registerTools performs at boot. Pinned here too, so a file
+  // renamed under content/ fails as a test rather than as a startup crash on
+  // a deployment nobody is watching.
+  for (const uri of MANDATORY_STANDARD_FILES) {
+    const entry = requireEntry(registry, uri);
+    assert.equal(entry.uri, uri);
+    assert.ok(entry.text.length > 0, `${uri} must have content to inline`);
+  }
+});
+
+test('agents_auto_activation inlines planning/task-workflow.md inside the mandatory section', async () => {
+  const { client, server, registry } = await connect();
+
+  const body = (await client.callTool({ name: 'agents_auto_activation' })).content[0].text;
+  const workflow = registry.get('agents://planning/task-workflow.md');
+
+  const heading = body.indexOf('# The four mandatory standard files');
+  const routing = body.indexOf('# Routing table for everything else');
+  const inlined = body.indexOf(workflow.text);
+
+  assert.ok(heading !== -1, 'the mandatory section must exist');
+  assert.ok(routing > heading, 'the routing table must follow the mandatory section');
+
+  // Named on its own rather than left to the loop above because this is the
+  // file the workflow itself depends on: a session that never reads it plans
+  // nothing, asks for no intake, and stacks no branches — and the omission
+  // looks like a shorter payload, not like an error.
+  assert.ok(inlined > heading && inlined < routing, 'task-workflow.md must sit in the section');
+
+  // §A and §F are the first and last things a truncated inline would lose.
+  assert.match(body, /## A\. Intake — Goal, Objective, Detail/);
+  assert.match(body, /## F\. Pull requests and merging/);
+
+  // The heading says "four" in prose while the count beneath it is computed.
+  // Tying them together is what stops the word becoming a lie.
+  assert.ok(body.includes(`${MANDATORY_STANDARD_FILES.length} files, in the order`));
+
+  await server.close();
+});
+
+test('agents_auto_activation never routes to a file it already inlined', async () => {
+  const { client, server, registry } = await connect();
+
+  const body = (await client.callTool({ name: 'agents_auto_activation' })).content[0].text;
+  const table = body.slice(body.indexOf('# Routing table for everything else'));
+
+  // The converse of the routing test above, and the half that catches a
+  // filter that stopped filtering: a mandatory file listed as somewhere to go
+  // "when a trigger fires" reads as optional, which is the one thing it is not.
+  for (const uri of [AUTO_ACTIVATION_URI, ...MANDATORY_STANDARD_FILES]) {
+    const entry = registry.get(uri);
+    assert.ok(entry, `${uri} must resolve`);
+    assert.ok(!table.includes(`\`${entry.path}\``), `${entry.path} is inlined; do not route to it`);
+  }
 
   await server.close();
 });

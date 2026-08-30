@@ -84,3 +84,30 @@ question asked was "the code is correct", and a branch that only adds tests look
 its diff alone, like tests added for no reason. The reason is the 80-of-80 pass with the
 constant gutted, and it is written down here because it will not be reproducible from the
 repository once the tests exist to prevent it.
+
+### Task 2 — `test/activation-inlining`
+
+Three tests added to `test/tools.test.js`, each mutation-proven on this branch before
+being kept:
+
+| Test | Fails when |
+|---|---|
+| `MANDATORY_STANDARD_FILES pins the four files, in order, and every one resolves` | The list is shortened, reordered, or points at a file that no longer exists. |
+| `agents_auto_activation inlines planning/task-workflow.md inside the mandatory section` | The file stops being inlined, or lands outside the section. |
+| `agents_auto_activation never routes to a file it already inlined` | The routing filter stops excluding the mandatory four or the rule. |
+
+Mutation A — delete the `task-workflow.md` line from `src/constants.js`: 81 pass, **2
+fail** (the first two above). Before this branch the same mutation passed 80 of 80.
+Mutation B — drop `!MANDATORY_STANDARD_FILES.includes(entry.uri)` from the routing filter
+in `src/server/payloads.js`: 82 pass, **1 fail** (the third). Both mutations were reverted
+and the tree checked clean; `src/` is untouched by this branch.
+
+The first test is written out **literally** rather than derived from
+`MANDATORY_STANDARD_FILES`, which reads as duplication and is the entire point: it is the
+one assertion in the suite that does not inherit its expectations from the thing it
+guards. `repository.md` asks for tests that pin an invariant over tests that pin a
+string — the invariant here is *which four files are mandatory*, and it cannot be
+expressed by reading the list.
+
+83 tests pass. Nothing under `content/` changed, so no consuming repository is affected
+and nothing is published by this branch.
