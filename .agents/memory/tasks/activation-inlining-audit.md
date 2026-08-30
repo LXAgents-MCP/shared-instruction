@@ -58,13 +58,14 @@ work is coverage, not code.
 
 | # | Title | Scope | Repository | Branch | Files / areas | PR |
 |---|---|---|---|---|---|---|
-| 1 | The record | This file and its index row. | `shared-instruction` | `chore/activation-inlining-audit-plan` | `.agents/memory/tasks/`, `.agents/index/memory-index.md` | — |
-| 2 | Pin the mandatory set | Three regression tests, each proven to fail first. | `shared-instruction` | `test/activation-inlining` | `test/tools.test.js` | — |
-| 3 | Close the record | Closing entry. No version, no changelog. | `shared-instruction` | `chore/activation-inlining-audit-close` | `.agents/memory/tasks/` | — |
+| 1 | The record | This file and its index row. | `shared-instruction` | `chore/activation-inlining-audit-plan` | `.agents/memory/tasks/`, `.agents/index/memory-index.md` | #43 |
+| 2 | Pin the mandatory set | Three regression tests, each proven to fail first. | `shared-instruction` | `test/activation-inlining` | `test/tools.test.js` | #44 |
+| 3 | Close the record | Closing entry. No version, no changelog. | `shared-instruction` | `chore/activation-inlining-audit-close` | `.agents/memory/tasks/` | #45 |
 
-Branches stack: 1 from `master`, 2 from 1, 3 from 2. No pull requests — the user asked
-for pushes only, which is a narrower answer than the §F gate asks for and needs no
-further permission.
+Branches stack: 1 from `master`, 2 from 1, 3 from 2, and one pull request per branch:
+#43 into `master`, #44 into branch 1, #45 into branch 2. The `PR` column above is filled
+by this task, the last in the chain, exactly as §F directs — branch 3 already contains
+every branch below it, so writing the numbers here rebases nothing.
 
 **No release task, deliberately.** Slot `n` is the release, and there is nothing to
 release: no file under `content/` changes, so no consuming repository sees anything, and
@@ -127,8 +128,12 @@ everyone downstream, and downstream saw nothing here.
 
 83 tests pass on this branch, which already contains tasks 1 and 2.
 
-**Pull requests.** None opened. The user asked for pushes only, in the same message that
-set the task up — narrower than the §F gate contemplates, so nothing needed asking.
+**Pull requests.** The first round was pushes only, at the user's instruction. They then
+asked for pull requests and an in-order merge in one message, which is both §F gates given
+at once — permission already given is the yes, so neither was asked again. #43, #44 and
+#45, one per branch, each carrying its merge-order line; #43's body was edited after all
+three were open to carry the chain, a body edit rather than a commit precisely because
+pushing to branch 1 at that point would have invalidated every branch above it.
 
 **Left undone, and worth a decision later.** The CLI has no activation command.
 `src/cli/commands.js` re-exports `buildSetupPayload` and `buildAuditPayload` but not
