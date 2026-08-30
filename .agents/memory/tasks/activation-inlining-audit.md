@@ -111,3 +111,36 @@ expressed by reading the list.
 
 83 tests pass. Nothing under `content/` changed, so no consuming repository is affected
 and nothing is published by this branch.
+
+### Task 3 — `chore/activation-inlining-audit-close`
+
+Closes the record. **No version bump, no changelog, no `wiki/logs/` directory, and no row
+in either logs index.**
+
+Deliberate, not an omission. `content/` is untouched, so nothing reaches a consuming
+repository on its next read, and `content-publishing.md` scopes the release obligation to
+`content/**`. The reserved slot is named "the release" and the pull on a slot with that
+name is to find something to release; there was nothing, and inventing a `0.12.1` to fill
+it would be an unapproved version claim under
+[`versioning.md`](../../../content/rules/versioning.md) — a version is a claim made to
+everyone downstream, and downstream saw nothing here.
+
+83 tests pass on this branch, which already contains tasks 1 and 2.
+
+**Pull requests.** None opened. The user asked for pushes only, in the same message that
+set the task up — narrower than the §F gate contemplates, so nothing needed asking.
+
+**Left undone, and worth a decision later.** The CLI has no activation command.
+`src/cli/commands.js` re-exports `buildSetupPayload` and `buildAuditPayload` but not
+`buildActivationPayload`, so from a checkout — which is how an agent working in *this*
+repository resolves the set, per [`repository.md`](../../rules/repository.md) — there is
+no way to reach the activation payload without an MCP client. That is a real gap in the
+dual-purpose surface, but it is a new command rather than a fix to the reported problem,
+and it was not asked for. Whoever picks it up: `test/cli.test.js` already pins CLI output
+as byte-identical to the served resource, and the new command belongs under that same
+assertion.
+
+## Record closed
+
+The chain was intact the whole time. What was missing was any way to know that, and now
+the suite says so.
