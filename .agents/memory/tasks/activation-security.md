@@ -207,3 +207,53 @@ addition.**
 Also updated, per `change-propagation.md`: the `README.md` documentation list and the
 further-reading list in `repository-map.md`. 84 tests pass, unchanged — this task touches
 no code.
+
+### Task 4 — `chore/release-0-13-0`
+
+`0.13.0`, minor, approved at the plan gate before anything was staged — a gate added, a
+recovery added, nothing renamed or removed.
+
+| Carrier | State |
+|---|---|
+| `package.json` | `0.12.0` → `0.13.0` |
+| `wiki/logs/0/13/0/CHANGELOG.md` | New |
+| `content/index/logs-index.md` | Row added, newest first |
+| `.agents/index/logs-index.md` | Row added, newest first |
+| `compose.yaml` | Still `0.0.0` — unchanged since the first release, still deliberate |
+
+**The `Consumers must` line says something the previous release could not.** `0.12.0` was
+able to promise that doing nothing stayed correct, because it extended the sequence rather
+than rewriting it. This one cannot: a session that has not read the new §B will still
+present a plan and start work in the same breath, which is precisely what the gate
+forbids. The entry says so in bold rather than burying it, because a consumer who reads
+"must" for something optional starts discounting the column — and the inverse, a real
+behaviour change filed under "re-read a file", is how a gate gets silently ignored.
+
+**The changelog carries a *Not published* section.** The security pages and the local
+trigger row ship in the same release but reach no consumer, and `directories.md` §C/§D
+gaining a `security/` row each **is** published. Splitting the entry that way is more
+honest than either omitting the local work or letting a consumer think a new folder
+convention was imposed on them.
+
+**`repository-state.md` corrected a stale claim while it was open.** It said `0.12.0` was
+the unmerged tip. In fact `origin/master` is at `dd87eee` carrying `0.10.0`, 49 commits
+behind, and everything from `0.10.1` onward lives on the stacked line. That is exactly the
+kind of staleness the file warns about in its own `0.10.0` paragraph — the next session
+plans a branch point from it — so the paragraph now names the commit and the version
+`master` is actually at.
+
+## Record closed
+
+Four tasks, four stacked branches, 84 tests passing on the last of them, which contains
+the other three.
+
+**The `PR` column is empty on purpose.** No pull request was opened: §F gates that on
+asking, and it was not asked for in this round. The column is filled by whoever opens
+them.
+
+**What this round proves about itself.** The plan gate it adds is the gate it ran under.
+The branch-name conflict between the harness and `branching-strategy.md` reached the user
+because a plan was put in front of them first; had the work started on the assigned
+`claude/…` branch, the conflict would have been resolved silently in the harness's favour
+and nobody would have seen it. That is the whole argument for the rule, and it is the
+reason this record is worth reading before the next round rather than after.

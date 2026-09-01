@@ -15,6 +15,7 @@ Because consumers read the shared set live and pick a change up on their next re
 
 | Version | Date | Summary | Consumers must |
 |---|---|---|---|
+| [`0/13/0`](../../wiki/logs/0/13/0/CHANGELOG.md) | 2026-09-01 | The plan gate and the workflow-fallback recovery, across four mirrors; one mutation-proven test. Ships this repository's own security context alongside, unpublished. | Re-read `planning/task-workflow.md` §B and `rules/shared-instructions.md` §H; say three gates, not two, in your always-on paragraph. |
 | [`0/12/0`](../../wiki/logs/0/12/0/CHANGELOG.md) | 2026-08-28 | `agents_auto_activation` returns session start in one call. The sequence is extended, not rewritten; `mcp-creator.js` updated in the same round. | Re-read the connector bootstrap block and update your `AGENTS.md` copy. |
 | [`0/11/0`](../../wiki/logs/0/11/0/CHANGELOG.md) | 2026-08-28 | `rules/model-naming-convention.md` is published, with `model_naming_convention` and `model_name_format` serving it. The tools read the rule from the registry, so no new mirror. | Add the `model_name` trigger row to your `AGENTS.md` and read the new rule before writing a `model_name`. |
 | [`0/10/1`](../../wiki/logs/0/10/1/CHANGELOG.md) | 2026-08-28 | The two-sets table in `rules/shared-instructions.md` drops the `{shared}` alternative and addresses the shared set as `agents://` alone. | Nothing — `{shared}` stays valid everywhere it is defined, including the trigger table. |
