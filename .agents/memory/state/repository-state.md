@@ -73,13 +73,17 @@ withdrawn), `0.6.1` (connector surface table completed), `0.7.0` (package rename
 (re-target before merging), `0.10.1` (`agents://` alone in the two-sets table), `0.11.0`
 (the model naming convention and its two tools), `0.12.0` (one-call session activation), `0.13.0` (the plan gate, the workflow-fallback recovery, and this repository's own security context).
 
-**`origin/master` is at `dd87eee` and still carries `0.10.0`.** Everything from `0.10.1`
-onward — including all of `0.12.0` and the activation-inlining audit — lives on the line
-of stacked branches above it, not on the default branch. Check this before planning a
-branch point: `master` looks like a sensible base and is 49 commits behind the work.
-`0.13.0` is unmerged too: four stacked branches,
-`chore/activation-security-plan`, `feat/activation-plan-gate`, `docs/security-context`,
-and `chore/release-0-13-0`, in that merge order, each branched from the one before.
+**`origin/master` is at `83b6f3d` and carries `0.12.0`** as of 2026-09-01, having advanced
+from `dd87eee`/`0.10.0` earlier the same day. **Re-verify with `git fetch` rather than
+trusting this SHA** — the previous version of this paragraph was added specifically to stop
+a session planning a branch point from a stale claim, and it went stale within the hour. A
+recorded commit is a snapshot; the remote is the authority.
+
+`0.13.0` is unmerged: four stacked branches — `chore/activation-security-plan`,
+`feat/activation-plan-gate`, `docs/security-context`, `chore/release-0-13-0` — in that
+merge order, each branched from the one before, the first from `master`. `0.14.0` stacks on
+top of that chain rather than on `master`, because it depends on the plan gate `0.13.0`
+defines.
 
 The `0.10.0` entry above said "unmerged, deliberately not merged this round" until
 `0.10.1` corrected it. It merged as pull request #21, with #22 (`fix/sonarcloud-findings`)
