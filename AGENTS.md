@@ -142,6 +142,7 @@ resolves to `content/…`.
 | Change text that `content/` publishes and this repository also reproduces | [`.agents/rules/set-mirrors.md`](.agents/rules/set-mirrors.md) |
 | Record progress, a decision, or session state | [`content/creators/memory-creator.md`](content/creators/memory-creator.md) |
 | Need project facts, commands, or orientation | [`.agents/wiki/context/repository-map.md`](.agents/wiki/context/repository-map.md) |
+| Work on security, authentication, secrets, or deployment | [`.agents/wiki/security/security-boundaries.md`](.agents/wiki/security/security-boundaries.md) |
 | Do anything at all in this repository | [`.agents/rules/repository.md`](.agents/rules/repository.md) |
 
 ## Reading order

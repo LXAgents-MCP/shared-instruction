@@ -166,6 +166,7 @@ set.
 | `environments/` | `docker.md`, `docker-compose.md`, `env.md`, local setup, CI. |
 | `guides/` | Task-oriented how-tos for people. |
 | `reference/` | Commands, config keys, API surface, schema. |
+| `security/` | This repository's own security model — trust boundaries, attack surface, posture. |
 | `logs/` | Versioned change logs — the one folder allowed extra depth. |
 
 ## D. `.agents/wiki/` types — agent knowledge
@@ -177,6 +178,7 @@ set.
 | `context/` | Orientation an agent needs before touching code: what lives where, build/test commands, entry points, gotchas. |
 | `sop/` | Standard operating procedures an agent follows step by step. |
 | `domain/` | Domain vocabulary, business rules, external-system behavior an agent must respect. |
+| `security/` | The security procedure and constraints for **this** repository — never carried to another. |
 
 **Facts live once, in `wiki/`.** An `.agents/wiki/` page carries the agent-specific
 procedure or framing and links to the human page for the underlying facts. If you catch

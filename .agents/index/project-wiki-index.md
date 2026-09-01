@@ -39,6 +39,12 @@ reflected here in the same commit.
 | [`../../wiki/guides/connect-a-repository.md`](../../wiki/guides/connect-a-repository.md) | Putting a repository onto the shared set, including one that already has instructions. |
 | [`../../wiki/guides/install-as-local-mcp.md`](../../wiki/guides/install-as-local-mcp.md) | Running the set from a clone under `./mcps/{owner}/{repo}/` when the deployed connector is not the right answer. |
 
+## security/
+
+| File | Purpose |
+|---|---|
+| [`../../wiki/security/security-model.md`](../../wiki/security/security-model.md) | This repository's trust boundaries, attack surface, secrets posture, and deployment caveats. |
+
 ## Child Indexes
 
 | Index | Scope | Load when |

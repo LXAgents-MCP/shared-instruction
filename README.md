@@ -81,6 +81,7 @@ and clients report that as a sign-in error rather than a wrong address. For loca
 - [Architecture](wiki/information/architecture.md) — registry, transports, concurrency.
 - [MCP surface](wiki/reference/mcp-surface.md) — every prompt and resource.
 - [Local setup](wiki/environments/setup.md) — running and testing it.
+- [Security model](wiki/security/security-model.md) — trust boundaries, attack surface, and what is deliberately not protected.
 
 ## Working with agents
 
