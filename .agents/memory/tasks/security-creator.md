@@ -191,3 +191,41 @@ enumerates every URI), and `repository-state.md` all updated. The connector's ow
 mirror has never gone stale.
 
 86 tests pass.
+
+### Task 4 — `chore/release-0-14-0`
+
+`0.14.0`, minor, approved at the plan gate before anything was staged — a creator and a
+served folder added, nothing renamed or removed.
+
+| Carrier | State |
+|---|---|
+| `package.json` | `0.13.0` → `0.14.0` |
+| `wiki/logs/0/14/0/CHANGELOG.md` | New |
+| Both logs indexes | Rows added, newest first |
+| `compose.yaml` | Still `0.0.0`, still deliberate |
+
+**The changelog leads with `## Fixed`, not `## Added`.** The creator is what was asked
+for, but the defect is what a consumer needs to know: `security/` was declared usable by
+the placement authority and was unservable, and the failure mode was silence. A release
+that filed this under "Added" would let a reader assume the folder was simply new, and
+miss that anything they had already put there never published.
+
+**The `Consumers must` line is one row, quoted verbatim**, because the trigger table is
+mirrored row-for-row and a paraphrase invites a reworded row that no longer matches the
+shared table.
+
+**The wider gap is named in the changelog and left open on purpose.** §B lists 21
+instruction folders; 7 are served. The other 14 still fail silently in the shared set.
+Bundling that into this release would have changed the published surface far beyond
+security, so it is stated in the entry and carried as a finding.
+
+## Record closed
+
+Four tasks, four stacked branches on top of `0.13.0`'s four, 86 tests passing on the last
+of them, which contains the other seven.
+
+**What this round is really about.** The user asked a question — *why is there no
+`content/security/`?* — that looked like it had a one-word answer. It had three, and the
+third was a defect nobody could have seen from the repository: the placement authority and
+the server disagreed, and the disagreement resolved as silence rather than as an error.
+The creator was the request; the folder fix is what made the request mean anything.
