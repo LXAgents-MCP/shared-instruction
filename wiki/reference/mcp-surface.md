@@ -173,6 +173,7 @@ a hash exactly rather than guess at it.
 | `agents://prompts/branch-and-commit.md` | `branch-and-commit-prompt` |
 | `agents://creators/instruction-creator.md` | `instruction-creator` |
 | `agents://creators/information-creator.md` | `information-creator` |
+| `agents://creators/security-creator.md` | `security-creator` |
 | `agents://creators/index-creator.md` | `index-creator` |
 | `agents://creators/memory-creator.md` | `memory-creator` |
 | `agents://creators/changelog-creator.md` | `changelog-creator` |

@@ -138,3 +138,56 @@ to make the test possible.
 **No counts moved.** 27 instruction resources before and after — the folder is served and
 empty, so `README.md`, `wiki/information/overview.md`, and `wiki/reference/mcp-surface.md`
 stay correct and were deliberately not touched.
+
+### Task 3 — `feat/security-creator`
+
+`content/creators/security-creator.md`, the sixth creator and the first organized by
+**subject** rather than by artifact kind. That is a new axis in the set — the other five
+split by what is being written (instruction, information, index, memory, changelog), this
+one by what it is about. It was flagged to the user at the plan gate as a door being
+opened knowingly rather than by accident, and it is defensible because security files have
+a genuinely distinct required shape that no artifact-kind creator supplies.
+
+**Three destinations, not two.** The creator's first section is routing, because security
+has an extra place to go wrong compared with documentation: `{shared}/security/` for
+universal policy, `{repo}/wiki/security/` for this repository's threat model,
+`{repo}/.agents/wiki/security/` for the agent procedure. Both wrong answers are named with
+their consequence — a local threat model published tells every repository your attack
+surface is theirs, and a universal policy kept local means every other repository
+rediscovers it after an incident.
+
+**The structure carries a per-section rationale table.** Not decoration: each row names the
+failure that section prevents, so a writer deleting a section knows what they are giving
+up. The two rows that do the most work are `Surfaces` — `Exposure` and `Guard` are separate
+columns precisely so a surface with **no** guard is visible rather than smoothed into a
+prose "reason" — and `Open`, which the creator forbids from ever reading "none known",
+because that claims a completeness nobody established.
+
+**§D exists because of last round.** *Write from the code, never from memory.* Writing the
+security pages in `0.13.0` turned up `MCP_DNS_REBINDING_PROTECTION` defaulting to `false`,
+which contradicted what the surrounding code implied. A remembered guard, an assumed
+default, and a control true in another codebase all read exactly like knowledge, so the
+creator requires the file be opened and the default checked.
+
+**The trigger row is shared this time**, and the contrast with last round is the point:
+
+| Round | Row | Where | Why |
+|---|---|---|---|
+| `0.13.0` | Load the security SOP on security work | **Local** `AGENTS.md` only | It names a local wiki page. A shared row would be broken in every repository without that tree. |
+| `0.14.0` | Load the security creator when writing a security file | **Shared** `auto-activation.md` + mirror | It names a published file every consumer can resolve. |
+
+**A test caught what a reading would not have.** `registry: the discovery-protocol block is
+byte-identical in every copy` asserts the creator count and failed at 6 !== 5. That is the
+test doing exactly its job: `discovery-protocol.md` §F owns the bounded list of files
+reproducing the gate block, and a sixth creator that carries the block without being added
+to that list would have left the authority wrong while every copy stayed correct. §F now
+names `security-creator.md`, and the assertion counts six.
+
+**Counts moved for the first time in three rounds.** 27 → 28 instruction resources.
+`README.md`, `wiki/information/overview.md`, `wiki/reference/mcp-surface.md` (which
+enumerates every URI), and `repository-state.md` all updated. The connector's own
+"(N files)" line needed nothing — `src/server/create-server.js:32` builds it from
+`registry.size`, which is the shape `repository.md` asks for and the reason that one
+mirror has never gone stale.
+
+86 tests pass.

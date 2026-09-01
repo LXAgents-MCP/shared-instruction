@@ -22,15 +22,15 @@ a pull request, ask before merging. The sentence naming them is reproduced in fo
 and `.agents/wiki/security/security-boundaries.md` (the SOP), loaded by a **local** trigger
 row. Its first rule is that a security context never crosses repositories.
 
-**Structure.** `content/` holds the 27 published instruction files. `.agents/rules/`
+**Structure.** `content/` holds the 28 published instruction files. `.agents/rules/`
 holds three local rules: `repository.md`, `content-publishing.md`, and `set-mirrors.md`,
 the last naming every place outside `content/` that copies published set text. `.agents/`
 holds
 this repository's own instruction set. `wiki/` holds human documentation. `src/` and
 `test/` hold the server and the CLI.
 
-**Surface.** 2 prompts (`agents-setup`, `check-duplicate-agents-instruction`), 28
-resources (27 instruction files plus `agents://manifest.json`), and 8 tools — 7
+**Surface.** 2 prompts (`agents-setup`, `check-duplicate-agents-instruction`), 29
+resources (28 instruction files plus `agents://manifest.json`), and 8 tools — 7
 read-only (`agents_auto_activation`, `agents_setup`,
 `agents_check_duplicate_instructions`, `agents_list_instructions`,
 `agents_read_instruction`, `model_naming_convention`, `model_name_format`) and one that
