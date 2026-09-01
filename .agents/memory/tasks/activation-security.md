@@ -155,3 +155,55 @@ fail **silently** if dropped — a session with no plan gate starts writing imme
 looks productive, and one with no fallback bypasses the workflow and looks fine. That is
 the same argument the discovery-protocol gate test rests on, and it is the reason this
 assertion is not redundant with the inlined-whole test beside it.
+
+### Task 3 — `docs/security-context`
+
+Two pages, two new folders, and the trigger row that makes them load without being asked.
+
+| File | Tree | Carries |
+|---|---|---|
+| `wiki/security/security-model.md` | Human | Trust boundaries, the attack-surface table, the two-channel `mcp_creator` design, secrets, deployment caveats. |
+| `.agents/wiki/security/security-boundaries.md` | Agent | The isolation rule, the per-surface checklist, what to escalate, what is not a finding. |
+
+**The isolation rule is the point of the round, not the page count.** The request was for
+a security context that does not mix across repositories, and the mechanism is §A of the
+agent page: a security conclusion is stated *about a named repository*, a mitigation
+learned elsewhere is re-derived here rather than assumed, and a threat model is never
+copied between repositories. The worst case is named explicitly because it is the
+comfortable one — this repository has no authentication and no secrets **by design**, and
+carrying "there is nothing to protect here" into a repository that holds credentials is
+the failure that feels like context rather than a claim.
+
+**Facts live once.** `directories.md` §D and `information-creator.md` both forbid
+mirroring between the trees, so the agent page opens by sending the reader to the human
+page and then carries only what an agent must *do*. The attack-surface table appears in
+`wiki/` and nowhere else.
+
+**Every fact was read out of the code, not assumed.** `resolveTarget` and the
+`root: process.cwd()` argument in `src/server/tools.js`; `MAX_REQUEST_BODY` at 4 MB and
+`DEFAULT_MAX_SESSIONS` at 1000 in `src/constants.js`; `originGuard` in
+`src/transport/http.js`; `--ignore-scripts` and `USER node` in the `Dockerfile`; the eight
+environment variables, none of which is a credential. The one that changed the page rather
+than confirming it: **`MCP_DNS_REBINDING_PROTECTION` defaults to `false`**
+(`src/config.js:107`), so the origin and host allow-lists do nothing unless it is switched
+on. That is a real caveat for a public deployment and it is now written down.
+
+**Two new folders, registered in the same commit** per `directories.md` §F.6: `security/`
+added to the §C `wiki/` table and to the §D `.agents/wiki/` type table — a published edit,
+so it belongs to this release. `.agents/wiki/security/` is a new `{type}`, not a file
+forced into `sop/`, because §F.5 says to create the folder that fits rather than rename the
+file to suit the closest one.
+
+**The trigger row is local, and that is the architectural decision here.** It went into
+this repository's **appended** rows in `AGENTS.md`, not into
+`content/rules/auto-activation.md`. The shared table is mirrored row-for-row by every
+consumer, and `agents-setup.md`'s checklist requires every file a row names to exist — so a
+shared row pointing at `.agents/wiki/security/…` would be a broken row in every repository
+that has not created that tree, and would also publish a repository-specific rule, which
+`shared-instructions.md` §A forbids the producer twice over. Put to the user at the plan
+gate; they chose local. **The shared version is a discovery finding, not a silent
+addition.**
+
+Also updated, per `change-propagation.md`: the `README.md` documentation list and the
+further-reading list in `repository-map.md`. 84 tests pass, unchanged — this task touches
+no code.

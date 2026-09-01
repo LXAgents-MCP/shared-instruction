@@ -107,3 +107,4 @@ so the working tree is the authority.
 * [`../../../wiki/information/architecture.md`](../../../wiki/information/architecture.md) — how the server is built and why.
 * [`../../../wiki/reference/mcp-surface.md`](../../../wiki/reference/mcp-surface.md) — every prompt, resource, tool, and endpoint.
 * [`../../../wiki/environments/env.md`](../../../wiki/environments/env.md) — configuration.
+* [`../security/security-boundaries.md`](../security/security-boundaries.md) — the security SOP, and the rule against carrying a security context between repositories.

@@ -16,3 +16,9 @@ live once, in `wiki/`; pages here carry the agent-specific framing and link out.
 | File | Purpose |
 |---|---|
 | [`../wiki/context/repository-map.md`](../wiki/context/repository-map.md) | Read before touching anything: what lives where, commands, entry points, and the gotchas that actually bite. |
+
+## security/
+
+| File | Purpose |
+|---|---|
+| [`../wiki/security/security-boundaries.md`](../wiki/security/security-boundaries.md) | The isolation rule that keeps security contexts from crossing repositories, and the per-surface checks. |
