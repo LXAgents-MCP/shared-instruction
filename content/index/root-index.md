@@ -12,7 +12,7 @@ Read exactly one branch per task.
 
 | Index | Scope | Load when |
 |---|---|---|
-| [`instructions-index.md`](agents://index/instructions-index.md) | `rules/`, `git/`, `planning/`, `prompts/`, `creators/` | You need any shared convention — placement, branching, commits, pull requests, planning, or a creator. |
+| [`instructions-index.md`](agents://index/instructions-index.md) | `rules/`, `git/`, `planning/`, `prompts/`, `creators/`, `security/` | You need any shared convention — placement, branching, commits, pull requests, planning, security, or a creator. |
 | [`logs-index.md`](agents://index/logs-index.md) | The shared set's release history | You need to know what changed in this set, or must record a release. |
 
 ## Maintenance
