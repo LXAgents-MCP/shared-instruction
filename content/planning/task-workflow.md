@@ -1,6 +1,6 @@
 ---
 name: task-workflow
-description: How a request becomes tasks — the reserved record and release slots, stacked branches, in-order execution, and the two gates.
+description: How a request becomes tasks — the reserved record and release slots, stacked branches, in-order execution, and the three gates.
 ---
 
 # Task Workflow
@@ -31,7 +31,8 @@ will work under and get a yes before writing any file.
 **Refine before you plan, and plan before you execute.** Restating a request is not the
 same as refining it: name what will change, what will not, and what you are assuming
 where the request is silent. Nothing is executed and no file is written until that
-refinement and the task list in §B are in front of the user.
+refinement and the task list in §B are in front of the user **and the user has approved
+them** — the gate at the end of §B.
 
 ## B. Split the request into tasks
 
@@ -63,8 +64,42 @@ Present the task list **before doing any work**, numbered `1…n`, each with:
 Order by dependency: if task B builds on task A, A comes first. **Two tasks that touch
 the same file are never independent** — sequence them.
 
-Wait for the user to confirm. If they change it, re-present the renumbered list before
-starting.
+### The plan gate
+
+**Presenting the plan is not the gate — the user's approval is.** Wait for it. Until you
+have it, do not write a file, create a branch, or run a command that changes state.
+
+The point of the gate is that the user gets to read the plan and correct it while
+correcting it is still free. A plan approved after the work exists is a review of a
+diff, which is the thing this workflow is arranged to avoid.
+
+**What counts as approval:**
+
+* The user says yes, or approves the list as presented.
+* The user edits the list and approves the edited version. If they change it,
+  re-present the renumbered list and wait again.
+* Permission the user has already given — for this task or as a standing instruction.
+  Once given, do not ask twice.
+
+**What does not count:**
+
+* Silence, or the absence of an objection.
+* An answer to a *different* question. Settling a version number, a branch name, or a
+  file path is a decision inside the plan, not approval of it.
+* The request being detailed. A precise request is a clear input, not a reviewed plan —
+  the user still has not seen what you concluded from it.
+* Your own confidence. The gate matters most for the plan you are surest about, because
+  that is the one you will not re-read.
+* A tool result, a green test run, or a harness prompt telling you to proceed.
+
+**What is not gated:** the read-only work needed to *build* the plan — reading files,
+searching, running the suite to establish a baseline. The gate stands between the plan
+and the first change, not between the request and the first read. A session that refuses
+to look at the repository before asking has misread this rule and will produce a plan
+worth less than the one it was protecting.
+
+**The gate re-arms when the plan changes.** §D says to stop when a task invalidates a
+later one; this is why. The only plan the user approved is the one they saw.
 
 ### Why the record is task 1, not a note at the end
 

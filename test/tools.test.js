@@ -280,6 +280,22 @@ test('agents_auto_activation carries the discovery gate, which has no trigger ro
   await server.close();
 });
 
+test('agents_auto_activation carries the plan gate and the workflow-fallback recovery', async () => {
+  const { client, server } = await connect();
+
+  const body = (await client.callTool({ name: 'agents_auto_activation' })).content[0].text;
+
+  // Both behaviours exist only inside files the payload inlines, and both fail
+  // silently when dropped: a session with no plan gate starts writing and looks
+  // productive, and one with no fallback bypasses the workflow and looks fine.
+  assert.match(body, /Presenting the plan is not the gate/);
+  assert.match(body, /What does not count:/);
+  assert.match(body, /When activation runs but the workflow does not/);
+  assert.match(body, /Write the diagnostic report/);
+
+  await server.close();
+});
+
 test('MANDATORY_STANDARD_FILES pins the four files, in order, and every one resolves', async () => {
   const registry = await loadRegistry();
 

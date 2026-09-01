@@ -95,3 +95,63 @@ permission to improvise* — the failure mode where activation cannot happen. Th
 section is its sibling: activation happened and did not take. Same subject, same file,
 and splitting them would leave two files each describing half of "what to do when
 activation fails", which is the near-duplicate `directories.md` §F.7 forbids.
+
+### Task 2 — `feat/activation-plan-gate`
+
+The plan gate is now a **named permission gate**, and the workflow-fallback recovery is a
+section of `auto-activation.md`. Eight files, one commit, because six of them reproduce
+text the other two own.
+
+| File | Change | Published? |
+|---|---|---|
+| `content/planning/task-workflow.md` | §B gains *The plan gate* — what counts as approval, what does not, what is not gated, and the re-arm rule. §A now points at it. | Yes |
+| `content/rules/auto-activation.md` | New section: *When activation runs but the workflow does not* — the three obligations and the diagnostic report table. | Yes |
+| `content/rules/shared-instructions.md` | §H: two gates become three; two mandate rows added (approve the plan, report a bypass). | Yes |
+| `content/prompts/agents-setup.md` | The contract block a new repository writes for itself, plus a checklist line for the three gates. | Yes |
+| `content/index/instructions-index.md` | Purpose rows for the two changed files. | Yes |
+| `AGENTS.md` | This repository's mirror of the always-on paragraph. | No |
+| `src/tools/mcp-creator.js` | The same paragraph, hard-coded into every scaffolded repository. | No |
+| `test/tools.test.js` | One regression test. | No |
+
+**What the change actually is.** §H already said to put a plan in front of the user
+before writing a file, and §B already said to wait for confirmation. Neither was a
+**gate**: nothing stated what counts as approval, so a session could present a plan and
+start writing in the same message and still claim compliance. The new text is almost
+entirely the negative half — *what does not count* — because that is the half that was
+missing, and because every item on that list is a real way the old wording was satisfied
+without the user ever approving anything. "The request being detailed" is the one worth
+keeping: a precise request is the case where skipping the gate feels most justified and
+is least visible.
+
+**Why the fallback landed in `auto-activation.md` rather than a new file.** Argued in task
+1's entry and unchanged by the implementation: the file already carries *A missing shared
+set is not permission to improvise*, and the new section is its sibling — activation that
+could not happen, and activation that happened without taking.
+
+**The mirror that would have been missed.** `src/tools/mcp-creator.js:675` carries the
+sentence as a **string array in source**, not as prose, so a grep for the markdown line
+does not find it. It is in `set-mirrors.md` for exactly this reason, and it earned the row
+again this round: without it, every repository scaffolded by `mcp_creator` would have been
+created telling its agents there are two gates.
+
+**One mirror deliberately not updated.** `wiki/logs/0/5/0/CHANGELOG.md` also says "two
+permission gates". It is released history, and
+[`versioning.md`](../../../content/rules/versioning.md) forbids editing a released log to
+change history — corrections go in the next version's log. It stays wrong on purpose,
+because it is a true record of what `0.5.0` shipped.
+
+**Tests: 84 pass, up from 83.** The new one is `agents_auto_activation carries the plan
+gate and the workflow-fallback recovery`, and it was mutation-proven before being kept:
+
+| Mutation | Result |
+|---|---|
+| Rename the fallback heading in `auto-activation.md` | 83 pass, **1 fail** |
+| Restore the old "Wait for the user to confirm" wording in `task-workflow.md` | same test fails |
+| Both reverted | 84 pass, tree clean |
+
+The test guards the payload rather than the files, which is the point: both behaviours
+reach a consuming repository only by being inlined into `agents_auto_activation`, and both
+fail **silently** if dropped — a session with no plan gate starts writing immediately and
+looks productive, and one with no fallback bypasses the workflow and looks fine. That is
+the same argument the discovery-protocol gate test rests on, and it is the reason this
+assertion is not redundant with the inlined-whole test beside it.
