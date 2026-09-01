@@ -49,6 +49,7 @@ export const INSTRUCTION_FOLDERS = Object.freeze([
   'planning',
   'prompts',
   'creators',
+  'security',
   'index',
 ]);
 

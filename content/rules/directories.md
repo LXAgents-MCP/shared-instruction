@@ -156,6 +156,15 @@ Use only those the set needs. Each is `{set}/{folder}/{file}.md`.
 folders — never put an instruction file in them. `memory/` never exists in the shared
 set.
 
+**In the shared set, a folder must also be served before it holds anything.** The table
+above is the placement authority for both sets, but the connector serves only the folders
+named in `INSTRUCTION_FOLDERS` (`src/constants.js` in the producer repository): `rules/`,
+`git/`, `planning/`, `prompts/`, `creators/`, `security/`, `index/`. A file in any other
+shared folder is **not rejected — it is never collected**: absent from
+`agents://manifest.json`, absent from every resource, and absent from every test. Adding a
+shared folder therefore means adding it there in the same change. Local folders under
+`{repo}/.agents/` are unaffected, because nothing serves them.
+
 ## C. `wiki/` folders — human documentation
 
 `wiki/{folder}/{file-name}.md`, plain markdown, no frontmatter, always local.

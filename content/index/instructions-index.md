@@ -5,7 +5,7 @@ description: Index of the shared instruction set — every rule, git convention,
 
 # Shared Instructions Index
 
-**Scope:** `rules/`, `git/`, `planning/`, `prompts/`, `creators/`
+**Scope:** `rules/`, `git/`, `planning/`, `prompts/`, `creators/`, `security/`
 **Parent:** [`root-index.md`](agents://index/root-index.md)
 
 Any file added to or removed from these folders is reflected here in the same commit. This
@@ -42,6 +42,12 @@ index lists shared files only; a consuming repository's files are routed from it
 | File | Purpose |
 |---|---|
 | [`task-workflow.md`](agents://planning/task-workflow.md) | Intake, the plan gate, the reserved record and release slots, stacked branches, in-order execution, merging. |
+
+## security/
+
+Empty. The folder is served — a file added here is published on the next boot — but no
+universal security rule has been written yet. Shape and placement:
+[`../creators/security-creator.md`](agents://creators/security-creator.md).
 
 ## prompts/
 

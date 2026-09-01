@@ -1,8 +1,12 @@
 import assert from 'node:assert/strict';
+import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { test } from 'node:test';
 
 import { normalizeBody, parseFrontmatter } from '../src/content/frontmatter.js';
 import { loadRegistry } from '../src/content/registry.js';
+import { INSTRUCTION_FOLDERS } from '../src/constants.js';
 
 test('frontmatter: reads name and description, and keeps colons in values', () => {
   const { data, body, hasFrontmatter } = parseFrontmatter(
@@ -108,4 +112,42 @@ test('registry: the discovery-protocol block is byte-identical in every copy', a
     const block = copy.text.slice(copy.text.indexOf('## Discovery Protocol'));
     assert.equal(fenced(block), canonical, `${copy.path} has drifted from the canonical block`);
   }
+});
+
+test('a file under content/security/ is collected and served', async () => {
+  // The failure this guards is silence, not an error. `collectPaths` walks
+  // INSTRUCTION_FOLDERS and nothing else, so a folder missing from that list
+  // is skipped: the file is absent from the manifest, absent from agents://,
+  // and absent from every other test. `directories.md` has declared
+  // `security/` a usable shared folder since it was written, which is exactly
+  // why an author would expect this to work without checking.
+  const dir = await mkdtemp(join(tmpdir(), 'lxagents-security-'));
+  try {
+    await writeFile(
+      join(dir, 'AGENTS.md'),
+      '---\nname: fixture-entry-point\ndescription: Fixture entry point.\n---\n\n# Fixture\n',
+    );
+    await mkdir(join(dir, 'security'));
+    await writeFile(
+      join(dir, 'security', 'secret-handling.md'),
+      '---\nname: fixture-secret-handling\ndescription: Fixture security rule.\n---\n\n# Secret Handling\n',
+    );
+
+    const registry = await loadRegistry({ contentDir: dir });
+    const entry = registry.getByName('fixture-secret-handling');
+
+    assert.ok(entry, 'a file under security/ must reach the registry');
+    assert.equal(entry.folder, 'security');
+    assert.equal(entry.uri, 'agents://security/secret-handling.md');
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('INSTRUCTION_FOLDERS keeps index last, so a new folder is added above it', () => {
+  // Ordering is not cosmetic: `index/` holds routers rather than instructions,
+  // and every listing built from this constant reads better with the routing
+  // folder last. Pinned because the natural way to add a folder is to append.
+  assert.equal(INSTRUCTION_FOLDERS.at(-1), 'index');
+  assert.ok(INSTRUCTION_FOLDERS.includes('security'));
 });

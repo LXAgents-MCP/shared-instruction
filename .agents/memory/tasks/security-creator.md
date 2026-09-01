@@ -95,3 +95,46 @@ went stale immediately. The lesson is not that the correction was wrong. It is t
 state file naming a specific commit has a short half-life, and the next session should
 re-verify with `git fetch` rather than trust the recorded SHA. That instruction is now in
 the file beside the fact.
+
+### Task 2 — `feat/security-folder`
+
+`security` added to `INSTRUCTION_FOLDERS`, **above `index`**, so the shared set can now
+serve `content/security/`. One line of code and four documentation changes, because the
+line of code was never the hard part — knowing it was needed was.
+
+| File | Change |
+|---|---|
+| `src/constants.js` | `security` inserted before `index` |
+| `test/registry.test.js` | Two tests, both mutation-proven |
+| `content/index/instructions-index.md` | Scope line, and a `## security/` section stating the folder is served but empty |
+| `content/index/root-index.md` | The child-index scope row |
+| `content/rules/directories.md` | §B: the caveat that would have prevented this round |
+
+**The caveat is the durable part of this task.** `directories.md` §B lists 21 instruction
+folders and reads as if all of them work. Seven are served. The new paragraph says
+plainly that a shared file in any other folder is **not rejected — it is never
+collected**, names `INSTRUCTION_FOLDERS` as the second authority, and notes that local
+folders under `.agents/` are unaffected because nothing serves them. Without it the next
+person to reach for `ethics/` or `compliance/` hits exactly the silence this round hit.
+
+**Ordering is pinned, not incidental.** `index/` holds routers rather than instructions
+and reads last in every listing built from the constant. The natural way to add a folder
+is to append, which would have put `security` after it — so a test pins `index` last.
+
+**Both tests were mutation-proven.** Removing `security` from the constant: **86 → 84
+pass, 2 fail**. Restored, 86 pass.
+
+| Test | Fails when |
+|---|---|
+| `a file under content/security/ is collected and served` | The folder stops being walked. Builds a temp content dir with `AGENTS.md` and `security/secret-handling.md`, then asserts the entry resolves with `folder === 'security'` and the expected `agents://` URI. |
+| `INSTRUCTION_FOLDERS keeps index last, so a new folder is added above it` | A folder is appended after `index`, or `security` is dropped. |
+
+The first test builds a **fixture registry** rather than asserting against the shipped
+set, and that is deliberate: this round adds no file under `content/security/`, so a test
+reading the real set would have nothing to find and would pass whether or not the folder
+works. `loadRegistry({ contentDir })` already supported this; no production code changed
+to make the test possible.
+
+**No counts moved.** 27 instruction resources before and after — the folder is served and
+empty, so `README.md`, `wiki/information/overview.md`, and `wiki/reference/mcp-surface.md`
+stay correct and were deliberately not touched.
