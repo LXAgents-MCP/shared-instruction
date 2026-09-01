@@ -36,3 +36,4 @@ the same commit that creates it.
 | [`../memory/tasks/agents-auto-activation-tool.md`](../memory/tasks/agents-auto-activation-tool.md) | One read-only tool that activates a session in a single call: the activation rule, the four mandatory files, and the routing table. |
 | [`../memory/tasks/claude-md-import.md`](../memory/tasks/claude-md-import.md) | Adding `.claude/CLAUDE.md` as an import of the root `AGENTS.md`, so Claude Code and every other agent read one file. |
 | [`../memory/tasks/activation-inlining-audit.md`](../memory/tasks/activation-inlining-audit.md) | Auditing whether `agents_auto_activation` still inlines `planning/task-workflow.md`, and closing the test gap that let the question stay open. |
+| [`../memory/tasks/activation-security.md`](../memory/tasks/activation-security.md) | Making plan approval a third permission gate, defining the workflow-fallback recovery, and adding this repository's own security context. |
