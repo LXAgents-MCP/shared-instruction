@@ -254,8 +254,9 @@ order:
 >
 > Four files load on **every** request rather than on a trigger — the task workflow, the
 > branching strategy, the commit conventions, and the discovery protocol — along with the
-> two permission gates that ride with them: ask before opening a pull request, ask before
-> merging. See `{shared}/rules/shared-instructions.md` §H.
+> three permission gates that ride with them: approve the plan before any file is
+> written, ask before opening a pull request, ask before merging. See
+> `{shared}/rules/shared-instructions.md` §H.
 >
 > Steps 2, 5 and 6 are one call to `agents_auto_activation` where the connector exposes
 > tools. Steps 1, 3 and 4 read files in this repository and are still read from disk.
@@ -501,6 +502,8 @@ Report each item.
 * The auto-activation contract names all four mandatory standard files as loading on every
   request — the task workflow, the branching strategy, the commit conventions, and the
   discovery protocol — and none of them is listed as a trigger row instead.
+* The auto-activation contract names all three permission gates — approve the plan,
+  ask before opening a pull request, ask before merging.
 * `README.md` is overview only and points at the wiki index for the full map.
 * The root index lists every local index, links to no leaf file, contains no rules, and
   carries the override table even when empty.

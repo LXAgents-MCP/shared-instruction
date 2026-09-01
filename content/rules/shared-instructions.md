@@ -126,11 +126,13 @@ and that file remains the single authority for how it is carried out.
 |---|---|
 | Load the four mandatory standard files before acting | [`../git/branching-strategy.md`](agents://git/branching-strategy.md), [`../git/commit-conventions.md`](agents://git/commit-conventions.md), [`../planning/task-workflow.md`](agents://planning/task-workflow.md), [`discovery-protocol.md`](agents://rules/discovery-protocol.md) |
 | Refine the requirements and put a plan in front of the user **before** running code or writing a file | [`../planning/task-workflow.md`](agents://planning/task-workflow.md) §A |
+| Wait for the user to **approve** that plan before writing a file, creating a branch, or changing state | [`../planning/task-workflow.md`](agents://planning/task-workflow.md) §B |
 | Break the work into tasks and present the list before starting — task 1 is the record, task `n` is the release, the work goes between | [`../planning/task-workflow.md`](agents://planning/task-workflow.md) §B |
 | Write the task record **before** the work, and append each task's own entry in the same commit as that task | [`../planning/task-workflow.md`](agents://planning/task-workflow.md) §B, §E |
 | Isolate each task on its own branch — one task, one branch, never two on one | [`../git/branching-strategy.md`](agents://git/branching-strategy.md), [`../planning/task-workflow.md`](agents://planning/task-workflow.md) §C |
 | Ask before opening a pull request, and ask again before merging one | [`../planning/task-workflow.md`](agents://planning/task-workflow.md) §F |
 | Propose any instruction you think should exist — never write it into either set yourself | [`discovery-protocol.md`](agents://rules/discovery-protocol.md) |
+| Stop, ask, and write a diagnostic report the moment this workflow is bypassed despite activation having run | [`auto-activation.md`](agents://rules/auto-activation.md) |
 
 ### The four standard files are not trigger-gated
 
@@ -146,15 +148,21 @@ into the set yourself is one edit away. The gate stands from the start of the re
 like the branch and commit conventions beside it: findings are collected and proposed,
 never self-applied, and that holds for the request that never mentions rules at all.
 
-### The two permission gates
+### The three permission gates
 
-Both are explicit-consent gates, and both are satisfied by permission the user has
+All three are explicit-consent gates, and each is satisfied by permission the user has
 already given — for this task or as a standing instruction. Once given, do not ask
 again.
 
+* **Approving the plan.** Present the task list, then ask, and wait for a yes. Until it
+  arrives, write no file, create no branch, and run nothing that changes state. Reading
+  and searching to *build* the plan are not gated.
 * **Opening a pull request.** Ask, and wait for a yes.
 * **Merging a branch or a pull request.** Ask, and wait for a yes. Never merge on your
   own initiative, and never enable auto-merge unless you were asked to.
 
-Neither gate is satisfied by inference. Finishing the work is not permission to open
-anything, and a green pipeline is not permission to merge it.
+**No gate is satisfied by inference.** A detailed request is not an approved plan,
+finishing the work is not permission to open anything, and a green pipeline is not
+permission to merge it. The full terms of the plan gate — what counts as approval and
+what does not — are in
+[`../planning/task-workflow.md`](agents://planning/task-workflow.md) §B.

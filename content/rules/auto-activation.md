@@ -1,6 +1,6 @@
 ---
 name: auto-activation
-description: The authority behind the AGENTS.md trigger table — when each instruction fires without being asked, and what outranks what.
+description: The authority behind the AGENTS.md trigger table — what fires unasked, what outranks what, and the recovery when activation does not take.
 ---
 
 # Auto-Activation
@@ -77,7 +77,7 @@ override table in `root-index.md` is for.
 **mandatory standard files**. They load at the start of every request regardless of the
 rows above, because their conventions have to be known before the work starts — not at
 the moment a branch, a commit, or an invented rule is finally in front of you. The
-mandate, and the two permission gates that come with it, are in
+mandate, and the three permission gates that come with it, are in
 [`shared-instructions.md`](agents://rules/shared-instructions.md) §H.
 
 [`discovery-protocol.md`](agents://rules/discovery-protocol.md) has no trigger row at
@@ -137,6 +137,60 @@ most.
 
 If resolution failed, work from the local set, say which conventions you could not read,
 and do not invent replacements.
+
+## When activation runs but the workflow does not
+
+The section above is about a set you could not reach. This one is the opposite failure,
+and it is the common one: activation **succeeded** — the tool returned, the files were
+read — and the workflow still did not happen. No plan went to the user, no branch was
+created, the commit went out in the tool's default format. Nothing in the session looks
+wrong, because reading a rule and following it are different acts and only the first one
+leaves a trace.
+
+Treat it as a defined outcome with a defined response, not as something to quietly
+correct. Three obligations, in order, **the moment you notice** — whether a step has
+already been skipped or you are one move away from skipping it.
+
+### 1. Stop, and ask whether to enforce the protocol
+
+Do not silently resume correct behaviour, and do not silently carry on without it. Name
+the step that was skipped or is about to be, then ask the user whether to enforce the
+auto-activation protocol for the rest of this session.
+
+Both answers are real. Enforcing it may mean redoing work that already landed on the
+wrong branch, which is a cost the user is entitled to weigh. Declining it is the user
+exercising precedence 1 — record it and proceed, do not re-litigate it.
+
+### 2. Ask whether to correct the repository's configuration
+
+A protocol skipped once will be skipped again if the thing carrying it is wrong. Ask
+whether to fix the repository's own configuration — usually `{repo}/AGENTS.md`: a trigger
+table that has drifted from this file, an activation contract missing the always-on
+paragraph, a row naming a file that does not exist, or an entry point that never mentions
+the set at all.
+
+**Ask; do not edit.** `AGENTS.md` is an instruction artifact, so
+[`discovery-protocol.md`](agents://rules/discovery-protocol.md) governs it: propose the
+change with the file named and the body written out, and wait to be selected. Repairing
+the mechanism that failed to constrain you is not a repair you make unsupervised.
+
+### 3. Write the diagnostic report
+
+A short report, in the session, saying **why** it happened. Not an apology — a cause.
+
+| Part | What it must say |
+|---|---|
+| **What was skipped** | The named step, from the six-step sequence or the four mandatory standard files. "The branch and commit conventions were bypassed", not "I made a mistake". |
+| **Why** | The mechanism. The payload was returned and never consulted again once work began; a harness default contradicted a rule and won because nothing checked; the request looked small enough that planning felt disproportionate; the trigger table was read before the work revealed which row it needed. |
+| **What it cost** | What is now wrong that otherwise would not be — an unreviewed plan, a mis-named branch, a commit needing amendment — and what putting it right would take. |
+
+The middle row is the one to insist on. "The workflow was not followed" restates the
+question. "The activation payload was read at session start and never re-read once the
+work began" is a cause — and it is the right one often enough to be worth checking first.
+
+**The report is owed even when nothing is enforced.** If the user declines both questions
+above, write it anyway and record it under `{repo}/.agents/memory/`. It is the only part
+of this that outlives the session, and the next session starts by reading memory.
 
 ## Cost discipline
 

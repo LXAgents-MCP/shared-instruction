@@ -50,8 +50,8 @@ At the start of every session, before doing any work:
 
 Four files load on **every** request rather than on a trigger — the task workflow, the
 branching strategy, the commit conventions, and the discovery protocol — along with the
-two permission gates that ride with them: ask before opening a pull request, ask before
-merging. See
+three permission gates that ride with them: approve the plan before any file is written,
+ask before opening a pull request, ask before merging. See
 [`content/rules/shared-instructions.md`](content/rules/shared-instructions.md) §H.
 
 Steps 2, 5 and 6 are one call to `agents_auto_activation` where this set is reached through

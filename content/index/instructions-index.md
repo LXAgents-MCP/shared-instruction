@@ -18,7 +18,7 @@ index lists shared files only; a consuming repository's files are routed from it
 |---|---|
 | [`directories.md`](agents://rules/directories.md) | Where every file goes — the four trees, the audience test, the placement algorithm. |
 | [`shared-instructions.md`](agents://rules/shared-instructions.md) | How shared and local combine — precedence, override, promotion, adoption. |
-| [`auto-activation.md`](agents://rules/auto-activation.md) | When each instruction fires without being asked, and what outranks what. |
+| [`auto-activation.md`](agents://rules/auto-activation.md) | When each instruction fires without being asked, what outranks what, and the recovery when activation does not take. |
 | [`mcp-connector.md`](agents://rules/mcp-connector.md) | Resolving this set through the connector instead of cloning it. |
 | [`no-session-links.md`](agents://rules/no-session-links.md) | Never record an assistant or tool session link. |
 | [`change-propagation.md`](agents://rules/change-propagation.md) | A change updates the documentation describing it, in the same commit. |
@@ -41,7 +41,7 @@ index lists shared files only; a consuming repository's files are routed from it
 
 | File | Purpose |
 |---|---|
-| [`task-workflow.md`](agents://planning/task-workflow.md) | Intake, the reserved record and release slots, stacked branches, in-order execution, merging. |
+| [`task-workflow.md`](agents://planning/task-workflow.md) | Intake, the plan gate, the reserved record and release slots, stacked branches, in-order execution, merging. |
 
 ## prompts/
 
