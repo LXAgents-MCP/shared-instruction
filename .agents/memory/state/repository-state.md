@@ -65,13 +65,13 @@ cost a debugging round and is now written into `content/rules/mcp-connector.md`.
 Render still serves that name after the move to `LXAgents-MCP/shared-instruction` has
 not been checked from this repository. Confirm it before quoting it to anyone.
 
-**Version.** `0.13.0`. Releases so far: `0.0.0` (initial set), `0.1.0` (tool surface),
+**Version.** `0.14.0`. Releases so far: `0.0.0` (initial set), `0.1.0` (tool surface),
 `0.2.0` (producer/local set split), `0.3.0` (change propagation), `0.4.0` (work summary),
 `0.5.0` (always-on workflow, dual-purpose CLI, repository tools), `0.6.0` (`mcp_repos`
 withdrawn), `0.6.1` (connector surface table completed), `0.7.0` (package renamed),
 `0.8.0` (discovery protocol always on), `0.9.0` (task record as task 1), `0.10.0`
 (re-target before merging), `0.10.1` (`agents://` alone in the two-sets table), `0.11.0`
-(the model naming convention and its two tools), `0.12.0` (one-call session activation), `0.13.0` (the plan gate, the workflow-fallback recovery, and this repository's own security context).
+(the model naming convention and its two tools), `0.12.0` (one-call session activation), `0.13.0` (the plan gate, the workflow-fallback recovery, and this repository's own security context), `0.14.0` (the security creator, and `security/` made servable).
 
 **`origin/master` is at `83b6f3d` and carries `0.12.0`** as of 2026-09-01, having advanced
 from `dd87eee`/`0.10.0` earlier the same day. **Re-verify with `git fetch` rather than
@@ -79,11 +79,13 @@ trusting this SHA** — the previous version of this paragraph was added specifi
 a session planning a branch point from a stale claim, and it went stale within the hour. A
 recorded commit is a snapshot; the remote is the authority.
 
-`0.13.0` is unmerged: four stacked branches — `chore/activation-security-plan`,
+`0.13.0` and `0.14.0` are both unmerged as of writing: eight stacked branches in one line.
+`0.13.0` is four of them — `chore/activation-security-plan`,
 `feat/activation-plan-gate`, `docs/security-context`, `chore/release-0-13-0` — in that
-merge order, each branched from the one before, the first from `master`. `0.14.0` stacks on
-top of that chain rather than on `master`, because it depends on the plan gate `0.13.0`
-defines.
+merge order, each branched from the one before, the first from `master`. `0.14.0` is the other four —
+`chore/security-creator-plan`, `feat/security-folder`, `feat/security-creator`,
+`chore/release-0-14-0` — stacked on top of that chain rather than on `master`, because it
+depends on the plan gate `0.13.0` defines.
 
 The `0.10.0` entry above said "unmerged, deliberately not merged this round" until
 `0.10.1` corrected it. It merged as pull request #21, with #22 (`fix/sonarcloud-findings`)
@@ -107,7 +109,7 @@ every request. The discovery protocol has **no trigger row** — it was delibera
 removed, so an `AGENTS.md` that mirrors the table must carry the always-on paragraph or
 it loses the gate entirely.
 
-**Tests.** 84, all passing, across registry, server, http, manifest, tools, cli, and
+**Tests.** 86, all passing, across registry, server, http, manifest, tools, cli, and
 mcp-creator. A fresh checkout has no `node_modules` and six of the seven files then fail
 with `ERR_MODULE_NOT_FOUND` — run `npm install` first, per `.agents/rules/repository.md`.
 
