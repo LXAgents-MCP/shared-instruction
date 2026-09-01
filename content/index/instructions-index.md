@@ -62,6 +62,7 @@ universal security rule has been written yet. Shape and placement:
 |---|---|
 | [`instruction-creator.md`](agents://creators/instruction-creator.md) | Writes normative rules, in the correct set. |
 | [`information-creator.md`](agents://creators/information-creator.md) | Writes both wiki trees, routed by audience. |
+| [`security-creator.md`](agents://creators/security-creator.md) | Writes security files in either set — routing, one concern per file, and the fixed structure. |
 | [`index-creator.md`](agents://creators/index-creator.md) | Owns the shape of every index file. |
 | [`memory-creator.md`](agents://creators/memory-creator.md) | Writes `.agents/memory/` — the ungated creator. |
 | [`changelog-creator.md`](agents://creators/changelog-creator.md) | Writes `wiki/logs/{Major}/{Minor}/{Patch}/`. |

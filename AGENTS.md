@@ -133,6 +133,7 @@ resolves to `content/…`.
 | Add, move, rename, or delete any file in `content/` or `wiki/` | [`content/creators/index-creator.md`](content/creators/index-creator.md) |
 | Write a rule or instruction | [`content/creators/instruction-creator.md`](content/creators/instruction-creator.md) |
 | Write documentation | [`content/creators/information-creator.md`](content/creators/information-creator.md) |
+| Write or change a security file — a policy, a threat model, or a security SOP | [`content/creators/security-creator.md`](content/creators/security-creator.md) |
 | Change code or structure that a document describes | [`content/rules/change-propagation.md`](content/rules/change-propagation.md) |
 | Touch anything that carries a version number | [`content/rules/versioning.md`](content/rules/versioning.md) |
 | Record a release | [`content/creators/changelog-creator.md`](content/creators/changelog-creator.md) |

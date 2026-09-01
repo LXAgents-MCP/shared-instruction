@@ -97,6 +97,7 @@ same commit.**
 | `agents://creators/changelog-creator.md` |
 | `agents://creators/index-creator.md` |
 | `agents://creators/memory-creator.md` |
+| `agents://creators/security-creator.md` |
 | A consuming repository's root `AGENTS.md` |
 
 The consuming repository's copy is written once at setup and re-synced whenever this

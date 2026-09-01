@@ -107,7 +107,7 @@ test('registry: the discovery-protocol block is byte-identical in every copy', a
   assert.ok(canonical?.includes('Discovery Protocol'), 'canonical block not found');
 
   const copies = registry.entries.filter((entry) => entry.folder === 'creators');
-  assert.equal(copies.length, 5, 'all five creators must exist');
+  assert.equal(copies.length, 6, 'all six creators must exist');
   for (const copy of copies) {
     const block = copy.text.slice(copy.text.indexOf('## Discovery Protocol'));
     assert.equal(fenced(block), canonical, `${copy.path} has drifted from the canonical block`);
