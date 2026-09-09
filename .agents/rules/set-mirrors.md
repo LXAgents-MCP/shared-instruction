@@ -18,9 +18,10 @@ of it — a consuming repository is forbidden from copying shared files at all, 
 
 | Mirror | What it reproduces |
 |---|---|
-| [`AGENTS.md`](../../AGENTS.md) (repository root) | The trigger table, row-for-row; the always-on paragraph; and the *Using the connector* section, which summarises [`content/rules/mcp-connector.md`](../../content/rules/mcp-connector.md) — the read sequence, the transports, and the unavailable-connector obligation. This repository consumes its own set, so its entry point goes stale exactly like a consumer's. |
-| [`src/tools/mcp-creator.js`](../../src/tools/mcp-creator.js) | `buildAgentsDoc` hard-codes the always-on paragraph into every `AGENTS.md` the tool scaffolds. |
-| [`content/prompts/agents-setup.md`](../../content/prompts/agents-setup.md) | Dictates the auto-activation contract a new consuming repository writes into its own `AGENTS.md`. Published, but a mirror all the same. |
+| [`AGENTS.md`](../../AGENTS.md) (repository root) | The **Shared instruction tools** declaration block; the inline gates; the trigger table for everything without a tool; and the *Using the connector* section, which summarises [`content/rules/mcp-connector.md`](../../content/rules/mcp-connector.md) — the read sequence, the transports, and the unavailable-connector obligation. This repository consumes its own set, so its entry point goes stale exactly like a consumer's. |
+| [`src/tools/mcp-creator.js`](../../src/tools/mcp-creator.js) | `buildAgentsDoc` hard-codes the declaration block and the inline gates into every `AGENTS.md` the tool scaffolds. The worst-consequence mirror in the table: a miss here ships the old model into repositories nobody will think to re-check. Pinned by `test/mcp-creator.test.js`. |
+| [`content/prompts/agents-setup.md`](../../content/prompts/agents-setup.md) | Dictates the auto-activation contract and the declaration block a new consuming repository writes into its own `AGENTS.md`. Published, but a mirror all the same. |
+| [`src/server/create-server.js`](../../src/server/create-server.js) | `buildInstructions` restates the routing model — call nothing at session start, one convention per tool — in the text every client receives at `initialize`. Pinned by `test/tools.test.js`. |
 
 The discovery-protocol block has its own bounded copy list, owned by
 [`content/rules/discovery-protocol.md`](../../content/rules/discovery-protocol.md) §F
@@ -36,8 +37,8 @@ the registry; hard-coding is what puts a file in the table above.
 ## The obligation
 
 A change to [`content/rules/auto-activation.md`](../../content/rules/auto-activation.md),
-to `shared-instructions.md` §H, or to any text a mirror reproduces updates every affected
-mirror **in the same commit** — the rule
+to `shared-instructions.md` §H, to the set of tools in `src/constants.js`, or to any text a
+mirror reproduces updates every affected mirror **in the same commit** — the rule
 [`content/rules/change-propagation.md`](../../content/rules/change-propagation.md)
 applies to documentation, extended to the source and prompt copies nothing else covers.
 

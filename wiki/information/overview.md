@@ -36,10 +36,11 @@ to vendor by mistake, and every repository reads the same bytes.
 | Resource | `agents://manifest.json` | Every file with its `name`, path, description, and content hash. |
 | Resource | `agents://AGENTS.md` | The federation contract consuming repositories rely on. |
 | Resource | `agents://{folder}/{file}.md` | Any instruction file — 28 of them. |
-| Tool | `agents_auto_activation` | The shared half of session start in one call. Called first. |
-| Tool | `agents_setup`, `agents_check_duplicate_instructions` | The two procedures, for clients that expose tools but not prompts. |
-| Tool | `agents_list_instructions`, `agents_read_instruction` | Discover and read the set without a prompt surface. |
-| Tool | `model_naming_convention`, `model_name_format` | The `{platform}/{model}` rule for stored model identifiers, and a builder that applies it. |
+| Tool | `task_workflow`, `branch_strategy`, `commit_strategy`, `discovery_protocol` | The four conventions every repository declares. One file each, on a trigger — never at session start. |
+| Tool | `pull_request_strategy`, `agents_model_naming_convention` | Declared by the repositories that need them. |
+| Tool | `agents_model_name_format` | Builds one compliant `model_name`. The one read-only tool that computes rather than returns. |
+| Tool | `setup_shared_agents_instruction`, `update_shared_agents_instruction`, `check_duplicate_shared_agents_instruction` | The three procedures. The last two run only when the user asks. |
+| Tool | `list_shared_agents_instruction`, `read_shared_agents_instruction` | Discover and read anything without a tool of its own. |
 | Tool | `mcp_creator` | Scaffolds a new dual-purpose MCP repository. The only tool that writes; plans by default. |
 
 ## Why prompts first, and tools as well

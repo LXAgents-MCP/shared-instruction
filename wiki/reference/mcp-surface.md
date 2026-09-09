@@ -30,6 +30,15 @@ than read all of it, and warning that the duplicate audit runs only on request.
 Delivers the full AGENTS-SETUP procedure as one user message, with the connector named
 as the shared set. Takes no arguments.
 
+### `agents-update`
+
+Delivers the AGENTS-UPDATE procedure — how a repository moves from the set version it
+adopted to the current one. Takes no arguments, so it is always the **re-sync** path; only
+the `update_shared_agents_instruction` tool takes a `from_version` and returns a delta. The
+payload says which mode it is in rather than letting the caller assume.
+
+Runs **only when the user asks**: it edits `AGENTS.md`.
+
 ### `check-duplicate-agents-instruction`
 
 Delivers the duplicate-instruction audit, with `agents://manifest.json` inlined so the
@@ -52,43 +61,78 @@ asserts that, so a new tool has to declare itself a writer deliberately.
 
 | Tool | Arguments | Returns |
 |---|---|---|
-| `agents_auto_activation` | none | The activation rule, the four mandatory standard files whole, and a routing table for the rest. **Called first, at session start.** |
-| `agents_setup` | none | The AGENTS-SETUP procedure — identical to the `agents-setup` prompt. |
-| `agents_check_duplicate_instructions` | none | The duplicate audit with the manifest inlined — identical to the audit prompt. **On request only.** |
-| `agents_list_instructions` | `folder` (optional) | Every file with its description and `sha256`, as text and as `structuredContent`. |
-| `agents_read_instruction` | `instruction` (required) | One file verbatim. Accepts a frontmatter `name`, a path, or an `agents://` URI. |
-| `model_naming_convention` | none | The `{platform}/{model}` rule for stored model identifiers, read from the registry. |
-| `model_name_format` | `platform` (required), `platform_model` (required) | `{ model_name, platform, model, normalized }` — the composed name, as text and as `structuredContent`. |
+| `task_workflow` | none | `planning/task-workflow.md` whole. |
+| `branch_strategy` | none | `git/branching-strategy.md` whole. |
+| `commit_strategy` | none | `git/commit-conventions.md` whole. |
+| `discovery_protocol` | none | `rules/discovery-protocol.md` whole. |
+| `pull_request_strategy` | none | `git/pull-request-template.md` whole. |
+| `agents_model_naming_convention` | none | `rules/model-naming-convention.md` whole. |
+| `setup_shared_agents_instruction` | none | The AGENTS-SETUP procedure — identical to the `agents-setup` prompt, prefixed with the version to stamp. |
+| `update_shared_agents_instruction` | `from_version` (optional) | The **Consumers must** delta since that version, oldest first, plus the AGENTS-UPDATE procedure. **On request only.** |
+| `check_duplicate_shared_agents_instruction` | none | The duplicate audit with the manifest inlined — identical to the audit prompt. **On request only.** |
+| `list_shared_agents_instruction` | `folder` (optional) | Every file with its description and `sha256`, as text and as `structuredContent`. |
+| `read_shared_agents_instruction` | `instruction` (required) | One file verbatim. Accepts a frontmatter `name`, a path, or an `agents://` URI. |
+| `agents_model_name_format` | `platform` (required), `platform_model` (required) | `{ model_name, platform, model, normalized }` — the composed name, as text and as `structuredContent`. |
 | `mcp_creator` | `name` (required), `description`, `directory`, `write`, `force` | The plan for a new dual-purpose MCP repository, and — with `write` — the repository itself. |
 
-### `agents_auto_activation`
+### The convention tools
 
-One call in place of the six reads a session start otherwise costs. It returns
-`rules/auto-activation.md`, the four files named by `MANDATORY_STANDARD_FILES` in
-`src/constants.js`, and a routing table of every remaining shared file — about 31,000
-characters, the same order as `agents_setup`.
+Six tools, one content file each, registered in a loop over `CONVENTION_TOOLS` in
+`src/constants.js` and served by one `buildConventionPayload`. Adding a seventh is a row in
+that constant plus an entry in `CONVENTION_PROSE` in `src/server/tools.js`; `registerTools`
+throws at boot if either is missing, so a tool cannot ship without a description — several
+clients will not surface one that has none.
 
-The routing table is built by **subtraction**: every registry entry that was not inlined.
-A file added to the set therefore appears in it on the next boot with no code change.
+**None of them is called at session start**, and `test/tools.test.js` asserts no tool
+description contains "at the start of every session" or "call this first". That sentence is
+what the surface used to cost, and it would come back one helpful description at a time.
 
-**It deliberately leads with what it does not contain.** Steps 1, 3 and 4 of the sequence
-read `{repo}/AGENTS.md`, `{repo}/.agents/index/root-index.md`, and
-`{repo}/.agents/index/memory-index.md` — files on the caller's own filesystem. One tool
-that looked complete would be worse than six reads that look like six, because a caller
-who stops there is activated wrong and nothing afterwards signals it.
+Until `1.0.0` a single `agents_auto_activation` returned the activation rule, four whole
+instruction files and a routing table — about 31,000 characters, charged to every session
+before the request was known. It is gone. The measured replacement:
 
-`test/tools.test.js` asserts each inlined file appears whole rather than paraphrased, that
-the three local paths are named, that nothing in the set is missing from the routing table,
-and that the discovery-protocol gate text survives — that rule has no trigger row, so it is
-the one most easily lost from a bootstrap payload.
+| Called | Characters |
+|---|---|
+| `branch_strategy` + `commit_strategy` | 5,133 |
+| `task_workflow` alone | 11,778 |
+| all six at once | 28,965 |
+
+The worst case of the new surface is cheaper than the best case of the old one, and the
+common case is about a sixth of it. Each tool is pinned under 15,000 characters by test, so
+a future inline cannot rebuild the payload quietly.
+
+Which conventions a repository actually uses is declared in that repository's own
+`AGENTS.md`, not fixed here — see `content/rules/auto-activation.md`. The four mandatory
+tools are checked against `MANDATORY_TOOLS` at boot, so dropping one from `CONVENTION_TOOLS`
+fails at startup rather than leaving the rule promising a call nothing publishes.
+
+### `update_shared_agents_instruction`
+
+Reads the release history out of `agents://index/logs-index.md` — the log files themselves
+are human records under `wiki/logs/` and are not served, so this index is the machine
+surface, and its **Consumers must** column is the only notice a repository ever gets.
+
+`src/server/logs.js` parses it. Parsing hand-written markdown is the fragile part, so it
+**throws** on a row without exactly four cells rather than skipping it: a row that silently
+vanished would leave a repository told about four releases when five happened, with nothing
+to notice the fifth. `test/logs.test.js` runs the parser over the real index.
+
+Versions compare numerically, not lexically. This set has shipped `0.9.0` and `0.14.0`, and
+string comparison orders them backwards — which would hand a repository the wrong delta
+without erroring.
+
+The argument chooses the mode, and a missing one is not a default: with a version it returns
+a delta, without one a re-sync that says so. Treating a missing version as "since the
+beginning" would return every line ever written, most already applied, with nothing marking
+which. A stamp ahead of the connector is reported, not applied.
 
 ### The model naming tools
 
-`model_naming_convention` returns `agents://rules/model-naming-convention.md` whole,
-through the same payload builder shape the setup procedure uses — the text lives in
+`agents_model_naming_convention` returns `agents://rules/model-naming-convention.md` whole,
+through the same `buildConventionPayload` the other five conventions use — the text lives in
 `content/`, never in `src/`.
 
-`model_name_format` is the one read-only tool that computes rather than returns. It
+`agents_model_name_format` is the one read-only tool that computes rather than returns. It
 lowercases `platform` and `platform_model` and joins them with a single `/`, which is the
 rule's own construction line applied once instead of at every call site. It is pure — no
 I/O, no clock — so its `readOnlyHint` and `idempotentHint` are facts rather than claims.
@@ -123,12 +167,15 @@ names the package declares, documenting installation and use for **both** CLI mo
 server mode. That is the point of generating it: the day a repository is created is the
 only day anyone reliably writes that page.
 
-`agents_read_instruction` returns near-match suggestions when nothing resolves, and
-`agents_list_instructions` names the real folders when given an unknown one, so a wrong
-guess costs one call rather than a full listing.
+`read_shared_agents_instruction` returns near-match suggestions when nothing resolves, and
+`list_shared_agents_instruction` names the real folders when given an unknown one, so a
+wrong guess costs one call rather than a full listing.
 
-The two zero-argument tools declare no input schema, for the same reason the prompts
-declare none — see the note below.
+The zero-argument tools — every convention tool, plus
+`setup_shared_agents_instruction` and `check_duplicate_shared_agents_instruction` — declare
+no input schema, for the same reason the prompts declare none. A tool that *does* declare
+one, such as `update_shared_agents_instruction`, is called with an arguments object even
+when every field is optional.
 
 ## Resources
 
@@ -171,6 +218,7 @@ a hash exactly rather than guess at it.
 | `agents://planning/task-workflow.md` | `task-workflow` |
 | `agents://prompts/agents-setup.md` | `agents-setup-prompt` |
 | `agents://prompts/branch-and-commit.md` | `branch-and-commit-prompt` |
+| `agents://prompts/agents-update.md` | `agents-update-prompt` |
 | `agents://creators/instruction-creator.md` | `instruction-creator` |
 | `agents://creators/information-creator.md` | `information-creator` |
 | `agents://creators/security-creator.md` | `security-creator` |
