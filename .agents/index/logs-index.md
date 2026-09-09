@@ -15,6 +15,7 @@ Because consumers read the shared set live and pick a change up on their next re
 
 | Version | Date | Summary | Consumers must |
 |---|---|---|---|
+| [`1/0/0`](../../wiki/logs/1/0/0/CHANGELOG.md) | 2026-09-09 | One tool per convention replaces the 31,000-character `agents_auto_activation`; each repository declares which tools it uses in its own `AGENTS.md`. Adds `update_shared_agents_instruction` and `src/server/logs.js`. Four mirrors updated, one of them newly listed. | Replace your trigger table with a declaration block, move the gates inline, rename five tools, and stamp the version. |
 | [`0/14/0`](../../wiki/logs/0/14/0/CHANGELOG.md) | 2026-09-01 | The security creator, and `security/` added to `INSTRUCTION_FOLDERS` after it turned out a file there was silently never collected. Resource count 27 → 28. | Add the security-creator trigger row to your `AGENTS.md`. |
 | [`0/13/0`](../../wiki/logs/0/13/0/CHANGELOG.md) | 2026-09-01 | The plan gate and the workflow-fallback recovery, across four mirrors; one mutation-proven test. Ships this repository's own security context alongside, unpublished. | Re-read `planning/task-workflow.md` §B and `rules/shared-instructions.md` §H; say three gates, not two, in your always-on paragraph. |
 | [`0/12/0`](../../wiki/logs/0/12/0/CHANGELOG.md) | 2026-08-28 | `agents_auto_activation` returns session start in one call. The sequence is extended, not rewritten; `mcp-creator.js` updated in the same round. | Re-read the connector bootstrap block and update your `AGENTS.md` copy. |

@@ -77,7 +77,14 @@ test('releasesSince returns only newer releases, oldest first', async () => {
 
   assert.ok(!versions.includes('0.11.0'), 'the version already adopted is not re-applied');
   assert.ok(versions.includes('0.14.0'));
-  assert.equal(current, '0.14.0');
+
+  // Derived, not hard-coded: pinning the literal here makes every release
+  // fail this test for a reason that has nothing to do with the parser.
+  const newest = readReleases(registry)
+    .map((release) => release.version)
+    .reduce((a, b) => (compareVersions(parseVersion(a), parseVersion(b)) >= 0 ? a : b));
+  assert.equal(current, newest);
+  assert.equal(versions.at(-1), newest, 'the newest release is last, since the order is oldest first');
 });
 
 test('releasesSince reports a stamp ahead of the set instead of applying it', async () => {

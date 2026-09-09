@@ -74,6 +74,10 @@ commits before being abandoned, so nothing was lost. `Co-Authored-By:` naming a 
 This chain branches from `master`. `0.14.0` is merged and there are no unmerged branches, so
 it stacks on nothing.
 
+**PR column:** empty at the time of writing and filled by this task. No pull request had been
+opened when the work finished — `planning/task-workflow.md` §F gates that on the user, and
+the gate had not been asked. The column stays blank until it is.
+
 ## Task 1 — chore/declared-tool-surface-plan
 
 Wrote this record and its row in `.agents/index/memory-index.md`. Nothing else exists yet.
@@ -303,3 +307,29 @@ deliberate historical references in `src/server/tools.js` and two test comments,
 asserting the old name is *absent*, released log rows (`versioning.md` — never rewritten),
 and past task records. `.agents/memory/state/repository-state.md` still describes an 8-tool
 surface; that is current state rather than history, and task 9 corrects it.
+
+## Task 9 — chore/release-1-0-0
+
+`1.0.0`. `package.json`, `wiki/logs/1/0/0/CHANGELOG.md`, both logs indexes,
+`.agents/memory/state/repository-state.md`, and this closing entry. **101 tests pass.**
+
+**Verified end to end, not assumed:** 13 tools and 3 prompts over an in-memory MCP client;
+`npm run cli -- update --from 0.13.0` returns `0.14.0` then `1.0.0`, oldest first, from the
+row this task just added; `branch_strategy` is 2,423 characters through the CLI; and
+`git log master..HEAD` carries no session link.
+
+**The release exposed one stale test.** `test/logs.test.js` asserted `current === '0.14.0'`
+as a literal, so bumping the version failed a test about the *parser*. It now derives the
+newest version from the index and additionally asserts it sorts last — which is what the
+test meant all along, and which will not need editing at the next release. A hard-coded
+version inside a test about version handling is worth watching for.
+
+**Where this leaves consumers.** This is the first release whose **Consumers must** line is
+not optional: five tools were renamed and one removed, so a repository that ignores it calls
+names that no longer resolve. No instruction `name` changed, though, so no override needs
+dropping — the break is in the tool surface, not in the set.
+
+**Not done, and deliberately.** No pull request was opened and nothing was merged: both are
+user gates under §F and neither had been asked. No consuming repository was touched —
+adopting `1.0.0` is each repository's own task, which is what
+`update_shared_agents_instruction` exists for.
