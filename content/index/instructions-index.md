@@ -55,6 +55,7 @@ universal security rule has been written yet. Shape and placement:
 |---|---|
 | [`agents-setup.md`](agents://prompts/agents-setup.md) | The full setup procedure, also served as the `agents-setup` prompt. |
 | [`branch-and-commit.md`](agents://prompts/branch-and-commit.md) | The standing branch-and-commit loop. |
+| [`agents-update.md`](agents://prompts/agents-update.md) | Moving a repository from the set version it adopted to the current one. On request only. |
 
 ## creators/
 
