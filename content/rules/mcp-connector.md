@@ -25,19 +25,23 @@ because it must work before any shared file has been read.
 > 1. If the `lxagents-agents-base` connector is available in this session, that is
 >    the shared set. Refer to it as `{shared}`; its files are addressed as
 >    `agents://{folder}/{file}.md`.
-> 2. Read `agents://manifest.json` once. It lists every shared file with its `name`,
->    path and description — one read instead of twenty, and it is what the routing
->    tables below are checked against.
-> 3. Read `agents://index/root-index.md` and route from there. Do not bulk-read the
->    set.
+> 2. **Resolving is not loading.** Do not pull any convention at session start. The
+>    **Shared instruction tools** block below declares which tools this repository
+>    uses and the trigger for each; call one when its trigger fires, and not before.
+> 3. Where the client exposes no tools, the same conventions are read as
+>    `agents://{folder}/{file}.md` resources, on the same triggers.
+>    `list_shared_agents_instruction` — or `agents://manifest.json` — answers "what
+>    exists?" in one call. Do not bulk-read the set.
 > 4. If the connector is not available, say so plainly and continue with this
 >    repository's local instruction set only. **Do not reconstruct the missing rules
 >    from memory, and do not clone or copy them into this repository.**
 >
-> **One call instead of six.** Where the connector exposes tools,
-> `agents_auto_activation` returns steps 2 and 3 together with the four files that load
-> on every request. It does not cover the local reads — this file, the local root index,
-> and the local memory index are still read from disk.
+> **The declaration block is required.** A repository without one has no routing table,
+> so nothing fires and the omission looks exactly like a session in which no convention
+> happened to apply. It names the four mandatory tools at minimum — `task_workflow`,
+> `branch_strategy`, `commit_strategy`, `discovery_protocol` — and stamps the set version
+> adopted. Shape: `{shared}/prompts/agents-setup.md`. Keeping it current when this set
+> moves: `{shared}/prompts/agents-update.md`, on request.
 >
 > Never commit shared content into this repository. A file that can be read from
 > `agents://` must not exist here as a copy — see
@@ -106,18 +110,28 @@ way, check the path first.
 | Kind | Name / URI | Purpose |
 |---|---|---|
 | Prompt | `agents-setup` | The full setup procedure. Invoke it to scaffold or adopt the instruction system in a repository. |
+| Prompt | `agents-update` | Move a repository from the set version it adopted to the current one. **On request only.** |
 | Prompt | `check-duplicate-agents-instruction` | The duplicate audit. Runs **only when the user asks** — see `duplicate-instruction-audit.md`. |
 | Resource | `agents://manifest.json` | Every shared file with `name`, path, description and content hash. |
 | Resource | `agents://AGENTS.md` | The federation contract. |
 | Resource | `agents://{folder}/{file}.md` | Any shared instruction file. |
-| Tool | `agents_auto_activation` | The shared half of session start in one call: the activation rule, the four mandatory standard files, and the routing table. **Call it first.** |
-| Tool | `agents_setup` | Same text as the `agents-setup` prompt. |
-| Tool | `agents_check_duplicate_instructions` | Same text as the audit prompt, manifest inlined. **On request only.** |
-| Tool | `agents_list_instructions` | The manifest, optionally filtered to one folder. |
-| Tool | `agents_read_instruction` | One file, by `name`, path, or URI. |
-| Tool | `model_naming_convention` | The `{platform}/{model}` rule for stored model identifiers, whole. |
-| Tool | `model_name_format` | Builds one compliant `model_name` from a platform and that platform's model id. |
+| Tool | `task_workflow` | The task workflow. One of the four every repository declares. |
+| Tool | `branch_strategy` | The branching strategy. One of the four. |
+| Tool | `commit_strategy` | The commit conventions. One of the four. |
+| Tool | `discovery_protocol` | The propose-never-self-apply protocol. One of the four. |
+| Tool | `pull_request_strategy` | The pull request title and body rules. |
+| Tool | `agents_model_naming_convention` | The `{platform}/{model}` rule for stored model identifiers, whole. |
+| Tool | `agents_model_name_format` | Builds one compliant `model_name` from a platform and that platform's model id. |
+| Tool | `setup_shared_agents_instruction` | Same text as the `agents-setup` prompt. |
+| Tool | `update_shared_agents_instruction` | The version delta and the re-sync procedure. **On request only.** |
+| Tool | `check_duplicate_shared_agents_instruction` | Same text as the audit prompt, manifest inlined. **On request only.** |
+| Tool | `list_shared_agents_instruction` | The manifest, optionally filtered to one folder. |
+| Tool | `read_shared_agents_instruction` | One file, by `name`, path, or URI. The route to everything without a dedicated tool. |
 | Tool | `mcp_creator` | Scaffolds a new MCP repository. **Not part of reading this set** — listed so you know the capability is there. Plans by default; creates files only when asked. |
+
+**No tool is called at session start.** Each fires on the trigger its row in the
+repository's declaration block gives it. Calling them all to "have them ready" rebuilds the
+single oversized payload this surface replaced, one call at a time.
 
 **Prefer the prompts and resources.** They are the right primitives for standing
 orders, and the tools return identical text. The tools exist because some clients
