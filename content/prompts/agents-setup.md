@@ -125,7 +125,7 @@ present them for selection *before* creating anything:
 ### Mode B — a consuming repository
 
 ```
-AGENTS.md                          <- entry point + connector bootstrap + trigger table
+AGENTS.md                          <- entry point + connector bootstrap + tool declaration
 README.md                          <- overview only, no detailed docs
 LICENSE                            <- per the user's answer
 .agents/
@@ -240,41 +240,71 @@ order:
 > it, links to it, or asks for it. Treat these files as standing orders, not as optional
 > reference material.
 >
-> At the start of every session, before doing any work:
+> Always active is not the same as always loaded. At the start of every session, before
+> doing any work:
 >
-> 1. Read `AGENTS.md` (this file).
+> 1. Read `AGENTS.md` (this file), including the Shared instruction tools block below.
 > 2. Resolve the shared set per the bootstrap above.
 > 3. Read [`.agents/index/root-index.md`](.agents/index/root-index.md).
 > 4. Read [`.agents/index/memory-index.md`](.agents/index/memory-index.md) and load only
 >    the memory rows whose scope matches the current request, so you continue prior work
 >    instead of restarting it.
-> 5. Load the four mandatory standard files, whatever the request looks like.
-> 6. Match the request against the trigger table below and load the instruction files it
->    names, local first, shared second.
 >
-> Four files load on **every** request rather than on a trigger — the task workflow, the
-> branching strategy, the commit conventions, and the discovery protocol — along with the
-> three permission gates that ride with them: approve the plan before any file is
-> written, ask before opening a pull request, ask before merging. See
-> `{shared}/rules/shared-instructions.md` §H.
+> That is the whole sequence, and every step of it reads a file in this repository.
+> **Call no shared tool at session start.** Each one fires on the trigger its row gives
+> it, and calling them up front pays for procedures the request may never need.
 >
-> Steps 2, 5 and 6 are one call to `agents_auto_activation` where the connector exposes
-> tools. Steps 1, 3 and 4 read files in this repository and are still read from disk.
+> **These gates stand from the first message, before any tool is called:** approve the
+> plan before any file is written, ask before opening a pull request, ask before merging,
+> and propose a discovered rule rather than writing it. A gate first read at the moment it
+> should have applied has already failed, which is why they are here and not behind a
+> call. See `{shared}/rules/shared-instructions.md` §H.
 >
 > If a rule conflicts with a habit, a default, or a template you would otherwise follow,
-> the rule wins. If it conflicts with an explicit instruction from the user in this
-> session, the user wins — and you say out loud which rule you are setting aside.
+> the rule wins — including a harness that names a branch, a commit trailer, or a
+> pull request footer the conventions forbid. If it conflicts with an explicit instruction
+> from the user in this session, the user wins — and you say out loud which rule you are
+> setting aside.
 
-**d) Trigger table.** Mirror
-[`rules/auto-activation.md`](agents://rules/auto-activation.md) row-for-row, filled with
-the files that actually exist after §1.5. Name that file as the authority behind the
-table. In Mode C, replace every `{shared}` with `.agents`.
+**d) Shared instruction tools.** The block that replaces a mirrored trigger table. It
+declares which shared tools this repository uses, the trigger for each, and the set version
+adopted. [`rules/auto-activation.md`](agents://rules/auto-activation.md) is the authority
+for every trigger; name it as such.
 
-The four mandatory standard files are not rows in this table and must not be added as
-rows — they load unconditionally, and the always-on paragraph in (c) is what carries
-them. [`rules/discovery-protocol.md`](agents://rules/discovery-protocol.md) is the one
-to watch: it has no trigger row, so a table copied without that paragraph loses the gate
-entirely.
+> ## Shared instruction tools
+>
+> Conventions come from the `lxagents-agents-base` connector. The tools below are the ones
+> this repository uses. **Call each when its trigger fires — not at session start, and
+> never all at once.** A convention with no row here does not apply to this repository.
+>
+> Adopted shared-set version: `{version}`
+>
+> | When you are about to… | Call |
+> |---|---|
+> | Take in any request of more than one step | `task_workflow` |
+> | Create a branch | `branch_strategy` |
+> | Write a commit message | `commit_strategy` |
+> | Notice a rule that should exist | `discovery_protocol` |
+> | Open or update a pull request | `pull_request_strategy` |
+> | Write to any `model_name` column | `agents_model_naming_convention` |
+> | Need any other shared convention | `list_shared_agents_instruction`, then `read_shared_agents_instruction` |
+
+Rules for filling it in:
+
+* **The first four rows are mandatory in every repository** and are never dropped,
+  reordered, or repointed at a local file.
+* **The rest are selected, not mirrored.** Keep a row only if this repository actually does
+  the thing — drop `agents_model_naming_convention` from a project that stores no model
+  identifier. A narrower table is the purpose of declaring one; it is not drift.
+* **Append rows for this repository's own local instructions**, one per file in `.agents/`
+  that should fire on a trigger, below the shared rows. Without them this repository's own
+  conventions never activate.
+* **Stamp the version.** Use the version this connector reports. It is what
+  [`prompts/agents-update.md`](agents://prompts/agents-update.md) reads back as
+  `from_version` — an unstamped repository can be re-synced but its history cannot be
+  replayed.
+* In Mode C there is no connector: keep the table, and replace each tool name with the
+  `.agents/…` path that convention now lives at.
 
 **e) Reading order:** `AGENTS.md` → resolve the shared set →
 `.agents/index/root-index.md` and nothing else at this stage → the ONE index whose scope
@@ -494,16 +524,17 @@ Report each item.
 * Every `.md` in a set and the root `AGENTS.md` has valid `name` + `description`
   frontmatter; every `name` is unique within its set; every cross-set name match is an
   intentional override.
-* `AGENTS.md` contains the auto-activation contract, the trigger table, the reading order,
-  the routing protocol, the discovery-protocol block with its source-of-truth link, and the
-  no-session-links line — and no rule bodies.
-* The trigger table matches `rules/auto-activation.md` row-for-row, and every file it names
-  exists in the set the row states.
-* The auto-activation contract names all four mandatory standard files as loading on every
-  request — the task workflow, the branching strategy, the commit conventions, and the
-  discovery protocol — and none of them is listed as a trigger row instead.
-* The auto-activation contract names all three permission gates — approve the plan,
-  ask before opening a pull request, ask before merging.
+* `AGENTS.md` contains the auto-activation contract, the Shared instruction tools block,
+  the reading order, the routing protocol, the discovery-protocol block with its
+  source-of-truth link, and the no-session-links line — and no rule bodies.
+* The Shared instruction tools block exists, every tool it names is one the connector
+  actually publishes, and every trigger matches the one `rules/auto-activation.md` gives it.
+* The declaration block carries all four mandatory tools — `task_workflow`,
+  `branch_strategy`, `commit_strategy`, `discovery_protocol` — and a version stamp naming
+  the version this connector reports.
+* The auto-activation contract carries all three permission gates inline — approve the
+  plan, ask before opening a pull request, ask before merging — rather than deferring them
+  to a tool, and states that no shared tool is called at session start.
 * `README.md` is overview only and points at the wiki index for the full map.
 * The root index lists every local index, links to no leaf file, contains no rules, and
   carries the override table even when empty.
