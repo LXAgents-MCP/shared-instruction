@@ -319,3 +319,35 @@ test('create CLI --write: the tree it produces is the tree it planned', async ()
     EXIT_OK,
   );
 });
+
+test('the generated AGENTS.md carries a declaration block, not an opening call', async () => {
+  const plan = scaffoldRepo({ name: 'weather-mcp', sharedSetVersion: '1.0.0', root: process.cwd() });
+  const doc = plan.files.find((file) => file.path === 'AGENTS.md').contents;
+
+  // buildAgentsDoc is a listed mirror (.agents/rules/set-mirrors.md): it
+  // hard-codes set text into every repository this tool creates, so a change
+  // to the activation model that misses it ships the old one forever.
+  assert.match(doc, /## Shared instruction tools/);
+  assert.match(doc, /Adopted shared-set version: `1\.0\.0`/);
+  assert.doesNotMatch(doc, /agents_auto_activation/);
+  assert.doesNotMatch(doc, /at the start of every session/i);
+
+  for (const tool of ['task_workflow', 'branch_strategy', 'commit_strategy', 'discovery_protocol']) {
+    assert.ok(doc.includes(`\`${tool}\``), `${tool} is mandatory and must be declared`);
+  }
+
+  // The gates are inline, not deferred to a call.
+  assert.match(doc, /approve the\s+plan before any file is written/);
+  assert.match(doc, /ask before opening a pull request/);
+  assert.match(doc, /ask before\s+merging/);
+});
+
+test('a scaffold with no version says so rather than inventing one', async () => {
+  const plan = scaffoldRepo({ name: 'weather-mcp', root: process.cwd() });
+  const doc = plan.files.find((file) => file.path === 'AGENTS.md').contents;
+
+  // An honest blank beats a guessed version: update_shared_agents_instruction
+  // reads this line back, and a wrong stamp produces a wrong delta silently.
+  assert.match(doc, /Adopted shared-set version: `unstamped/);
+  assert.match(doc, /update_shared_agents_instruction/);
+});

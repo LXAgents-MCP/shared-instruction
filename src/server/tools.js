@@ -472,7 +472,13 @@ Returns: the plan — package name, server id, both bin names, target directory,
         // `root` pins the target inside the working directory. The CLI may
         // scaffold anywhere the operator names; a model filling in this
         // argument may not.
-        plan = scaffoldRepo({ name, description, directory, root: process.cwd() });
+        plan = scaffoldRepo({
+          name,
+          description,
+          directory,
+          root: process.cwd(),
+          sharedSetVersion: version,
+        });
       } catch (error) {
         return failure(error instanceof Error ? error.message : String(error));
       }

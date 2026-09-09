@@ -142,10 +142,11 @@ export async function createCommand({
   write = false,
   force = false,
   json = false,
+  sharedSetVersion = null,
 } = {}) {
   let plan;
   try {
-    plan = scaffoldRepo({ name, description, directory });
+    plan = scaffoldRepo({ name, description, directory, sharedSetVersion });
   } catch (error) {
     throw new CommandError(error instanceof Error ? error.message : String(error));
   }
