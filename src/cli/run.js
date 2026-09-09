@@ -146,7 +146,7 @@ async function dispatch({ command, rest, values, write }) {
       return EXIT_OK;
     }
     case 'setup':
-      write(setupProcedure(registry));
+      write(setupProcedure(registry, version));
       return EXIT_OK;
     case 'audit':
       write(auditProcedure(registry, version));

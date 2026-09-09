@@ -123,14 +123,14 @@ test('cli setup and audit return exactly what the MCP tools return', async () =>
   const { client, server } = await connect();
 
   const setupCli = await cli('setup');
-  const setupTool = await client.callTool({ name: 'agents_setup', arguments: {} });
+  const setupTool = await client.callTool({ name: 'setup_shared_agents_instruction', arguments: {} });
   assert.equal(setupCli.code, EXIT_OK);
   assert.equal(setupCli.out.trimEnd(), setupTool.content[0].text.trimEnd());
   assert.match(setupCli.out, /# AGENTS-SETUP/);
 
   const auditCli = await cli('audit');
   const auditTool = await client.callTool({
-    name: 'agents_check_duplicate_instructions',
+    name: 'check_duplicate_shared_agents_instruction',
     arguments: {},
   });
   assert.equal(auditCli.code, EXIT_OK);

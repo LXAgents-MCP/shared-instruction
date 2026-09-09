@@ -54,24 +54,62 @@ export const INSTRUCTION_FOLDERS = Object.freeze([
 ]);
 
 /**
- * The four files that load on every request rather than on a trigger.
+ * The conventions served as one read-only tool each, in the order a repository's
+ * declaration block lists them.
  *
- * Named here rather than in the tool that serves them so the list has one
- * home: `rules/auto-activation.md` is the authority on *why* they are
- * mandatory, and this is the authority on *which*. A change to the set is one
- * edit, and a URI that stops resolving fails at boot instead of silently
- * shipping a shorter activation payload.
+ * Named here rather than in the tool that serves them so the list has one home:
+ * `rules/auto-activation.md` is the authority on *when* each fires, and this is
+ * the authority on *which content* each returns. A URI that stops resolving
+ * fails at boot instead of silently serving an empty convention.
  *
- * Order matters — it is the order the rule names them in.
+ * The prose each tool advertises itself with lives in `server/tools.js` — it
+ * describes the tool, not the set, and `registerTools` refuses to start if a
+ * name here has no description there.
  */
-export const MANDATORY_STANDARD_FILES = Object.freeze([
-  `${RESOURCE_SCHEME}://planning/task-workflow.md`,
-  `${RESOURCE_SCHEME}://git/branching-strategy.md`,
-  `${RESOURCE_SCHEME}://git/commit-conventions.md`,
-  `${RESOURCE_SCHEME}://rules/discovery-protocol.md`,
+export const CONVENTION_TOOLS = Object.freeze([
+  Object.freeze({ name: 'task_workflow', uri: `${RESOURCE_SCHEME}://planning/task-workflow.md` }),
+  Object.freeze({ name: 'branch_strategy', uri: `${RESOURCE_SCHEME}://git/branching-strategy.md` }),
+  Object.freeze({ name: 'commit_strategy', uri: `${RESOURCE_SCHEME}://git/commit-conventions.md` }),
+  Object.freeze({
+    name: 'discovery_protocol',
+    uri: `${RESOURCE_SCHEME}://rules/discovery-protocol.md`,
+  }),
+  Object.freeze({
+    name: 'pull_request_strategy',
+    uri: `${RESOURCE_SCHEME}://git/pull-request-template.md`,
+  }),
+  Object.freeze({
+    name: 'agents_model_naming_convention',
+    uri: `${RESOURCE_SCHEME}://rules/model-naming-convention.md`,
+  }),
 ]);
 
-/** The rule that governs session start, served whole by the activation tool. */
+/**
+ * The four every repository declares, whatever else it narrows away.
+ *
+ * These are the old mandatory standard files, one tool each. They stopped being
+ * loaded unconditionally in 1.0.0 — what is unconditional now is that a
+ * repository *declares* them, and that the gates they carry are written inline
+ * in its own `AGENTS.md` rather than fetched when the gate should already have
+ * applied. `rules/shared-instructions.md` §H is the mandate.
+ *
+ * Order matters: it is the order `auto-activation.md` names them in.
+ */
+export const MANDATORY_TOOLS = Object.freeze([
+  'task_workflow',
+  'branch_strategy',
+  'commit_strategy',
+  'discovery_protocol',
+]);
+
+/**
+ * The rule that governs session start.
+ *
+ * No tool returns it whole any more — a repository's own declaration block is
+ * what a session routes on, and this file is the authority that block is built
+ * from. It is still pinned here so a rename fails at boot rather than leaving
+ * every trigger in the set pointing at nothing.
+ */
 export const AUTO_ACTIVATION_URI = `${RESOURCE_SCHEME}://rules/auto-activation.md`;
 
 /** Files allowed to sit at the content root rather than inside a folder. */
@@ -79,6 +117,7 @@ export const ROOT_CONTENT_FILES = Object.freeze(['AGENTS.md']);
 
 /** Prompt names. Kept here so prompts and docs cannot drift apart. */
 export const PROMPT_AGENTS_SETUP = 'agents-setup';
+export const PROMPT_AGENTS_UPDATE = 'agents-update';
 export const PROMPT_DUPLICATE_AUDIT = 'check-duplicate-agents-instruction';
 
 /** Default HTTP settings. Overridable through the environment — see config.js. */

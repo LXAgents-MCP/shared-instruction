@@ -160,3 +160,44 @@ file the resource serves, which is the property `content-publishing.md` asks for
 A repository that adopts without a stamp is not broken — `agents-update.md` §1 already
 handles the unstamped case by falling back to a full re-sync. It just cannot have its
 history replayed, only its current state reconciled.
+
+## Task 5 — feat/convention-tools
+
+Deleted `agents_auto_activation` and `buildActivationPayload`. Registered six convention
+tools from `CONVENTION_TOOLS`, renamed five, and rewrote the `initialize` instructions.
+**85 tests pass**, down from 86: eight activation tests and the `MANDATORY_STANDARD_FILES`
+pin were deleted, seven new ones added.
+
+**Measured, because the whole task is a claim about cost:**
+
+| Called | Characters |
+|---|---|
+| `branch_strategy` + `commit_strategy` | 5,133 |
+| all six at once | 28,965 |
+| the old `agents_auto_activation`, every session | ~31,000 |
+
+A session that only branches and commits now pays 5,133 instead of 31,000. Calling *all
+six* still costs less than the old opening call, which is the useful bound: the worst case
+of the new design beats the best case of the old one. `test/tools.test.js` pins each tool
+under 15,000 characters so a future inline cannot quietly rebuild the payload.
+
+**Design notes for anyone changing this later:**
+
+* `CONVENTION_TOOLS` lives in `constants.js` as `{name, uri}` pairs; the prose each tool
+  advertises itself with lives in `tools.js` as `CONVENTION_PROSE`. `registerTools` throws
+  at boot if a name has no prose, so the two cannot drift into a tool published without a
+  description — which several clients will not surface at all.
+* `buildModelNamingPayload` is gone. `agents_model_naming_convention` is just another row in
+  the loop, and `buildConventionPayload(registry, uri, lead)` serves all six. One builder,
+  not six.
+* `MANDATORY_STANDARD_FILES` became `MANDATORY_TOOLS` — four names, not four URIs, because
+  what is mandatory is now that a repository *declares* them. `registerTools` checks each
+  is actually published, so dropping one from `CONVENTION_TOOLS` fails at boot rather than
+  leaving `auto-activation.md` promising a call nothing serves.
+* A new test asserts **no tool description contains "at the start of every session" or
+  "call this first"**. That sentence is what made the old surface expensive, and it would
+  come back one helpful description at a time.
+
+`AUTO_ACTIVATION_URI` is kept and still `requireEntry`-checked at boot even though no tool
+returns it: the file is the authority every declaration block is built from, and a rename
+should fail loudly rather than leave every trigger pointing at nothing.

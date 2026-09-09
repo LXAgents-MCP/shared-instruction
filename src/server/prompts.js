@@ -43,7 +43,7 @@ export function registerPrompts(server, registry, version) {
     async () => ({
       description:
         'The AGENTS-SETUP procedure, with the shared set resolved through this connector.',
-      messages: [userMessage(buildSetupPayload(registry))],
+      messages: [userMessage(buildSetupPayload(registry, version))],
     }),
   );
 
