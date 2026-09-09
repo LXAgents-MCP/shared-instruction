@@ -37,6 +37,7 @@ test('tools/list: publishes every tool, each described and non-destructive', asy
     'read_shared_agents_instruction',
     'setup_shared_agents_instruction',
     'task_workflow',
+    'update_shared_agents_instruction',
   ]);
 
   for (const tool of tools) {
@@ -121,6 +122,91 @@ test('check_duplicate_shared_agents_instruction matches its prompt and inlines t
   assert.match(body, /Deletion requires per-file approval/);
   const json = body.slice(body.indexOf('```json') + 7, body.lastIndexOf('```'));
   assert.equal(JSON.parse(json).count, registry.size);
+
+  await server.close();
+});
+
+test('update_shared_agents_instruction returns the delta, oldest first', async () => {
+  const { client, server } = await connect();
+
+  const body = (
+    await client.callTool({
+      name: 'update_shared_agents_instruction',
+      arguments: { from_version: '0.12.0' },
+    })
+  ).content[0].text;
+
+  assert.match(body, /releases to apply/);
+  assert.match(body, /# AGENTS-UPDATE/);
+
+  // Ordering is the correctness property, not a presentation choice: a file
+  // added by one release and changed by a later one is left half-applied if
+  // the newer line is taken first, and the result looks fine.
+  // Compared inside the table only: the heading above it already names the
+  // target version, so a whole-body index would pass on a reversed table.
+  const table = body.slice(body.indexOf('| Version | What changed |'));
+  assert.ok(table.indexOf('| `0.13.0` |') < table.indexOf('| `0.14.0` |'), 'oldest first');
+  assert.ok(!table.includes('| `0.12.0` |'), 'the adopted version is not re-applied');
+
+  await server.close();
+});
+
+test('update_shared_agents_instruction without a version is a re-sync, not a full history', async () => {
+  const { client, server } = await connect();
+
+  const body = (
+    await client.callTool({ name: 'update_shared_agents_instruction', arguments: {} })
+  ).content[0].text;
+
+  // Treating a missing version as "since the beginning" would return every
+  // line ever written, most already applied, with nothing to say which.
+  assert.match(body, /this is a re-sync, not a delta/);
+  assert.match(body, /# AGENTS-UPDATE/);
+  assert.ok(!body.includes('releases to apply'), 'no delta without a baseline');
+
+  await server.close();
+});
+
+test('update_shared_agents_instruction reports a stamp ahead of the connector', async () => {
+  const { client, server } = await connect();
+
+  const body = (
+    await client.callTool({
+      name: 'update_shared_agents_instruction',
+      arguments: { from_version: '99.0.0' },
+    })
+  ).content[0].text;
+
+  assert.match(body, /stamp is ahead of this connector/);
+  assert.ok(!body.includes('releases to apply'));
+
+  await server.close();
+});
+
+test('update_shared_agents_instruction refuses a value that is not a version', async () => {
+  const { client, server } = await connect();
+
+  const result = await client.callTool({
+    name: 'update_shared_agents_instruction',
+    arguments: { from_version: 'latest' },
+  });
+
+  assert.equal(result.isError, true);
+  assert.match(result.content[0].text, /not a version/);
+
+  await server.close();
+});
+
+test('update_shared_agents_instruction says on-request only, and never at session start', async () => {
+  const { client, server } = await connect();
+
+  const { tools } = await client.listTools();
+  const update = tools.find((tool) => tool.name === 'update_shared_agents_instruction');
+
+  // It edits AGENTS.md. Like the duplicate audit, noticing a version
+  // difference is not a trigger to run it.
+  assert.match(update.description, /ONLY when the user asks/);
+  assert.match(update.description, /never because you noticed a version difference/);
 
   await server.close();
 });

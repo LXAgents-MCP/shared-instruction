@@ -29,6 +29,16 @@ export const RESOURCE_SCHEME = 'agents';
 /** URI of the manifest resource — the entry point for a duplicate audit. */
 export const MANIFEST_URI = `${RESOURCE_SCHEME}://manifest.json`;
 
+/**
+ * URI of the release history a consuming repository updates against.
+ *
+ * The log files themselves are human release records under `wiki/logs/` and are
+ * deliberately not served; this index is the machine-readable surface, and its
+ * **Consumers must** column is the only notice a repository ever gets that a
+ * shared change needs an edit on its side.
+ */
+export const LOGS_INDEX_URI = `${RESOURCE_SCHEME}://index/logs-index.md`;
+
 /** URI of the federation contract served to consuming repositories. */
 export const CONTRACT_URI = `${RESOURCE_SCHEME}://AGENTS.md`;
 

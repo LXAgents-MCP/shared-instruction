@@ -40,6 +40,7 @@ import {
   buildAuditPayload,
   buildConventionPayload,
   buildSetupPayload,
+  buildUpdatePayload,
   requireEntry,
 } from './payloads.js';
 import { resolveEntry, suggestEntries } from '../content/resolve.js';
@@ -192,6 +193,37 @@ Equivalent to the \`agents-setup\` prompt; use the prompt instead if your client
       annotations: READ_ONLY,
     },
     async () => text(buildSetupPayload(registry, version)),
+  );
+
+  server.registerTool(
+    'update_shared_agents_instruction',
+    {
+      title: 'Update this repository against the shared set',
+      description: `Return what this repository must do to move from the shared-set version it adopted to the current one: the Consumers must line for every release since, oldest first, plus the re-sync procedure.
+
+Use this ONLY when the user asks to update, re-sync, or adopt a newer version of the shared instruction set. It edits AGENTS.md, so never call it on your own initiative, never as part of session start, and never because you noticed a version difference — note it, finish the task, and mention it at the end.
+
+Args:
+  - from_version (string, optional): the value on the \`Adopted shared-set version:\` line in this repository's AGENTS.md. Accepts 1.0.0 or 1/0/0.
+
+Returns: with a version, the delta — every release newer than it, oldest first, because the lines compose and applying a newer one first leaves an older edit silently unmade. Without one, the re-sync path instead: the current state to reconcile against, with no history. Read the stamp before calling; passing nothing when a stamp exists throws away the reasons things changed.
+
+Errors: refuses a value that is not a version. A stamp ahead of this connector is reported rather than applied.`,
+      inputSchema: {
+        from_version: z
+          .string()
+          .optional()
+          .describe('The Adopted shared-set version from this repository\'s AGENTS.md, e.g. "0.14.0".'),
+      },
+      annotations: READ_ONLY,
+    },
+    async ({ from_version: fromVersion }) => {
+      try {
+        return text(buildUpdatePayload(registry, version, fromVersion ?? null));
+      } catch (error) {
+        return failure(error instanceof Error ? error.message : String(error));
+      }
+    },
   );
 
   server.registerTool(
@@ -471,6 +503,7 @@ Returns: the plan — package name, server id, both bin names, target directory,
   // first call, matching how the registry validates content at boot.
   requireEntry(registry, 'agents://prompts/agents-setup.md');
   requireEntry(registry, 'agents://rules/duplicate-instruction-audit.md');
+  requireEntry(registry, 'agents://prompts/agents-update.md');
   requireEntry(registry, AUTO_ACTIVATION_URI);
 
   // The four every repository declares must exist as tools, not merely as
