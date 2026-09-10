@@ -92,3 +92,19 @@ test('releasesSince refuses a value that is not a version', async () => {
   const registry = await loadRegistry();
   assert.throws(() => releasesSince(registry, 'latest'), /not a version/);
 });
+
+test('releasesSince reports what is wrong with a broken index, not a reduce crash', () => {
+  // The guard in readReleases must fire before anything walks the rows. An
+  // unseeded reduce over an empty list throws "Reduce of empty array with no
+  // initial value" — true, useless, and pointing at the wrong file.
+  const emptyIndex = {
+    get: () => ({ text: '| Version | Date | Summary | Consumers must |\n|---|---|---|---|' }),
+  };
+
+  assert.throws(() => releasesSince(emptyIndex, '1.0.0'), /published no release rows/);
+});
+
+test('releasesSince says which resource is missing when the index is absent', () => {
+  const noIndex = { get: () => undefined };
+  assert.throws(() => releasesSince(noIndex, '1.0.0'), /content missing from the registry/);
+});

@@ -129,7 +129,12 @@ export function readReleases(registry) {
  */
 export function releasesSince(registry, fromVersion) {
   const all = readReleases(registry);
-  const newest = all.reduce((a, b) => (compareVersions(a, b) >= 0 ? a : b));
+  // Seeded explicitly. `readReleases` throws on an empty index, so `first`
+  // always exists — but an unseeded reduce leans on a guarantee made in another
+  // function, and would throw "Reduce of empty array" here rather than the
+  // message that says what is actually wrong with the index.
+  const [first, ...rest] = all;
+  const newest = rest.reduce((a, b) => (compareVersions(a, b) >= 0 ? a : b), first);
   const from = parseVersion(fromVersion);
   if (!from) throw new Error(`not a version: "${fromVersion}". Use 1.0.0 or 1/0/0.`);
 
