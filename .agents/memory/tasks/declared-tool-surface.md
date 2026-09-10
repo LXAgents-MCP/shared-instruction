@@ -201,3 +201,52 @@ under 15,000 characters so a future inline cannot quietly rebuild the payload.
 `AUTO_ACTIVATION_URI` is kept and still `requireEntry`-checked at boot even though no tool
 returns it: the file is the authority every declaration block is built from, and a rename
 should fail loudly rather than leave every trigger pointing at nothing.
+
+## Task 6 — feat/update-tool
+
+Added `src/server/logs.js`, `buildUpdatePayload`, the `update_shared_agents_instruction`
+tool, the `agents-update` prompt, and a CLI `update [--from <version>]`. **99 tests pass**,
+up from 85 — seven in a new `test/logs.test.js`, five for the tool, two for the CLI.
+
+**The parser is the fragile part, so it fails loudly.** `parseReleaseRows` throws on a row
+without exactly four cells and on a table with no release rows at all, and
+`test/logs.test.js` runs it over the real `content/index/logs-index.md`. The failure it
+prevents is specific: a row that stops matching would vanish from an update payload in
+silence, and a repository told about four releases when five happened has nothing to notice
+the fifth with. It skips the header on the version-cell test rather than on line position,
+so prose above the table does not break it.
+
+**Version comparison is numeric, and the test says why.** This set has shipped `0.9.0` and
+`0.14.0`; string comparison puts them the wrong way round, which would silently hand a
+repository the wrong delta rather than erroring.
+
+**Two modes, chosen by the argument's presence, never by defaulting.** With a version it is
+a delta; without one it is a re-sync that says so. Treating a missing version as "since the
+beginning" would return every line ever written, most already applied, with nothing marking
+which — the worst of both. Two more cases are answered rather than computed: a stamp ahead
+of the connector is reported, not applied, and a stamp already current triggers §3(b)/§3(c)
+only, because a release changes the set while a repository can still have drifted on its own.
+
+**The prompt and the tool differ here, deliberately, and this is the first place they do.**
+A prompt is invoked by a person clicking a button with no arguments to send, so
+`agents-update` is always the re-sync path; only the tool takes `from_version`. The payload
+states which mode it is in rather than letting the caller assume.
+
+Two test bugs worth recording, since both would have passed while asserting nothing real:
+the oldest-first assertion had to be scoped to the table (the heading above it already names
+the target version, so a whole-body index passes on a reversed table), and the re-sync test
+had to pass `arguments: {}` rather than omitting them — a tool that declares a schema is
+called with an object, which is the contract `tools.js` documents.
+
+**SonarCloud found a third defect after the pull requests were open.** `releasesSince`
+reduced over the release list with no initial value (`logs.js` L132). Not reachable today —
+`readReleases` throws on an empty index before the reduce runs — but the guarantee lived in
+a *different function*, so the code sat one refactor away from throwing "Reduce of empty
+array with no initial value": true, useless, and pointing at the wrong file. Seeded from the
+destructured first element, with two tests pinning that a broken index reports what is
+actually wrong with it — no rows, or no index resource at all. 101 tests pass on this
+branch, up from 99.
+
+Fixed here rather than on a follow-up branch, because this is where the defect is. The three
+branches stacked above were rebased onto the fix rather than merged into, keeping the stack
+linear as `planning/task-workflow.md` §C describes.

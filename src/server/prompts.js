@@ -19,8 +19,12 @@
  * no arguments to send.
  */
 
-import { PROMPT_AGENTS_SETUP, PROMPT_DUPLICATE_AUDIT } from '../constants.js';
-import { buildAuditPayload, buildSetupPayload } from './payloads.js';
+import {
+  PROMPT_AGENTS_SETUP,
+  PROMPT_AGENTS_UPDATE,
+  PROMPT_DUPLICATE_AUDIT,
+} from '../constants.js';
+import { buildAuditPayload, buildSetupPayload, buildUpdatePayload } from './payloads.js';
 
 /** Wraps prompt text in the single user message clients expect. */
 export function userMessage(text) {
@@ -44,6 +48,23 @@ export function registerPrompts(server, registry, version) {
       description:
         'The AGENTS-SETUP procedure, with the shared set resolved through this connector.',
       messages: [userMessage(buildSetupPayload(registry, version))],
+    }),
+  );
+
+  server.registerPrompt(
+    PROMPT_AGENTS_UPDATE,
+    {
+      title: 'Update this repository against the shared set',
+      description:
+        "Re-sync this repository's AGENTS.md with the shared instruction set: apply each release's Consumers must line, reconcile the tool declaration and override tables, and re-stamp the version.",
+    },
+    // A prompt is invoked by a person clicking a button, with no arguments to
+    // send, so this is always the re-sync path. The tool takes from_version and
+    // returns the delta; that is the difference between the two surfaces here,
+    // and the payload says so rather than pretending it has a history.
+    async () => ({
+      description: 'The AGENTS-UPDATE procedure, with the connector version and no assumed baseline.',
+      messages: [userMessage(buildUpdatePayload(registry, version, null))],
     }),
   );
 

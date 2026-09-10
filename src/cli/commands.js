@@ -11,7 +11,7 @@
 import { loadRegistry } from '../content/registry.js';
 import { resolveEntry, suggestEntries } from '../content/resolve.js';
 import { manifestJson } from '../server/manifest.js';
-import { buildAuditPayload, buildSetupPayload } from '../server/payloads.js';
+import { buildAuditPayload, buildSetupPayload, buildUpdatePayload } from '../server/payloads.js';
 import { formatScaffold, scaffoldRepo, writeScaffold } from '../tools/mcp-creator.js';
 import { resolveVersion } from '../version.js';
 
@@ -102,6 +102,20 @@ export function readInstruction(registry, identifier, { json = false } = {}) {
 /** The AGENTS-SETUP procedure — the same text the prompt and tool deliver. */
 export function setupProcedure(registry, version) {
   return buildSetupPayload(registry, version);
+}
+
+/**
+ * The AGENTS-UPDATE procedure, with the delta when a version is given.
+ *
+ * `from` is the stamp in the calling repository's AGENTS.md. Omitted, this is
+ * the re-sync path rather than the whole history — see `buildUpdatePayload`.
+ */
+export function updateProcedure(registry, version, { from = null } = {}) {
+  try {
+    return buildUpdatePayload(registry, version, from);
+  } catch (error) {
+    throw new CommandError(error instanceof Error ? error.message : String(error));
+  }
 }
 
 /** The duplicate-instruction audit, manifest inlined — as the prompt delivers it. */

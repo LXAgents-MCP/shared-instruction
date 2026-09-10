@@ -10,6 +10,7 @@
  */
 
 import { MANIFEST_URI } from '../constants.js';
+import { releasesSince, readReleases } from './logs.js';
 import { manifestJson } from './manifest.js';
 
 /** What the connector is, and how to read it. Prefixes every payload. */
@@ -83,6 +84,105 @@ ${CONNECTOR_PREAMBLE}
 ---
 
 ${entry.text}`;
+}
+
+/**
+ * What a repository must do to move from the set version it adopted to this one.
+ *
+ * Two modes, and the argument chooses between them deliberately rather than by
+ * defaulting. With a version, this is a **delta**: the Consumers must lines the
+ * repository has not applied, oldest first, because they compose. Without one it
+ * is a **re-sync**: the current state to reconcile against, with no history,
+ * which is the honest answer for a repository that never recorded a stamp.
+ *
+ * Treating a missing version as "since the beginning" would be the worst of
+ * both — every line ever written, most of them already applied, with nothing to
+ * say which.
+ *
+ * @param {Readonly<object>} registry
+ * @param {string} version the connector's own version
+ * @param {string|null} fromVersion the stamp in the repository's AGENTS.md
+ * @returns {string}
+ */
+export function buildUpdatePayload(registry, version, fromVersion = null) {
+  const procedure = requireEntry(registry, 'agents://prompts/agents-update.md');
+  const header = [
+    'Update this repository against the shared instruction set, following the procedure below.',
+    '',
+    CONNECTOR_PREAMBLE,
+    '',
+    `**This connector is version \`${version}\`.** That is the value to write into the`,
+    '`Adopted shared-set version:` line when the work is done — last, after the edits land.',
+  ];
+
+  if (!fromVersion) {
+    const logged = readReleases(registry).length;
+    return `${header.join('\n')}
+
+## No version given — this is a re-sync, not a delta
+
+You did not pass \`from_version\`, so nothing here is a history. Either this repository
+carries no \`Adopted shared-set version:\` stamp, or it was not read.
+
+**Check for a stamp first.** If one exists, call again with it: ${logged} releases are logged, and
+a delta tells you *why* each thing changed, which a re-sync cannot. If there is genuinely no
+stamp, continue — §1 of the procedure covers exactly this case — and reconcile the
+declaration table against \`list_shared_agents_instruction\` directly.
+
+---
+
+${procedure.text}`;
+  }
+
+  const { releases, current, ahead } = releasesSince(registry, fromVersion);
+  const from = fromVersion.replaceAll('`', '').trim();
+
+  if (ahead) {
+    header.push(
+      '',
+      `**The stamp is ahead of this connector.** It reads \`${from}\`; the newest logged release is`,
+      `\`${current}\`. Do not edit anything on that basis. Report it: either the stamp was written`,
+      'for a set this connector has not deployed yet, or it was typed by hand.',
+    );
+    return `${header.join('\n')}\n\n---\n\n${procedure.text}`;
+  }
+
+  if (releases.length === 0) {
+    header.push(
+      '',
+      `**Nothing to apply.** The stamp reads \`${from}\`, which is the newest logged release.`,
+      '',
+      'That is not the same as being in sync. A release changes the *set*; a repository can still',
+      'have drifted on its own — a tool renamed out from under a declaration row, an override whose',
+      'shared `name` no longer exists. Run §3(b) and §3(c) of the procedure below, skip §3(a), and',
+      'leave the stamp alone.',
+    );
+    return `${header.join('\n')}\n\n---\n\n${procedure.text}`;
+  }
+
+  const table = releases.map(
+    (release) => `| \`${release.version}\` | ${release.summary} | ${release.consumersMust} |`,
+  );
+
+  return `${header.join('\n')}
+
+## ${releases.length} release${releases.length === 1 ? '' : 's'} to apply: \`${from}\` → \`${current}\`
+
+**Oldest first, in the order given.** They compose: a file added by one release and changed
+by a later one is left half-applied if you take the newer line first, and nothing about the
+result looks wrong.
+
+| Version | What changed | Consumers must |
+|---|---|---|
+${table.join('\n')}
+
+Apply every line above, then the declaration and override reconciliation in §3(b) and §3(c),
+then the stamp. A version you moved past without applying its line is worse than not
+updating at all — the stamp now says the work is done.
+
+---
+
+${procedure.text}`;
 }
 
 /**

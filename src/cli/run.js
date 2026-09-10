@@ -17,6 +17,7 @@ import {
   manifest,
   readInstruction,
   setupProcedure,
+  updateProcedure,
 } from './commands.js';
 import { write as writeStdout, writeError } from './output.js';
 import { resolveVersion } from '../version.js';
@@ -33,6 +34,7 @@ const OPTIONS = {
   version: { type: 'boolean', short: 'v' },
   json: { type: 'boolean' },
   folder: { type: 'string' },
+  from: { type: 'string' },
   http: { type: 'boolean' },
   stdio: { type: 'boolean' },
   port: { type: 'string' },
@@ -56,6 +58,7 @@ Commands
   list                   List every instruction file with its description
   read <instruction>     Print one file — by name, path, or agents:// URI
   setup                  Print the AGENTS-SETUP procedure
+  update                 Print the AGENTS-UPDATE procedure, with the delta
   audit                  Print the duplicate-instruction audit procedure
   manifest               Print the manifest as JSON
   create <name>          Scaffold a new dual-purpose MCP repository
@@ -65,6 +68,7 @@ Options
   --stdio                serve: use the stdio transport (default)
   --port <n>             serve: HTTP port (default 3000)
   --folder <name>        list: restrict to one folder, e.g. rules, git
+  --from <version>       update: the shared-set version this repository adopted
   --description <text>   create: one line describing the new repository
   --directory <dir>      create: where to create it (default: the name)
   --write                create: actually write the files (default: plan only)
@@ -77,6 +81,7 @@ Examples
   lxagents-agents list --folder git
   lxagents-agents read branching-strategy
   lxagents-agents read agents://rules/directories.md
+  lxagents-agents update --from 0.14.0
   lxagents-agents serve --http --port 8080
   lxagents-agents create weather-mcp                 # show the plan
   lxagents-agents create weather-mcp --write         # create it
@@ -147,6 +152,9 @@ async function dispatch({ command, rest, values, write }) {
     }
     case 'setup':
       write(setupProcedure(registry, version));
+      return EXIT_OK;
+    case 'update':
+      write(updateProcedure(registry, version, { from: values.from ?? null }));
       return EXIT_OK;
     case 'audit':
       write(auditProcedure(registry, version));

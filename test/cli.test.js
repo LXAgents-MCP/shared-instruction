@@ -139,6 +139,29 @@ test('cli setup and audit return exactly what the MCP tools return', async () =>
   await server.close();
 });
 
+test('cli update returns exactly what the MCP tool returns, with and without a version', async () => {
+  const { client, server } = await connect();
+
+  for (const from of ['0.12.0', null]) {
+    const viaCli = from ? await cli('update', '--from', from) : await cli('update');
+    const viaTool = await client.callTool({
+      name: 'update_shared_agents_instruction',
+      arguments: from ? { from_version: from } : {},
+    });
+
+    assert.equal(viaCli.code, EXIT_OK, `update --from ${from}`);
+    assert.equal(viaCli.out.trimEnd(), viaTool.content[0].text.trimEnd());
+  }
+
+  await server.close();
+});
+
+test('cli update refuses a value that is not a version', async () => {
+  // EXIT_ERROR, not EXIT_USAGE: the command was understood and the argument
+  // was wrong, which is the distinction run.js draws between the two codes.
+  assert.equal((await cli('update', '--from', 'latest')).code, EXIT_ERROR);
+});
+
 test('cli manifest is byte-identical to the manifest resource', async () => {
   const { client, server } = await connect();
 
