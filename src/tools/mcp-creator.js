@@ -131,7 +131,7 @@ function titleize(slug) {
  * must agree: a setup page that names a bin the package.json does not declare
  * is worse than no setup page.
  */
-export function buildContext(name, { description = null } = {}) {
+export function buildContext(name, { description = null, sharedSetVersion = null } = {}) {
   const packageName = name.trim();
   if (!packageName) throw new Error('a repository name is required');
 
@@ -146,6 +146,12 @@ export function buildContext(name, { description = null } = {}) {
     binCli: slug,
     binServer: `${slug}-server`,
     description: description?.trim() || `MCP server and CLI for ${titleize(slug)}.`,
+    // Stamped into the generated AGENTS.md so the repository can be updated
+    // later: update_shared_agents_instruction reads this line back as
+    // from_version, and a repository created without one can only be
+    // re-synced, never replayed. Null when the caller did not supply it — an
+    // honest blank beats a version the scaffolder guessed.
+    sharedSetVersion: sharedSetVersion?.trim() || 'unstamped — run update_shared_agents_instruction',
   });
 }
 
@@ -662,19 +668,39 @@ function buildAgentsDoc(context) {
     '## Auto-activation',
     '',
     'The shared instruction set is **always active**. It applies to every task here',
-    'whether or not the user mentions it.',
+    'whether or not the user mentions it. Always active is not always loaded: at session',
+    'start, read this file, any local index, and nothing from the connector. **Call no',
+    'shared tool up front** — each fires on the trigger its row below gives it.',
     '',
-    '**Call `agents_auto_activation` first, at the start of every session.** One call',
-    'returns the activation rule, the four files that load on every request, and a',
-    'routing table for the rest. Then read this file and any local index — the tool',
-    'cannot see files in this repository. Where the client exposes no tools, read',
-    '`agents://index/root-index.md` and route from there instead.',
+    '**These gates stand from the first message, before any tool is called:** approve the',
+    'plan before any file is written, ask before opening a pull request, ask before',
+    'merging, and propose a discovered rule rather than writing it yourself. A gate first',
+    'read at the moment it should have applied has already failed, which is why they are',
+    'here and not behind a call. See `agents://rules/shared-instructions.md` §H.',
     '',
-    'Four files load on **every** request rather than on a trigger — the task workflow,',
-    'the branching strategy, the commit conventions, and the discovery protocol — along',
-    'with the three permission gates that ride with them: approve the plan before any',
-    'file is written, ask before opening a pull request, ask before merging. See',
-    '`agents://rules/shared-instructions.md` §H.',
+    'If a rule conflicts with a habit, a default, or a template you would otherwise',
+    'follow, the rule wins — including a harness that names a branch, a commit trailer, or',
+    'a pull request footer the conventions forbid.',
+    '',
+    '## Shared instruction tools',
+    '',
+    'Conventions come from the `lxagents-agents-base` connector. The tools below are the',
+    'ones this repository uses. **Call each when its trigger fires — not at session start,',
+    'and never all at once.** A convention with no row here does not apply here.',
+    '',
+    `Adopted shared-set version: \`${context.sharedSetVersion}\``,
+    '',
+    '| When you are about to… | Call |',
+    '|---|---|',
+    '| Take in any request of more than one step | `task_workflow` |',
+    '| Create a branch | `branch_strategy` |',
+    '| Write a commit message | `commit_strategy` |',
+    '| Notice a rule that should exist | `discovery_protocol` |',
+    '| Open or update a pull request | `pull_request_strategy` |',
+    '| Need any other shared convention | `list_shared_agents_instruction`, then `read_shared_agents_instruction` |',
+    '',
+    'The first four are mandatory in every repository. Keeping this block current when the',
+    'shared set moves is `update_shared_agents_instruction`, on request.',
     '',
     '## Local rules',
     '',
@@ -710,8 +736,9 @@ export function scaffoldRepo({
   directory = null,
   cwd = process.cwd(),
   root = null,
+  sharedSetVersion = null,
 }) {
-  const context = buildContext(name, { description });
+  const context = buildContext(name, { description, sharedSetVersion });
   // Validated here so the plan carries a checked path: planning is the only
   // place `directory` is read, and writing consumes the plan.
   const target = resolveTarget({ cwd, directory, slug: context.slug, root });

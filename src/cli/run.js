@@ -175,6 +175,7 @@ async function dispatch({ command, rest, values, write }) {
           write: values.write ?? false,
           force: values.force ?? false,
           json: values.json,
+          sharedSetVersion: version,
         }),
       );
       return EXIT_OK;

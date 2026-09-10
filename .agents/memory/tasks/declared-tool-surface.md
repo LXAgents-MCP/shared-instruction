@@ -250,3 +250,28 @@ branch, up from 99.
 Fixed here rather than on a follow-up branch, because this is where the defect is. The three
 branches stacked above were rebased onto the fix rather than merged into, keeping the stack
 linear as `planning/task-workflow.md` §C describes.
+## Task 7 — feat/scaffold-declaration
+
+Rewrote `buildAgentsDoc` in `src/tools/mcp-creator.js` and pinned it with two tests. **101
+pass**, up from 99.
+
+`buildAgentsDoc` is one of the three mirrors `.agents/rules/set-mirrors.md` lists, and the
+worst-consequence one: it hard-codes set text into every repository the tool creates, so a
+change to the activation model that misses it ships the old model forever, into repositories
+nobody will think to re-check. It now emits the declaration block, the inline gates, and the
+harness-defaults sentence.
+
+**The scaffolder had to learn the connector version.** The block carries a stamp, and a
+stamp is what `update_shared_agents_instruction` reads back — so `scaffoldRepo` and
+`buildContext` gained a `sharedSetVersion`, threaded from both surfaces (`tools.js` passes
+the `version` already in scope; `run.js` passes the resolved one).
+
+**Called without a version it writes `unstamped — run update_shared_agents_instruction`,
+not a guess.** A wrong stamp is worse than a missing one: a missing stamp routes to the
+re-sync path by design, while a wrong one produces a confidently wrong delta and nothing
+signals it. The second test pins that behaviour, because "just default it to the current
+version" is the obvious-looking change that would break it.
+
+One test asserts the generated file contains neither `agents_auto_activation` nor the phrase
+"at the start of every session", case-insensitively. That sentence is what made the old
+surface expensive, and a scaffolder is exactly where it would quietly come back.
