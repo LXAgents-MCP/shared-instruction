@@ -134,3 +134,29 @@ writes that split into the setup procedure.
 `rules/auto-activation.md` also gained a second worked example under "Tool-injected defaults
 rank below rules" — a harness that names the branch to work on, in a format the convention
 forbids. That is this session, and it belonged in the rule rather than only in this record.
+
+## Task 4 — feat/tool-declaration
+
+Rewrote `content/prompts/agents-setup.md` §4.1(c) and (d), the Mode B tree comment, and four
+§7 verify bullets. 86 tests pass.
+
+(c) lost two steps. The six-step sequence is four: every remaining step reads a file in the
+repository itself, and the section now says outright that no shared tool is called at session
+start. The paragraph that used to name four always-loading files now names the four gates
+instead — approve the plan, ask before a pull request, ask before merging, propose rather
+than write — because those are the half that has to stand before the work, and the
+procedures are the half that can wait for a trigger.
+
+(d) replaced the mirrored trigger table with the **Shared instruction tools** block, and
+with four rules for filling it in: the first four rows are mandatory, the rest are selected
+rather than mirrored, local instruction rows are appended below, and the version is stamped.
+
+**One decision task 5 must honour.** The block carries a literal `{version}` placeholder,
+and `buildSetupPayload` names the concrete version in its preamble rather than substituting
+it into the published text. Mutating the text would make the setup payload stop being the
+file the resource serves, which is the property `content-publishing.md` asks for and
+`test/cli.test.js` pins for the read surface. So: prefix, never rewrite.
+
+A repository that adopts without a stamp is not broken — `agents-update.md` §1 already
+handles the unstamped case by falling back to a full re-sync. It just cannot have its
+history replayed, only its current state reconciled.
