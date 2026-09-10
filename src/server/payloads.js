@@ -9,7 +9,7 @@
  * neither surface owns it.
  */
 
-import { AUTO_ACTIVATION_URI, MANDATORY_STANDARD_FILES, MANIFEST_URI } from '../constants.js';
+import { MANIFEST_URI } from '../constants.js';
 import { manifestJson } from './manifest.js';
 
 /** What the connector is, and how to read it. Prefixes every payload. */
@@ -39,12 +39,17 @@ export function requireEntry(registry, uri) {
  * @param {Readonly<object>} registry
  * @returns {string}
  */
-export function buildSetupPayload(registry) {
+export function buildSetupPayload(registry, version) {
   const procedure = requireEntry(registry, 'agents://prompts/agents-setup.md');
 
   return `Follow the procedure below for this repository.
 
 ${CONNECTOR_PREAMBLE}
+
+**The version to stamp is \`${version}\`.** §4.1(d) has you write a Shared instruction tools
+block carrying \`Adopted shared-set version:\`; that is the value it takes. The procedure below
+writes it as \`{version}\` because it is published text and is served byte-for-byte as
+\`agents://prompts/agents-setup.md\` — substitute here, not there.
 
 ---
 
@@ -52,98 +57,32 @@ ${procedure.text}`;
 }
 
 /**
- * The shared half of the session-start sequence, in one payload.
+ * One standing convention, returned whole.
  *
- * Composed from registry entries rather than written out here, for the reason
- * `.agents/rules/set-mirrors.md` gives: a hard-coded copy of set text is a
- * mirror, and mirrors drift. Adding a file to `MANDATORY_STANDARD_FILES` is
- * therefore the whole change — nothing here names the four individually.
+ * Every convention tool is this function with a different URI. They return the
+ * registry entry rather than a summary for the reason the whole set exists: a
+ * caller who received a paraphrase of the task workflow is following something
+ * nobody wrote, and cannot tell.
  *
- * The payload leads with what it does *not* contain. Three steps of the
- * sequence read local files that no connector can see, and a caller who
- * believes one tool finished the job is activated wrong in a way nothing
- * signals afterwards.
- *
- * @param {Readonly<object>} registry
- * @returns {string}
- */
-export function buildActivationPayload(registry) {
-  const rule = requireEntry(registry, AUTO_ACTIVATION_URI);
-  const mandatory = MANDATORY_STANDARD_FILES.map((uri) => requireEntry(registry, uri));
-
-  const routing = registry.entries
-    .filter((entry) => entry.uri !== rule.uri && !MANDATORY_STANDARD_FILES.includes(entry.uri))
-    .map((entry) => `| \`${entry.path}\` | \`${entry.name}\` | ${entry.description} |`);
-
-  return `# Session activation
-
-The shared instruction set is now active for this session. It is a set of standing orders:
-it applies to every task from here on, whether or not the user mentions it.
-
-${CONNECTOR_PREAMBLE}
-
-## This call does not finish the job
-
-Three steps of the sequence below read files on **your** filesystem, which no connector can
-see. Read them yourself, now:
-
-1. \`{repo}/AGENTS.md\` — the repository's entry point (step 1).
-2. \`{repo}/.agents/index/root-index.md\` — its router (step 3).
-3. \`{repo}/.agents/index/memory-index.md\` — and load only the rows matching the request,
-   so you continue prior work instead of restarting it (step 4).
-
-Everything shared — steps 2, 5 and 6 — is below, in full. Nothing else needs reading before
-you start.
-
----
-
-${rule.text}
-
----
-
-# The four mandatory standard files
-
-These load on every request, not on a trigger, and they are reproduced here whole so that
-activation is one call. ${mandatory.length} files, in the order the rule names them.
-
-${mandatory.map((entry) => `---\n\n${entry.text}`).join('\n\n')}
-
----
-
-# Routing table for everything else
-
-Every remaining shared file. Route on the description; read one at a time with
-\`agents_read_instruction\` when a trigger fires. Do not bulk-read the set.
-
-| Path | name | Purpose |
-|---|---|---|
-${routing.join('\n')}
-
----
-
-You are activated. Read the three local files named above, then begin.`;
-}
-
-/**
- * The model naming convention.
- *
- * Returned whole rather than summarised. The rule ends in a four-point
- * checklist a caller is expected to apply, and a summary is precisely the form
- * in which a checklist stops being checkable.
+ * `lead` is the one line that says what to *do* with the text. It is tool prose,
+ * not set text, which is why it arrives as an argument instead of living here —
+ * see `.agents/rules/set-mirrors.md` on why `src/` never hard-codes the set.
  *
  * @param {Readonly<object>} registry
+ * @param {string} uri
+ * @param {string} lead
  * @returns {string}
  */
-export function buildModelNamingPayload(registry) {
-  const rule = requireEntry(registry, 'agents://rules/model-naming-convention.md');
+export function buildConventionPayload(registry, uri, lead) {
+  const entry = requireEntry(registry, uri);
 
-  return `Apply the convention below to every model identifier this repository stores, on every platform it integrates.
+  return `${lead}
 
 ${CONNECTOR_PREAMBLE}
 
 ---
 
-${rule.text}`;
+${entry.text}`;
 }
 
 /**

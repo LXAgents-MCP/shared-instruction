@@ -100,8 +100,8 @@ export function readInstruction(registry, identifier, { json = false } = {}) {
 }
 
 /** The AGENTS-SETUP procedure — the same text the prompt and tool deliver. */
-export function setupProcedure(registry) {
-  return buildSetupPayload(registry);
+export function setupProcedure(registry, version) {
+  return buildSetupPayload(registry, version);
 }
 
 /** The duplicate-instruction audit, manifest inlined — as the prompt delivers it. */

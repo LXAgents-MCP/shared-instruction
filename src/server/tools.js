@@ -9,10 +9,16 @@
  *
  * They add no content. The procedure tools return exactly what the matching
  * prompt returns (`payloads.js`), and the access tools read the same frozen
- * registry the resources do. If a client supports prompts and resources, prefer
- * those — nothing is lost either way.
+ * registry the resources do.
  *
- * `model_name_format` is the one read-only tool that computes rather than
+ * **One convention, one tool.** Until 1.0.0 a single `agents_auto_activation`
+ * returned the activation rule, four whole instruction files and a routing
+ * table — about 31,000 characters, charged to every session before the request
+ * was known. It is gone. Each convention is now its own call, and which of them
+ * a repository uses is declared in that repository's own `AGENTS.md` rather
+ * than fixed here. Nothing is called at session start.
+ *
+ * `agents_model_name_format` is the one read-only tool that computes rather than
  * returns. It applies the published naming convention instead of reprinting it,
  * so an integration gets one answer rather than re-deriving the rule at every
  * call site — but its text still lives in `content/`, not here.
@@ -28,12 +34,11 @@
 
 import { z } from 'zod';
 
-import { AUTO_ACTIVATION_URI, MANDATORY_STANDARD_FILES } from '../constants.js';
+import { AUTO_ACTIVATION_URI, CONVENTION_TOOLS, MANDATORY_TOOLS } from '../constants.js';
 
 import {
-  buildActivationPayload,
   buildAuditPayload,
-  buildModelNamingPayload,
+  buildConventionPayload,
   buildSetupPayload,
   requireEntry,
 } from './payloads.js';
@@ -60,31 +65,119 @@ const READ_ONLY = Object.freeze({
 });
 
 /**
+ * How each convention tool presents itself, keyed by the names `constants.js`
+ * pins. Prose about the *tool*; the convention's own text stays in `content/`.
+ *
+ * `lead` is the imperative line the payload opens with, and it matters more
+ * than it looks: a model that fetched a procedure and did not act on it is the
+ * failure `auto-activation.md` calls activation running while the workflow does
+ * not.
+ */
+const CONVENTION_PROSE = Object.freeze({
+  task_workflow: {
+    title: 'Read the task workflow',
+    lead: 'Follow the workflow below for this request, starting with the intake in §A.',
+    description: `Return the task workflow: intake, the plan gate, the reserved record and release slots, one branch per task stacked in order, and the pull request and merge gates.
+
+Call this when a request needs more than one step — before planning it, not after. It is the authority for how a request becomes tasks, and it is one of the four tools every repository declares.
+
+Takes no arguments.
+
+Returns: the full procedure as markdown, roughly 11,500 characters, §A through §F.
+
+**It does not carry the gates, it explains them.** Approving the plan, asking before a pull request, and asking before merging stand from the first message of the session, written inline in your repository's AGENTS.md. If they are not there, that is a defect to report — not a reason to skip them until this call.`,
+  },
+  branch_strategy: {
+    title: 'Read the branching strategy',
+    lead: 'Name and create the branch for this task according to the rules below.',
+    description: `Return the branching strategy: \`{type}/{primary-noun}\` naming, the allowed types, one task per branch, and how branches stack in dependency order.
+
+Call this before creating a branch. One of the four tools every repository declares.
+
+Takes no arguments.
+
+Returns: the full convention as markdown, roughly 2,300 characters, with worked good and bad examples.
+
+Note what it forbids, because a harness commonly supplies exactly these: tool-preset prefixes such as \`claude/\` or \`codex/\`, generated suffixes, and session identifiers. A branch name handed to you by your tooling does not outrank this convention.`,
+  },
+  commit_strategy: {
+    title: 'Read the commit conventions',
+    lead: 'Write this commit message according to the conventions below.',
+    description: `Return the commit conventions: Conventional Commits for commit messages, the subject and body rules, granularity, and what must ride in the same commit.
+
+Call this before writing a commit message. One of the four tools every repository declares.
+
+Takes no arguments.
+
+Returns: the full convention as markdown, roughly 2,200 characters, with a worked example.
+
+Two rules are easy to miss: index and memory updates ship in the **same** commit as the change they describe, and a session trailer your tooling appends must be stripped before the commit lands. Pull request titles use a different format — see \`pull_request_strategy\`.`,
+  },
+  discovery_protocol: {
+    title: 'Read the discovery protocol',
+    lead: 'Handle the finding below according to this protocol. Propose it; do not apply it.',
+    description: `Return the discovery protocol: how to handle a rule you think should exist — propose it, never write it into either set yourself — plus how to choose the target set and what counts as a finding.
+
+Call this when you notice something that ought to be a rule. One of the four tools every repository declares.
+
+Takes no arguments.
+
+Returns: the full protocol as markdown, roughly 4,500 characters, §A through §F.
+
+**The gate itself does not wait for this call.** Its canonical block is written inline in your repository's AGENTS.md precisely because this trigger fires only once you have recognised a finding — the moment at which writing the rule yourself is one edit away. This call supplies the rest of the procedure.`,
+  },
+  pull_request_strategy: {
+    title: 'Read the pull request conventions',
+    lead: 'Write this pull request title and body according to the template below.',
+    description: `Return the pull request conventions: human-readable titles and the required body sections.
+
+Call this before opening or updating a pull request — after the user has said yes to opening one, which is a separate gate this does not satisfy.
+
+Takes no arguments.
+
+Returns: the full template as markdown, roughly 2,900 characters.
+
+Pull request titles are **not** Conventional Commits: \`feat:\` belongs on a commit, never on a pull request title. No session link and no generated-by footer carrying one.`,
+  },
+  agents_model_naming_convention: {
+    title: 'Read the model naming convention',
+    lead: 'Apply the convention below to every model identifier this repository stores, on every platform it integrates.',
+    description: `Return the convention every stored model identifier follows: \`{platform}/{model}\`, lowercased before the write.
+
+Call this before adding a platform, storing an embedding, or writing anything into a model_name column — and when adding multi-platform support, so a direct API integration and a gateway such as OpenRouter produce the same string for the same model rather than two names nothing downstream can compare.
+
+Takes no arguments.
+
+Returns: the full rule as markdown, ending in the four-point checklist a stored name must satisfy.
+
+Call \`agents_model_name_format\` to build a compliant name instead of assembling one by hand.`,
+  },
+});
+
+/**
  * @param {import('@modelcontextprotocol/sdk/server/mcp.js').McpServer} server
  * @param {Readonly<object>} registry
  * @param {string} version
  */
 export function registerTools(server, registry, version) {
-  server.registerTool(
-    'agents_auto_activation',
-    {
-      title: 'Activate the instruction set for this session',
-      description: `Return the shared half of the session-start sequence in one call: the auto-activation rule, the four files that load on every request (task workflow, branching strategy, commit conventions, discovery protocol), and a routing table for everything else.
+  // One registration per convention. A name in CONVENTION_TOOLS without prose
+  // here throws at boot rather than publishing a tool with no description,
+  // which several clients will not surface at all.
+  for (const { name, uri } of CONVENTION_TOOLS) {
+    const prose = CONVENTION_PROSE[name];
+    if (!prose) throw new Error(`convention tool has no description: ${name}`);
+    // Fails now, not on the first call, if content/ moved underneath it.
+    requireEntry(registry, uri);
 
-**Call this first, at the start of every session, before doing any work.** One call instead of six reads. The instruction set is always active — it applies whether or not the user mentions it — so this is not optional and does not need a trigger phrase.
-
-It does NOT return everything. Three steps of the sequence read files on the caller's own filesystem, which no connector can see: {repo}/AGENTS.md, {repo}/.agents/index/root-index.md, and {repo}/.agents/index/memory-index.md. The payload names them; read them yourself after this call.
-
-Takes no arguments.
-
-Returns: roughly 31,000 characters of markdown — the activation rule and four instruction files in full, then a table of every remaining shared file with the description to route on.`,
-      annotations: READ_ONLY,
-    },
-    async () => text(buildActivationPayload(registry)),
-  );
+    server.registerTool(
+      name,
+      { title: prose.title, description: prose.description, annotations: READ_ONLY },
+      async () => text(buildConventionPayload(registry, uri, prose.lead)),
+    );
+  }
 
   server.registerTool(
-    'agents_setup',
+    'setup_shared_agents_instruction',
     {
       title: 'Set up the agent instruction system',
       description: `Return the full AGENTS-SETUP procedure for the current repository.
@@ -93,16 +186,16 @@ Use this when asked to set up, adopt, scaffold, or re-write a repository's agent
 
 Takes no arguments.
 
-Returns: the complete procedure as markdown, roughly 27,000 characters, prefixed with a note that this connector is the shared instruction set it refers to.
+Returns: the complete procedure as markdown, roughly 28,000 characters, prefixed with the connector's current version — §4.1(d) has you write that version into the repository's Shared instruction tools block, and it is what \`update_shared_agents_instruction\` later reads back.
 
 Equivalent to the \`agents-setup\` prompt; use the prompt instead if your client exposes prompts.`,
       annotations: READ_ONLY,
     },
-    async () => text(buildSetupPayload(registry)),
+    async () => text(buildSetupPayload(registry, version)),
   );
 
   server.registerTool(
-    'agents_check_duplicate_instructions',
+    'check_duplicate_shared_agents_instruction',
     {
       title: 'Check for duplicated agent instructions',
       description: `Return the duplicate-instruction audit procedure, with the shared set manifest inlined.
@@ -136,12 +229,12 @@ Deletion requires per-file user approval. Report every finding with a verdict an
   };
 
   server.registerTool(
-    'agents_list_instructions',
+    'list_shared_agents_instruction',
     {
       title: 'List the shared instruction files',
       description: `List every file in the shared instruction set, with the description to route on and the content hash to compare against.
 
-Use this to discover what exists before reading anything — one call instead of opening files to find out what they cover. Route on the descriptions, then read only what you need with agents_read_instruction.
+Use this to discover what exists before reading anything — one call instead of opening files to find out what they cover. Route on the descriptions, then read only what you need with read_shared_agents_instruction.
 
 Args:
   - folder (string, optional): restrict to one folder, e.g. "rules", "git", "planning", "prompts", "creators", "index". Omit for everything.
@@ -194,12 +287,12 @@ Equivalent to reading the agents://manifest.json resource.`,
   );
 
   server.registerTool(
-    'agents_read_instruction',
+    'read_shared_agents_instruction',
     {
       title: 'Read one shared instruction file',
       description: `Return the full text of a single file from the shared instruction set.
 
-Use this after agents_list_instructions has told you which file you need. Read one file at a time; do not walk the whole set.
+Use this after list_shared_agents_instruction has told you which file you need. Read one file at a time; do not walk the whole set.
 
 Args:
   - instruction (string, required): the file's frontmatter name ("directory-architecture"), its path ("rules/directories.md"), or its full URI ("agents://rules/directories.md"). All three work.
@@ -223,7 +316,7 @@ Errors: if nothing matches, returns the closest available names so you can retry
           `No instruction matches "${instruction}".` +
             (near.length
               ? ` Did you mean: ${near.join(', ')}?`
-              : ' Call agents_list_instructions to see what exists.'),
+              : ' Call list_shared_agents_instruction to see what exists.'),
         );
       }
 
@@ -232,30 +325,12 @@ Errors: if nothing matches, returns the closest available names so you can retry
   );
 
   server.registerTool(
-    'model_naming_convention',
-    {
-      title: 'Read the model naming convention',
-      description: `Return the convention every stored model identifier follows: \`{platform}/{model}\`, lowercased before the write.
-
-Use this before adding a platform, storing an embedding, or writing anything into a model_name column — and when adding multi-platform support, so a direct API integration and a gateway such as OpenRouter produce the same string for the same model rather than two names nothing downstream can compare.
-
-Takes no arguments.
-
-Returns: the full rule as markdown, ending in the four-point checklist a stored name must satisfy.
-
-Call model_name_format to build a compliant name instead of assembling one by hand.`,
-      annotations: READ_ONLY,
-    },
-    async () => text(buildModelNamingPayload(registry)),
-  );
-
-  server.registerTool(
-    'model_name_format',
+    'agents_model_name_format',
     {
       title: 'Build a compliant model name',
       description: `Compose a stored model identifier from a platform and that platform's own model id, applying the naming convention: lowercase both, join with a single "/".
 
-Use this at every call site that writes a model_name, on a direct API integration as much as on a gateway route — one platform means one spelling only if the same function produces it. Read model_naming_convention first if you need the reasoning.
+Use this at every call site that writes a model_name, on a direct API integration as much as on a gateway route — one platform means one spelling only if the same function produces it. Read agents_model_naming_convention first if you need the reasoning.
 
 Args:
   - platform (string, required): the provider, e.g. "OpenAI". One segment, no "/".
@@ -396,7 +471,13 @@ Returns: the plan — package name, server id, both bin names, target directory,
   // first call, matching how the registry validates content at boot.
   requireEntry(registry, 'agents://prompts/agents-setup.md');
   requireEntry(registry, 'agents://rules/duplicate-instruction-audit.md');
-  requireEntry(registry, 'agents://rules/model-naming-convention.md');
   requireEntry(registry, AUTO_ACTIVATION_URI);
-  for (const uri of MANDATORY_STANDARD_FILES) requireEntry(registry, uri);
+
+  // The four every repository declares must exist as tools, not merely as
+  // content. Dropping one from CONVENTION_TOOLS would otherwise leave
+  // auto-activation.md promising a call nothing publishes.
+  const published = new Set(CONVENTION_TOOLS.map((tool) => tool.name));
+  for (const name of MANDATORY_TOOLS) {
+    if (!published.has(name)) throw new Error(`mandatory tool is not published: ${name}`);
+  }
 }

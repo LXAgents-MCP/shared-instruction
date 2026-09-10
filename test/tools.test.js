@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 
-import { AUTO_ACTIVATION_URI, MANDATORY_STANDARD_FILES } from '../src/constants.js';
+import { CONVENTION_TOOLS, MANDATORY_TOOLS } from '../src/constants.js';
 import { loadRegistry } from '../src/content/registry.js';
 import { createServer } from '../src/server/create-server.js';
 import { requireEntry } from '../src/server/payloads.js';
@@ -25,14 +25,18 @@ test('tools/list: publishes every tool, each described and non-destructive', asy
   const names = tools.map((tool) => tool.name).sort();
 
   assert.deepEqual(names, [
-    'agents_auto_activation',
-    'agents_check_duplicate_instructions',
-    'agents_list_instructions',
-    'agents_read_instruction',
-    'agents_setup',
+    'agents_model_name_format',
+    'agents_model_naming_convention',
+    'branch_strategy',
+    'check_duplicate_shared_agents_instruction',
+    'commit_strategy',
+    'discovery_protocol',
+    'list_shared_agents_instruction',
     'mcp_creator',
-    'model_name_format',
-    'model_naming_convention',
+    'pull_request_strategy',
+    'read_shared_agents_instruction',
+    'setup_shared_agents_instruction',
+    'task_workflow',
   ]);
 
   for (const tool of tools) {
@@ -66,10 +70,9 @@ test('the zero-argument tools declare no required arguments', async () => {
 
   const { tools } = await client.listTools();
   for (const name of [
-    'agents_setup',
-    'agents_check_duplicate_instructions',
-    'model_naming_convention',
-    'agents_auto_activation',
+    'setup_shared_agents_instruction',
+    'check_duplicate_shared_agents_instruction',
+    ...CONVENTION_TOOLS.map((tool) => tool.name),
   ]) {
     const tool = tools.find((candidate) => candidate.name === name);
     assert.deepEqual(tool.inputSchema.required ?? [], [], `${name} must be callable with no args`);
@@ -78,12 +81,12 @@ test('the zero-argument tools declare no required arguments', async () => {
   await server.close();
 });
 
-test('agents_setup returns the same text as the agents-setup prompt', async () => {
+test('setup_shared_agents_instruction returns the same text as the agents-setup prompt', async () => {
   const { client, server } = await connect();
 
   // The two surfaces exist for different clients; a repository set up through
   // one must get identical instructions to one set up through the other.
-  const viaTool = await client.callTool({ name: 'agents_setup', arguments: {} });
+  const viaTool = await client.callTool({ name: 'setup_shared_agents_instruction', arguments: {} });
   const viaPrompt = await client.getPrompt({ name: 'agents-setup' });
 
   assert.notEqual(viaTool.isError, true);
@@ -93,21 +96,21 @@ test('agents_setup returns the same text as the agents-setup prompt', async () =
   await server.close();
 });
 
-test('agents_setup is callable with arguments omitted entirely', async () => {
+test('setup_shared_agents_instruction is callable with arguments omitted entirely', async () => {
   const { client, server } = await connect();
 
-  const result = await client.callTool({ name: 'agents_setup' });
+  const result = await client.callTool({ name: 'setup_shared_agents_instruction' });
   assert.notEqual(result.isError, true);
   assert.ok(result.content[0].text.length > 10_000);
 
   await server.close();
 });
 
-test('agents_check_duplicate_instructions matches its prompt and inlines the manifest', async () => {
+test('check_duplicate_shared_agents_instruction matches its prompt and inlines the manifest', async () => {
   const { client, server, registry } = await connect();
 
   const viaTool = await client.callTool({
-    name: 'agents_check_duplicate_instructions',
+    name: 'check_duplicate_shared_agents_instruction',
     arguments: {},
   });
   const viaPrompt = await client.getPrompt({ name: 'check-duplicate-agents-instruction' });
@@ -122,10 +125,10 @@ test('agents_check_duplicate_instructions matches its prompt and inlines the man
   await server.close();
 });
 
-test('agents_list_instructions returns every file with structured output', async () => {
+test('list_shared_agents_instruction returns every file with structured output', async () => {
   const { client, server, registry } = await connect();
 
-  const result = await client.callTool({ name: 'agents_list_instructions', arguments: {} });
+  const result = await client.callTool({ name: 'list_shared_agents_instruction', arguments: {} });
 
   assert.notEqual(result.isError, true);
   assert.equal(result.structuredContent.count, registry.size);
@@ -139,11 +142,11 @@ test('agents_list_instructions returns every file with structured output', async
   await server.close();
 });
 
-test('agents_list_instructions filters by folder', async () => {
+test('list_shared_agents_instruction filters by folder', async () => {
   const { client, server, registry } = await connect();
 
   const result = await client.callTool({
-    name: 'agents_list_instructions',
+    name: 'list_shared_agents_instruction',
     arguments: { folder: 'git' },
   });
 
@@ -154,11 +157,11 @@ test('agents_list_instructions filters by folder', async () => {
   await server.close();
 });
 
-test('agents_list_instructions names the real folders when given an unknown one', async () => {
+test('list_shared_agents_instruction names the real folders when given an unknown one', async () => {
   const { client, server } = await connect();
 
   const result = await client.callTool({
-    name: 'agents_list_instructions',
+    name: 'list_shared_agents_instruction',
     arguments: { folder: 'nope' },
   });
 
@@ -169,7 +172,7 @@ test('agents_list_instructions names the real folders when given an unknown one'
   await server.close();
 });
 
-test('agents_read_instruction accepts a name, a path, or a URI', async () => {
+test('read_shared_agents_instruction accepts a name, a path, or a URI', async () => {
   const { client, server, registry } = await connect();
 
   const expected = registry.get('agents://rules/directories.md').text;
@@ -179,7 +182,7 @@ test('agents_read_instruction accepts a name, a path, or a URI', async () => {
     'rules/directories.md',
     'agents://rules/directories.md',
   ]) {
-    const result = await client.callTool({ name: 'agents_read_instruction', arguments: { instruction } });
+    const result = await client.callTool({ name: 'read_shared_agents_instruction', arguments: { instruction } });
     assert.notEqual(result.isError, true, `${instruction} should resolve`);
     assert.equal(result.content[0].text, expected, `${instruction} returned the wrong file`);
   }
@@ -187,11 +190,11 @@ test('agents_read_instruction accepts a name, a path, or a URI', async () => {
   await server.close();
 });
 
-test('agents_read_instruction suggests near matches instead of just refusing', async () => {
+test('read_shared_agents_instruction suggests near matches instead of just refusing', async () => {
   const { client, server } = await connect();
 
   const result = await client.callTool({
-    name: 'agents_read_instruction',
+    name: 'read_shared_agents_instruction',
     arguments: { instruction: 'directories' },
   });
 
@@ -201,182 +204,129 @@ test('agents_read_instruction suggests near matches instead of just refusing', a
   await server.close();
 });
 
-test('agents_read_instruction points at the listing when nothing is close', async () => {
+test('read_shared_agents_instruction points at the listing when nothing is close', async () => {
   const { client, server } = await connect();
 
   const result = await client.callTool({
-    name: 'agents_read_instruction',
+    name: 'read_shared_agents_instruction',
     arguments: { instruction: 'zzzzz' },
   });
 
   assert.equal(result.isError, true);
-  assert.match(result.content[0].text, /agents_list_instructions/);
+  assert.match(result.content[0].text, /list_shared_agents_instruction/);
 
   await server.close();
 });
 
-test('agents_auto_activation inlines the rule and every mandatory standard file', async () => {
+test('every convention tool returns its content file whole', async () => {
   const { client, server, registry } = await connect();
 
-  const result = await client.callTool({ name: 'agents_auto_activation', arguments: {} });
-  const body = result.content[0].text;
-
-  assert.notEqual(result.isError, true);
-
-  // Whole files, not summaries: a caller that got a paraphrase of the task
-  // workflow is activated wrong and cannot tell.
-  for (const uri of [AUTO_ACTIVATION_URI, ...MANDATORY_STANDARD_FILES]) {
+  // Whole files, not summaries. A caller that got a paraphrase of the task
+  // workflow is following something nobody wrote and cannot tell.
+  for (const { name, uri } of CONVENTION_TOOLS) {
+    const result = await client.callTool({ name, arguments: {} });
+    assert.notEqual(result.isError, true, `${name} should succeed`);
     const entry = registry.get(uri);
-    assert.ok(body.includes(entry.text), `${uri} must be inlined whole`);
+    assert.ok(entry, `${uri} must resolve`);
+    assert.ok(result.content[0].text.endsWith(entry.text), `${name} must return ${uri} whole`);
   }
 
   await server.close();
 });
 
-test('agents_auto_activation names the local files it cannot return', async () => {
+test('every convention tool is callable with arguments omitted entirely', async () => {
   const { client, server } = await connect();
 
-  const body = (await client.callTool({ name: 'agents_auto_activation' })).content[0].text;
-
-  // The failure this guards: one call, a caller who believes it finished, and
-  // three steps of the sequence silently skipped.
-  assert.match(body, /This call does not finish the job/);
-  for (const local of [
-    '{repo}/AGENTS.md',
-    '{repo}/.agents/index/root-index.md',
-    '{repo}/.agents/index/memory-index.md',
-  ]) {
-    assert.ok(body.includes(local), `${local} must be named as a local read`);
+  for (const { name } of CONVENTION_TOOLS) {
+    const result = await client.callTool({ name });
+    assert.notEqual(result.isError, true, `${name} must be callable with no args`);
   }
 
   await server.close();
 });
 
-test('agents_auto_activation routes to every file it did not inline', async () => {
-  const { client, server, registry } = await connect();
-
-  const body = (await client.callTool({ name: 'agents_auto_activation' })).content[0].text;
-  const inlined = new Set([AUTO_ACTIVATION_URI, ...MANDATORY_STANDARD_FILES]);
-
-  // Inlined or routed to — no shared file may be unreachable after one call.
-  for (const entry of registry.entries) {
-    if (inlined.has(entry.uri)) continue;
-    assert.ok(body.includes(`\`${entry.path}\``), `${entry.path} must appear in the routing table`);
-  }
-
-  await server.close();
-});
-
-test('agents_auto_activation carries the discovery gate, which has no trigger row', async () => {
+test('no convention tool returns anything near the old activation payload', async () => {
   const { client, server } = await connect();
 
-  const body = (await client.callTool({ name: 'agents_auto_activation' })).content[0].text;
+  // The point of 1.0.0. agents_auto_activation returned ~31,000 characters on
+  // every session start; the largest convention here is the task workflow at
+  // well under half that, and it is charged only when a request needs it.
+  for (const { name } of CONVENTION_TOOLS) {
+    const body = (await client.callTool({ name })).content[0].text;
+    assert.ok(body.length < 15_000, `${name} returned ${body.length} characters`);
+  }
 
-  // discovery-protocol.md is deliberately absent from the trigger table, so a
-  // payload that dropped it would leave the gate unreachable at session start.
+  await server.close();
+});
+
+test('the four mandatory tools are all published', async () => {
+  const { client, server } = await connect();
+
+  // Written out literally rather than derived from the constant it guards, for
+  // the reason the deleted MANDATORY_STANDARD_FILES pin existed: every other
+  // test iterates the constant, so a name dropped from it takes its own
+  // coverage with it and nothing fails.
+  assert.deepEqual(
+    [...MANDATORY_TOOLS],
+    ['task_workflow', 'branch_strategy', 'commit_strategy', 'discovery_protocol'],
+  );
+
+  const { tools } = await client.listTools();
+  const names = new Set(tools.map((tool) => tool.name));
+  for (const name of MANDATORY_TOOLS) {
+    assert.ok(names.has(name), `${name} is mandatory in every repository and must be published`);
+  }
+
+  await server.close();
+});
+
+test('discovery_protocol still carries the gate that has no trigger of its own', async () => {
+  const { client, server } = await connect();
+
+  const body = (await client.callTool({ name: 'discovery_protocol' })).content[0].text;
+
+  // The gate itself is written inline in a repository's AGENTS.md, but this
+  // tool is where the canonical block lives. A payload that dropped it would
+  // leave nothing to copy that block from.
   assert.match(body, /do NOT create or edit it yourself/);
   assert.match(body, /Never batch-apply, never apply silently/);
 
   await server.close();
 });
 
-test('agents_auto_activation carries the plan gate and the workflow-fallback recovery', async () => {
+test('task_workflow carries the plan gate and the whole procedure', async () => {
   const { client, server } = await connect();
 
-  const body = (await client.callTool({ name: 'agents_auto_activation' })).content[0].text;
-
-  // Both behaviours exist only inside files the payload inlines, and both fail
-  // silently when dropped: a session with no plan gate starts writing and looks
-  // productive, and one with no fallback bypasses the workflow and looks fine.
-  assert.match(body, /Presenting the plan is not the gate/);
-  assert.match(body, /What does not count:/);
-  assert.match(body, /When activation runs but the workflow does not/);
-  assert.match(body, /Write the diagnostic report/);
-
-  await server.close();
-});
-
-test('MANDATORY_STANDARD_FILES pins the four files, in order, and every one resolves', async () => {
-  const registry = await loadRegistry();
-
-  // Written out literally rather than derived from the constant it guards.
-  // Every other activation test iterates MANDATORY_STANDARD_FILES, so a URI
-  // dropped from it takes its own coverage with it: the payload gets shorter,
-  // the dropped file quietly reappears in the routing table as though it had
-  // never been mandatory, and all 80 tests still pass. This assertion is the
-  // only thing that fails in that case.
-  assert.deepEqual(
-    [...MANDATORY_STANDARD_FILES],
-    [
-      'agents://planning/task-workflow.md',
-      'agents://git/branching-strategy.md',
-      'agents://git/commit-conventions.md',
-      'agents://rules/discovery-protocol.md',
-    ],
-  );
-
-  // The lookup registerTools performs at boot. Pinned here too, so a file
-  // renamed under content/ fails as a test rather than as a startup crash on
-  // a deployment nobody is watching.
-  for (const uri of MANDATORY_STANDARD_FILES) {
-    const entry = requireEntry(registry, uri);
-    assert.equal(entry.uri, uri);
-    assert.ok(entry.text.length > 0, `${uri} must have content to inline`);
-  }
-});
-
-test('agents_auto_activation inlines planning/task-workflow.md inside the mandatory section', async () => {
-  const { client, server, registry } = await connect();
-
-  const body = (await client.callTool({ name: 'agents_auto_activation' })).content[0].text;
-  const workflow = registry.get('agents://planning/task-workflow.md');
-
-  const heading = body.indexOf('# The four mandatory standard files');
-  const routing = body.indexOf('# Routing table for everything else');
-  const inlined = body.indexOf(workflow.text);
-
-  assert.ok(heading !== -1, 'the mandatory section must exist');
-  assert.ok(routing > heading, 'the routing table must follow the mandatory section');
-
-  // Named on its own rather than left to the loop above because this is the
-  // file the workflow itself depends on: a session that never reads it plans
-  // nothing, asks for no intake, and stacks no branches — and the omission
-  // looks like a shorter payload, not like an error.
-  assert.ok(inlined > heading && inlined < routing, 'task-workflow.md must sit in the section');
+  const body = (await client.callTool({ name: 'task_workflow' })).content[0].text;
 
   // §A and §F are the first and last things a truncated inline would lose.
   assert.match(body, /## A\. Intake — Goal, Objective, Detail/);
   assert.match(body, /## F\. Pull requests and merging/);
-
-  // The heading says "four" in prose while the count beneath it is computed.
-  // Tying them together is what stops the word becoming a lie.
-  assert.ok(body.includes(`${MANDATORY_STANDARD_FILES.length} files, in the order`));
+  assert.match(body, /Presenting the plan is not the gate/);
+  assert.match(body, /What does not count:/);
 
   await server.close();
 });
 
-test('agents_auto_activation never routes to a file it already inlined', async () => {
-  const { client, server, registry } = await connect();
+test('no tool advertises calling anything at session start', async () => {
+  const { client, server } = await connect();
 
-  const body = (await client.callTool({ name: 'agents_auto_activation' })).content[0].text;
-  const table = body.slice(body.indexOf('# Routing table for everything else'));
-
-  // The converse of the routing test above, and the half that catches a
-  // filter that stopped filtering: a mandatory file listed as somewhere to go
-  // "when a trigger fires" reads as optional, which is the one thing it is not.
-  for (const uri of [AUTO_ACTIVATION_URI, ...MANDATORY_STANDARD_FILES]) {
-    const entry = registry.get(uri);
-    assert.ok(entry, `${uri} must resolve`);
-    assert.ok(!table.includes(`\`${entry.path}\``), `${entry.path} is inlined; do not route to it`);
+  const { tools } = await client.listTools();
+  for (const tool of tools) {
+    assert.doesNotMatch(
+      tool.description,
+      /at the start of every session|call this first/i,
+      `${tool.name} must not tell a session to call it up front`,
+    );
   }
 
   await server.close();
 });
 
-test('model_naming_convention returns the published rule verbatim', async () => {
+test('agents_model_naming_convention returns the published rule verbatim', async () => {
   const { client, server, registry } = await connect();
 
-  const result = await client.callTool({ name: 'model_naming_convention', arguments: {} });
+  const result = await client.callTool({ name: 'agents_model_naming_convention', arguments: {} });
 
   assert.notEqual(result.isError, true);
   // Served from the registry, not restated in the tool — the whole point of
@@ -388,20 +338,20 @@ test('model_naming_convention returns the published rule verbatim', async () => 
   await server.close();
 });
 
-test('model_naming_convention is callable with arguments omitted entirely', async () => {
+test('agents_model_naming_convention is callable with arguments omitted entirely', async () => {
   const { client, server } = await connect();
 
-  const result = await client.callTool({ name: 'model_naming_convention' });
+  const result = await client.callTool({ name: 'agents_model_naming_convention' });
 
   assert.notEqual(result.isError, true);
   await server.close();
 });
 
-test('model_name_format lowercases both segments and joins them with one slash', async () => {
+test('agents_model_name_format lowercases both segments and joins them with one slash', async () => {
   const { client, server } = await connect();
 
   const result = await client.callTool({
-    name: 'model_name_format',
+    name: 'agents_model_name_format',
     arguments: { platform: 'OpenAI', platform_model: 'Text-Embedding-3-Small' },
   });
 
@@ -417,11 +367,11 @@ test('model_name_format lowercases both segments and joins them with one slash',
   await server.close();
 });
 
-test('model_name_format reports input that was already normalized', async () => {
+test('agents_model_name_format reports input that was already normalized', async () => {
   const { client, server } = await connect();
 
   const result = await client.callTool({
-    name: 'model_name_format',
+    name: 'agents_model_name_format',
     arguments: { platform: 'openai', platform_model: 'text-embedding-3-small' },
   });
 
@@ -431,7 +381,7 @@ test('model_name_format reports input that was already normalized', async () => 
   await server.close();
 });
 
-test('model_name_format output satisfies the rule it implements', async () => {
+test('agents_model_name_format output satisfies the rule it implements', async () => {
   const { client, server } = await connect();
 
   // The rule's checklist, applied to the tool's own output. If the two ever
@@ -441,7 +391,7 @@ test('model_name_format output satisfies the rule it implements', async () => {
     { platform: 'Anthropic', platform_model: 'Claude-Sonnet' },
     { platform: 'voyage', platform_model: 'voyage-3' },
   ]) {
-    const result = await client.callTool({ name: 'model_name_format', arguments: args });
+    const result = await client.callTool({ name: 'agents_model_name_format', arguments: args });
     const value = result.structuredContent.model_name;
 
     assert.equal(value.split('/').length, 2, `${value}: exactly one separator`);
@@ -452,11 +402,11 @@ test('model_name_format output satisfies the rule it implements', async () => {
   await server.close();
 });
 
-test('model_name_format refuses a blank segment', async () => {
+test('agents_model_name_format refuses a blank segment', async () => {
   const { client, server } = await connect();
 
   const result = await client.callTool({
-    name: 'model_name_format',
+    name: 'agents_model_name_format',
     arguments: { platform: 'openai', platform_model: '   ' },
   });
 
@@ -466,13 +416,13 @@ test('model_name_format refuses a blank segment', async () => {
   await server.close();
 });
 
-test('model_name_format refuses a model id that already carries its platform', async () => {
+test('agents_model_name_format refuses a model id that already carries its platform', async () => {
   const { client, server } = await connect();
 
   // Silently composing this would store openai/openai/text-embedding-3-small,
   // which is exactly the uncomparable name the convention exists to prevent.
   const result = await client.callTool({
-    name: 'model_name_format',
+    name: 'agents_model_name_format',
     arguments: { platform: 'OpenAI', platform_model: 'openai/text-embedding-3-small' },
   });
 
@@ -483,14 +433,24 @@ test('model_name_format refuses a model id that already carries its platform', a
   await server.close();
 });
 
-test('initialize instructions cover both surfaces and the on-request audit', async () => {
+test('initialize instructions route by trigger and name nothing to call up front', async () => {
   const { client, server } = await connect();
 
   const instructions = client.getInstructions();
-  assert.match(instructions, /agents_setup/);
-  assert.match(instructions, /agents_list_instructions/);
-  assert.match(instructions, /agents_auto_activation/);
-  assert.match(instructions, /model_naming_convention/);
+
+  // The behaviour 1.0.0 exists to change: a client that reads this must not
+  // come away thinking there is an opening call to make.
+  assert.match(instructions, /Call nothing at session start/);
+  assert.match(instructions, /Shared\n?instruction tools/);
+  assert.doesNotMatch(instructions, /agents_auto_activation/);
+
+  for (const name of MANDATORY_TOOLS) {
+    assert.ok(instructions.includes(name), `${name} must be named in the instructions`);
+  }
+
+  assert.match(instructions, /setup_shared_agents_instruction/);
+  assert.match(instructions, /list_shared_agents_instruction/);
+  assert.match(instructions, /read_shared_agents_instruction/);
   assert.match(instructions, /only when the user asks/);
   assert.match(instructions, /same text/);
 
