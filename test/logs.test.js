@@ -80,9 +80,12 @@ test('releasesSince returns only newer releases, oldest first', async () => {
 
   // Derived, not hard-coded: pinning the literal here makes every release
   // fail this test for a reason that has nothing to do with the parser.
-  const newest = readReleases(registry)
-    .map((release) => release.version)
-    .reduce((a, b) => (compareVersions(parseVersion(a), parseVersion(b)) >= 0 ? a : b));
+  // Seeded, for the same reason releasesSince seeds its own reduce.
+  const [first, ...rest] = readReleases(registry).map((release) => release.version);
+  const newest = rest.reduce(
+    (a, b) => (compareVersions(parseVersion(a), parseVersion(b)) >= 0 ? a : b),
+    first,
+  );
   assert.equal(current, newest);
   assert.equal(versions.at(-1), newest, 'the newest release is last, since the order is oldest first');
 });
