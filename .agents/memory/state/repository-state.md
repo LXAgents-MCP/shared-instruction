@@ -22,28 +22,44 @@ a pull request, ask before merging. The sentence naming them is reproduced in fo
 and `.agents/wiki/security/security-boundaries.md` (the SOP), loaded by a **local** trigger
 row. Its first rule is that a security context never crosses repositories.
 
-**Structure.** `content/` holds the 28 published instruction files. `.agents/rules/`
+**Structure.** `content/` holds the 29 published instruction files. `.agents/rules/`
 holds three local rules: `repository.md`, `content-publishing.md`, and `set-mirrors.md`,
-the last naming every place outside `content/` that copies published set text. `.agents/`
+the last naming all four places outside `content/` that copy published set text. `.agents/`
 holds
 this repository's own instruction set. `wiki/` holds human documentation. `src/` and
 `test/` hold the server and the CLI.
 
-**Surface.** 2 prompts (`agents-setup`, `check-duplicate-agents-instruction`), 29
-resources (28 instruction files plus `agents://manifest.json`), and 8 tools — 7
-read-only (`agents_auto_activation`, `agents_setup`,
-`agents_check_duplicate_instructions`, `agents_list_instructions`,
-`agents_read_instruction`, `model_naming_convention`, `model_name_format`) and one that
-writes (`mcp_creator`, which plans by default).
+**Surface.** 3 prompts (`agents-setup`, `agents-update`, `check-duplicate-agents-instruction`),
+30 resources (29 instruction files plus `agents://manifest.json`), and 13 tools — 12
+read-only and one that writes (`mcp_creator`, which plans by default).
 
-`agents_auto_activation` is the session-start entry point as of `0.12.0`: one call returns
-`rules/auto-activation.md`, the four mandatory standard files whole, and a routing table
-built by subtracting what was inlined. It cannot return the three local reads — the
-repository's own `AGENTS.md`, root index, and memory index — and says so before anything
-else.
-Prompts and tools deliver identical text from `src/server/payloads.js`.
+**As of `1.0.0`, nothing is called at session start.** `agents_auto_activation` is gone; six
+convention tools replace it, one content file each, fired by a trigger:
 
-`model_name_format` is the only read-only tool that computes rather than returns text. It
+| Tool | Serves | Chars |
+|---|---|---|
+| `task_workflow` | `planning/task-workflow.md` | 11,778 |
+| `branch_strategy` | `git/branching-strategy.md` | 2,620 |
+| `commit_strategy` | `git/commit-conventions.md` | 2,513 |
+| `discovery_protocol` | `rules/discovery-protocol.md` | 4,743 |
+| `pull_request_strategy` | `git/pull-request-template.md` | 3,173 |
+| `agents_model_naming_convention` | `rules/model-naming-convention.md` | 4,138 |
+
+The first four are declared by every repository. All six together are 28,965 characters —
+less than the single call they replaced, which was charged unconditionally. Which of them a
+repository uses is declared in that repository's own `AGENTS.md`, not fixed here.
+
+The other seven: `setup_shared_agents_instruction`, `update_shared_agents_instruction`,
+`check_duplicate_shared_agents_instruction`, `list_shared_agents_instruction`,
+`read_shared_agents_instruction`, `agents_model_name_format`, and `mcp_creator`. The middle
+two of the first three run **only when the user asks** — the audit proposes deletions and
+the update edits `AGENTS.md`.
+
+Prompts and tools deliver identical text from `src/server/payloads.js`, with one deliberate
+exception: `agents-update` takes no arguments, so the prompt is always the re-sync path
+while the tool takes `from_version` and returns a delta.
+
+`agents_model_name_format` is the only read-only tool that computes rather than returns text. It
 applies `rules/model-naming-convention.md` — lowercase both segments, join with one `/` —
 and `test/tools.test.js` runs that rule's checklist against its output, so the two cannot
 drift apart silently.

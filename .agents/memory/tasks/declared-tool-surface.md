@@ -61,18 +61,24 @@ commits before being abandoned, so nothing was lost. `Co-Authored-By:` naming a 
 
 | # | Title | Scope | Repository | Branch | Files / areas | PR |
 |---|---|---|---|---|---|---|
-| 1 | The record | This file and its index row, written before any of it is built. | `shared-instruction` | `chore/declared-tool-surface-plan` | `.agents/memory/`, `.agents/index/memory-index.md` | |
-| 2 | The update procedure | The published procedure a consumer follows to move to a new set version. | `shared-instruction` | `feat/update-procedure` | `content/prompts/agents-update.md`, `content/index/instructions-index.md` | |
-| 3 | Activation by declared tools | The trigger table names tools instead of paths; the one-call section goes. | `shared-instruction` | `refactor/activation-model` | `content/rules/auto-activation.md`, `content/rules/mcp-connector.md`, `content/rules/shared-instructions.md`, `content/AGENTS.md` | |
-| 4 | The declaration block at setup | Setup writes the block into every repository and stamps the version. | `shared-instruction` | `feat/tool-declaration` | `content/prompts/agents-setup.md` | |
-| 5 | Convention tools | Delete the one-call tool; serve each convention on its own; rename five. | `shared-instruction` | `feat/convention-tools` | `src/constants.js`, `src/server/`, `test/tools.test.js` | |
-| 6 | The update tool | Parse the log index, compute the delta, serve it as tool, prompt and CLI command. | `shared-instruction` | `feat/update-tool` | `src/server/logs.js`, `src/server/`, `src/cli/`, `test/` | |
-| 7 | The scaffolder mirror | Every repository `mcp_creator` generates gets the declaration block. | `shared-instruction` | `feat/scaffold-declaration` | `src/tools/mcp-creator.js`, `test/mcp-creator.test.js` | |
-| 8 | This repository's own surface | It consumes its own set, so its entry point and docs go stale like a consumer's. | `shared-instruction` | `docs/tool-surface` | `AGENTS.md`, `.agents/rules/set-mirrors.md`, `README.md`, `wiki/` | |
-| 9 | The release | `1.0.0`, changelog, both logs indexes, closing entry. | `shared-instruction` | `chore/release-1-0-0` | `package.json`, `wiki/logs/1/0/0/`, both logs indexes, `.agents/memory/` | |
+| 1 | The record | This file and its index row, written before any of it is built. | `shared-instruction` | `chore/declared-tool-surface-plan` | `.agents/memory/`, `.agents/index/memory-index.md` | #54 |
+| 2 | The update procedure | The published procedure a consumer follows to move to a new set version. | `shared-instruction` | `feat/update-procedure` | `content/prompts/agents-update.md`, `content/index/instructions-index.md` | #55 |
+| 3 | Activation by declared tools | The trigger table names tools instead of paths; the one-call section goes. | `shared-instruction` | `refactor/activation-model` | `content/rules/auto-activation.md`, `content/rules/mcp-connector.md`, `content/rules/shared-instructions.md`, `content/AGENTS.md` | #56 |
+| 4 | The declaration block at setup | Setup writes the block into every repository and stamps the version. | `shared-instruction` | `feat/tool-declaration` | `content/prompts/agents-setup.md` | #57 |
+| 5 | Convention tools | Delete the one-call tool; serve each convention on its own; rename five. | `shared-instruction` | `feat/convention-tools` | `src/constants.js`, `src/server/`, `test/tools.test.js` | #58 |
+| 6 | The update tool | Parse the log index, compute the delta, serve it as tool, prompt and CLI command. | `shared-instruction` | `feat/update-tool` | `src/server/logs.js`, `src/server/`, `src/cli/`, `test/` | #59 |
+| 7 | The scaffolder mirror | Every repository `mcp_creator` generates gets the declaration block. | `shared-instruction` | `feat/scaffold-declaration` | `src/tools/mcp-creator.js`, `test/mcp-creator.test.js` | #60 |
+| 8 | This repository's own surface | It consumes its own set, so its entry point and docs go stale like a consumer's. | `shared-instruction` | `docs/tool-surface` | `AGENTS.md`, `.agents/rules/set-mirrors.md`, `README.md`, `wiki/` | #61 |
+| 9 | The release | `1.0.0`, changelog, both logs indexes, closing entry. | `shared-instruction` | `chore/release-1-0-0` | `package.json`, `wiki/logs/1/0/0/`, both logs indexes, `.agents/memory/` | #62 |
 
 This chain branches from `master`. `0.14.0` is merged and there are no unmerged branches, so
 it stacks on nothing.
+
+**PR column:** empty at the time of writing, filled by task 9 once the user opened the §F
+gate. Filled here rather than on task 1's branch: task 9 is last and already contains every
+branch below it, so writing the numbers here rebases nothing, while writing them on branch 1
+would invalidate all eight above it. Task 1's pull request carries the chain as a **body
+edit** for the same reason.
 
 ## Task 1 — chore/declared-tool-surface-plan
 
@@ -303,3 +309,34 @@ deliberate historical references in `src/server/tools.js` and two test comments,
 asserting the old name is *absent*, released log rows (`versioning.md` — never rewritten),
 and past task records. `.agents/memory/state/repository-state.md` still describes an 8-tool
 surface; that is current state rather than history, and task 9 corrects it.
+
+## Task 9 — chore/release-1-0-0
+
+`1.0.0`. `package.json`, `wiki/logs/1/0/0/CHANGELOG.md`, both logs indexes,
+`.agents/memory/state/repository-state.md`, and this closing entry. **101 tests pass.**
+
+**Verified end to end, not assumed:** 13 tools and 3 prompts over an in-memory MCP client;
+`npm run cli -- update --from 0.13.0` returns `0.14.0` then `1.0.0`, oldest first, from the
+row this task just added; `branch_strategy` is 2,423 characters through the CLI; and
+`git log master..HEAD` carries no session link.
+
+**The release exposed one stale test.** `test/logs.test.js` asserted `current === '0.14.0'`
+as a literal, so bumping the version failed a test about the *parser*. It now derives the
+newest version from the index and additionally asserts it sorts last — which is what the
+test meant all along, and which will not need editing at the next release. A hard-coded
+version inside a test about version handling is worth watching for.
+
+**Where this leaves consumers.** This is the first release whose **Consumers must** line is
+not optional: five tools were renamed and one removed, so a repository that ignores it calls
+names that no longer resolve. No instruction `name` changed, though, so no override needs
+dropping — the break is in the tool surface, not in the set.
+
+**The §F gates, both asked and both given.** The user opened the pull request and merge
+gates together in a later turn. Pull requests #54–#62 were opened one per branch, #54's body
+edited to carry the chain, and the stack merged in order 1…9, each pull request re-targeted
+to `master` before its merge rather than after — a forge only re-targets a stacked pull
+request when the base branch is deleted on merge, and where that setting is off, pull request
+`k` merges into branch `k-1` and the default branch silently stays behind.
+
+**Not done, and deliberately.** No consuming repository was touched — adopting `1.0.0` is
+each repository's own task, which is what `update_shared_agents_instruction` exists for.
