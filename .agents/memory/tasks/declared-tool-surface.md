@@ -237,3 +237,16 @@ the oldest-first assertion had to be scoped to the table (the heading above it a
 the target version, so a whole-body index passes on a reversed table), and the re-sync test
 had to pass `arguments: {}` rather than omitting them — a tool that declares a schema is
 called with an object, which is the contract `tools.js` documents.
+
+**SonarCloud found a third defect after the pull requests were open.** `releasesSince`
+reduced over the release list with no initial value (`logs.js` L132). Not reachable today —
+`readReleases` throws on an empty index before the reduce runs — but the guarantee lived in
+a *different function*, so the code sat one refactor away from throwing "Reduce of empty
+array with no initial value": true, useless, and pointing at the wrong file. Seeded from the
+destructured first element, with two tests pinning that a broken index reports what is
+actually wrong with it — no rows, or no index resource at all. 101 tests pass on this
+branch, up from 99.
+
+Fixed here rather than on a follow-up branch, because this is where the defect is. The three
+branches stacked above were rebased onto the fix rather than merged into, keeping the stack
+linear as `planning/task-workflow.md` §C describes.
