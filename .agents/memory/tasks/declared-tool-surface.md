@@ -81,3 +81,23 @@ Wrote this record and its row in `.agents/index/memory-index.md`. Nothing else e
 The one thing task 2 depends on: the tool names above are settled and are not to be
 re-derived. Six convention tools, five renames, one new tool, `mcp_creator` untouched —
 thirteen in total, down from an eight-tool surface whose entry point cost 31,000 characters.
+
+## Task 2 — feat/update-procedure
+
+Added `content/prompts/agents-update.md` (`name: agents-update-prompt`) and its row in
+`content/index/instructions-index.md`, in this commit. 86 tests still pass, which is the
+real check: the registry validates frontmatter, the 140-character description ceiling, and
+the instruction folder at boot, so a file it accepts is a file that will publish.
+
+Two decisions inside the procedure that task 6 has to honour when it builds the tool:
+
+* **The delta is applied oldest first**, whatever order the tool returns it in. The lines
+  compose — a file added in one release and changed in a later one is left half-applied if
+  the newer line lands first, and nothing signals it.
+* **Calling with no `from_version` is a different mode, not a default.** It returns the
+  re-sync path rather than a delta, because a re-sync can see the current state but not the
+  reasons it changed. The tool must therefore branch on the argument's presence rather than
+  treating a missing version as "since the beginning".
+
+The version stamp is rewritten **last**, after the edits land. A stamp moved first claims
+work that has not happened, and the next update computes its delta from that claim.
