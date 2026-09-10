@@ -35,7 +35,9 @@ is found anyway, it is resolved by
 A repository consumes this set once it has all of:
 
 1. A root `AGENTS.md` carrying the connector bootstrap block verbatim
-   (see [`rules/mcp-connector.md`](agents://rules/mcp-connector.md)).
+   (see [`rules/mcp-connector.md`](agents://rules/mcp-connector.md)) **and a Shared
+   instruction tools block** declaring which tools the repository uses, the trigger for
+   each, and the set version it adopted.
 2. `.agents/index/root-index.md`, with an override table — empty is a valid and
    meaningful state.
 3. `.agents/rules/repository.md`, naming the mode and the connector it resolves.
@@ -60,7 +62,7 @@ there is nothing to keep in sync and nothing to accidentally commit.
 | Content | Set |
 |---|---|
 | Branching, commits, pull requests | Shared |
-| Task workflow, planning, standing prompts | Shared |
+| Task workflow, planning, the setup and update procedures | Shared |
 | The five creators | Shared |
 | Directory architecture, auto-activation, versioning, memory policy, no-session-links, discovery protocol, connector resolution, duplicate audit, work summary | Shared |
 | The model naming convention for stored model identifiers | Shared |
@@ -140,17 +142,27 @@ Source of truth: [`rules/discovery-protocol.md`](agents://rules/discovery-protoc
 
 ## Task and git workflow
 
-The task workflow, the branching strategy, the commit conventions, and the discovery
-protocol above load on **every** request, with no trigger phrase, and two actions are
-gated on explicit user permission: opening a pull request, and merging one. The mandate
-is [`rules/shared-instructions.md`](agents://rules/shared-instructions.md) §H; the
-procedure it points at is
-[`planning/task-workflow.md`](agents://planning/task-workflow.md).
+Four conventions are declared by **every** consuming repository — the task workflow, the
+branching strategy, the commit conventions, and the discovery protocol — served as the
+tools `task_workflow`, `branch_strategy`, `commit_strategy` and `discovery_protocol`. A
+repository narrows the rest of its declaration block to what it uses; it never narrows
+these four.
 
-The discovery protocol carries no trigger row at all. A trigger would fire only once a
-finding had already been recognised — the point at which writing the rule into the set
-yourself is one edit away — so the gate stands from the start of every request instead.
-See [`rules/discovery-protocol.md`](agents://rules/discovery-protocol.md).
+**Their gates do not wait for a trigger.** Approving the plan before anything is written,
+asking before opening a pull request, asking before merging, and the discovery-protocol
+block are written inline in the repository's own `AGENTS.md`, where they are read from disk
+at session start. The tools carry the procedures. A gate first read at the moment you are
+about to write a file has already failed, which is why the two halves are split.
+
+The mandate is [`rules/shared-instructions.md`](agents://rules/shared-instructions.md) §H;
+the procedure it points at is
+[`planning/task-workflow.md`](agents://planning/task-workflow.md); how a repository declares
+any of it is [`rules/auto-activation.md`](agents://rules/auto-activation.md).
+
+**Nothing is called at session start.** Resolving this set is not loading it: a session
+reads its own `AGENTS.md`, its root index and its memory, then calls a tool when that tool's
+trigger fires. Calling every declared tool up front rebuilds the one oversized payload this
+surface exists to replace.
 
 ## Version rule
 

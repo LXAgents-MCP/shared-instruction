@@ -124,7 +124,7 @@ and that file remains the single authority for how it is carried out.
 
 | On every request you must… | Authority |
 |---|---|
-| Load the four mandatory standard files before acting | [`../git/branching-strategy.md`](agents://git/branching-strategy.md), [`../git/commit-conventions.md`](agents://git/commit-conventions.md), [`../planning/task-workflow.md`](agents://planning/task-workflow.md), [`discovery-protocol.md`](agents://rules/discovery-protocol.md) |
+| Declare the four mandatory tools in `AGENTS.md`, and carry their gates inline | `task_workflow`, `branch_strategy`, `commit_strategy`, `discovery_protocol` — [`auto-activation.md`](agents://rules/auto-activation.md) |
 | Refine the requirements and put a plan in front of the user **before** running code or writing a file | [`../planning/task-workflow.md`](agents://planning/task-workflow.md) §A |
 | Wait for the user to **approve** that plan before writing a file, creating a branch, or changing state | [`../planning/task-workflow.md`](agents://planning/task-workflow.md) §B |
 | Break the work into tasks and present the list before starting — task 1 is the record, task `n` is the release, the work goes between | [`../planning/task-workflow.md`](agents://planning/task-workflow.md) §B |
@@ -134,19 +134,30 @@ and that file remains the single authority for how it is carried out.
 | Propose any instruction you think should exist — never write it into either set yourself | [`discovery-protocol.md`](agents://rules/discovery-protocol.md) |
 | Stop, ask, and write a diagnostic report the moment this workflow is bypassed despite activation having run | [`auto-activation.md`](agents://rules/auto-activation.md) |
 
-### The four standard files are not trigger-gated
+### The gates are not trigger-gated; the procedures are
 
-[`auto-activation.md`](agents://rules/auto-activation.md) fires most instructions from a
-trigger table. These four are the exception: they load at the start of every request,
-whether or not it looks like work that will end in a branch. By the time a commit is in
-front of you, it is too late to go and learn the convention it should have followed.
+[`auto-activation.md`](agents://rules/auto-activation.md) fires most conventions from a
+trigger, and the four below are no exception — `task_workflow` fires on a request of more
+than one step, `branch_strategy` when a branch is about to exist, and so on. What is *not*
+trigger-gated is the part that has to be standing before the work starts: **the gates
+themselves live inline in the repository's `AGENTS.md`**, read from disk at session start,
+while the tools supply the procedures that implement them.
 
-[`discovery-protocol.md`](agents://rules/discovery-protocol.md) is on that list for the
-same reason and carries no trigger row of its own. A trigger would fire only once you
-had already recognised a finding for what it is — the point at which writing the rule
-into the set yourself is one edit away. The gate stands from the start of the request,
-like the branch and commit conventions beside it: findings are collected and proposed,
-never self-applied, and that holds for the request that never mentions rules at all.
+The distinction is the whole design. A permission gate first read at the moment you are
+about to write a file has already failed; a branch-naming procedure fetched at the moment
+you name a branch has not. So the cheap, always-true half is inline and the expensive,
+sometimes-needed half is a call.
+
+[`discovery-protocol.md`](agents://rules/discovery-protocol.md) is the sharpest case. Its
+trigger would fire only once you had already recognised a finding for what it is — the point
+at which writing the rule into the set yourself is one edit away. Its gate block is
+therefore reproduced verbatim in `AGENTS.md` and stands from the start of every request,
+including the request that never mentions rules at all; `discovery_protocol` supplies §B–§F
+when a finding actually appears.
+
+**The four are declared by every repository.** A repository may narrow the rest of its
+declaration block to the conventions it uses; it may not drop one of these four, and it may
+not carry them as a tool row without the inline gates.
 
 ### The three permission gates
 

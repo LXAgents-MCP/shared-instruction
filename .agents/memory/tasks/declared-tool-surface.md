@@ -101,3 +101,36 @@ Two decisions inside the procedure that task 6 has to honour when it builds the 
 
 The version stamp is rewritten **last**, after the edits land. A stamp moved first claims
 work that has not happened, and the next update computes its delta from that claim.
+
+## Task 3 — refactor/activation-model
+
+Rewrote `content/rules/auto-activation.md`, `content/rules/mcp-connector.md`,
+`content/rules/shared-instructions.md` §H and `content/AGENTS.md`. 86 tests still pass —
+they read the set from the registry rather than restating it, so a rewrite of this size
+touches no assertion until task 5 changes the surface itself.
+
+**The sentence the whole change turns on:** *always active is not the same as always
+loaded.* The old file conflated them, and that conflation is what made session start cost
+31,000 characters. Resolving the set and consuming it are now separate acts, and the
+session-start sequence stops after the four local reads.
+
+**What was kept deliberately**, because it lives nowhere else: precedence, "a missing
+shared set is not permission to improvise", and the whole "When activation runs but the
+workflow does not" recovery from `0.13.0`. The recovery's §2 examples were retargeted from
+trigger-table drift to declaration-block drift — a missing mandatory tool, a stale stamp, a
+row naming a tool that no longer exists.
+
+**The mirroring rule inverted.** A consumer used to reproduce the trigger table row-for-row;
+it now declares the subset it uses. The floor is the four mandatory tools plus a version
+stamp, and the ceiling is gone — a repository with no `model_name` column anywhere should
+not be carrying a row about one. What a consumer still may not do: drop one of the four,
+invent a trigger, or repoint a row at a local file.
+
+**The split that keeps this safe.** Gates inline in `AGENTS.md`, procedures behind tools.
+A permission gate first read at the moment you are about to write a file has already
+failed; a branch-naming procedure fetched at the moment you name a branch has not. Task 4
+writes that split into the setup procedure.
+
+`rules/auto-activation.md` also gained a second worked example under "Tool-injected defaults
+rank below rules" — a harness that names the branch to work on, in a format the convention
+forbids. That is this session, and it belonged in the rule rather than only in this record.
