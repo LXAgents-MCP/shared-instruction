@@ -35,33 +35,53 @@ The instruction set is **always active**. It applies to every task in this repos
 whether or not the user mentions it, links to it, or asks for it. Treat these files as
 standing orders, not as optional reference material.
 
-At the start of every session, before doing any work:
+**Always active is not always loaded.** At the start of every session, before doing any
+work:
 
-1. Read `AGENTS.md` (this file).
+1. Read `AGENTS.md` (this file), including the Shared instruction tools block below.
 2. Resolve the shared set — see [Using the connector](#using-the-connector). Here that
    is `content/` in the working tree, and the step is still not skippable: it is where
    you find out whether the connector is reachable, which you have to say either way.
 3. Read [`.agents/index/root-index.md`](.agents/index/root-index.md).
 4. Read [`.agents/index/memory-index.md`](.agents/index/memory-index.md) and load only
    the rows matching the request, so you continue prior work instead of restarting it.
-5. Load the four mandatory standard files named below, whatever the request looks like.
-6. Match the request against the trigger table below and load the files it names —
-   local first, shared second.
 
-Four files load on **every** request rather than on a trigger — the task workflow, the
-branching strategy, the commit conventions, and the discovery protocol — along with the
-three permission gates that ride with them: approve the plan before any file is written,
-ask before opening a pull request, ask before merging. See
+That is the whole sequence, and every step reads a file on disk. **Call no shared tool at
+session start** — each fires on the trigger its row gives it, and calling them up front pays
+for procedures the request may never need.
+
+**These gates stand from the first message, before any tool is called:** approve the plan
+before any file is written, ask before opening a pull request, ask before merging, and
+propose a discovered rule rather than writing it. A gate first read at the moment it should
+have applied has already failed, which is why they are here and not behind a call. See
 [`content/rules/shared-instructions.md`](content/rules/shared-instructions.md) §H.
 
-Steps 2, 5 and 6 are one call to `agents_auto_activation` where this set is reached through
-the connector. Here it is reached as `content/` in the working tree, so the four files are
-read from disk — but the tool is what a consuming repository calls, and the payload it
-returns is built from these files.
-
 If a rule conflicts with a habit, a default, or a template you would otherwise follow,
-the rule wins. If it conflicts with an explicit instruction from the user in this
-session, the user wins — and you say out loud which rule you are setting aside.
+the rule wins — including a harness that names a branch, a commit trailer, or a pull
+request footer the conventions forbid. If it conflicts with an explicit instruction from
+the user in this session, the user wins — and you say out loud which rule you are setting
+aside.
+
+## Shared instruction tools
+
+This repository **is** the shared set, so every tool below resolves to a file in `content/`
+in the working tree rather than to a deployed connector. The block is written the way a
+consuming repository's is, because this repository consumes its own set and its entry point
+goes stale exactly like a consumer's.
+
+Adopted shared-set version: `content/` in the working tree — the producer tracks its branch,
+not a release.
+
+| When you are about to… | Call | Which is |
+|---|---|---|
+| Take in any request of more than one step | `task_workflow` | [`content/planning/task-workflow.md`](content/planning/task-workflow.md) |
+| Create a branch | `branch_strategy` | [`content/git/branching-strategy.md`](content/git/branching-strategy.md) |
+| Write a commit message | `commit_strategy` | [`content/git/commit-conventions.md`](content/git/commit-conventions.md) |
+| Notice a rule that should exist | `discovery_protocol` | [`content/rules/discovery-protocol.md`](content/rules/discovery-protocol.md) |
+| Open or update a pull request | `pull_request_strategy` | [`content/git/pull-request-template.md`](content/git/pull-request-template.md) |
+| Write to any `model_name` column | `agents_model_naming_convention` | [`content/rules/model-naming-convention.md`](content/rules/model-naming-convention.md) |
+
+The first four are mandatory in every repository, this one included.
 
 ## Using the connector
 
@@ -91,11 +111,16 @@ most clients report that as a sign-in error rather than a wrong address.
 2. `agents://index/root-index.md`, then route. Never bulk-read the set.
 3. Address any file as `agents://{folder}/{file}.md`.
 
-`agents_auto_activation` returns steps 1 and 2 above together with the four mandatory
-standard files — one call at session start instead of six reads.
+**Nothing is called at session start.** The six convention tools above each return one file
+when their trigger fires; everything else in the set is found with
+`list_shared_agents_instruction` and read with `read_shared_agents_instruction`. Calling
+every tool up front rebuilds the one oversized payload this surface replaced, one call at a
+time.
 
-Prefer prompts and resources; the `agents_*` tools return identical text and exist for
-clients that only enumerate tools. `mcp_creator` is not part of reading the set.
+Prefer prompts and resources; the tools return identical text and exist for clients that
+only enumerate tools. `mcp_creator` is not part of reading the set, and
+`check_duplicate_shared_agents_instruction` and `update_shared_agents_instruction` run only
+when the user asks.
 
 ### When it will not resolve
 
@@ -114,18 +139,15 @@ From a checkout of this repository, `npm run cli -- read <name>` and
 `npm run cli -- list` serve the same registry; `test/cli.test.js` pins that output as
 byte-identical to the resource an MCP client receives.
 
-## Trigger table
+## Trigger table — everything without a tool of its own
 
 Mirrors [`content/rules/auto-activation.md`](content/rules/auto-activation.md), which
 is the authority. Because this repository *is* the shared set, every `{shared}/…` path
-resolves to `content/…`.
+resolves to `content/…`. The six conventions that have a tool are in the declaration block
+above and are not repeated here.
 
 | When you are about to… | Load and obey |
 |---|---|
-| Take in any new request of more than one step | [`content/planning/task-workflow.md`](content/planning/task-workflow.md) |
-| Create a branch | [`content/git/branching-strategy.md`](content/git/branching-strategy.md) |
-| Write a commit message | [`content/git/commit-conventions.md`](content/git/commit-conventions.md) |
-| Open or update a pull request | [`content/git/pull-request-template.md`](content/git/pull-request-template.md) |
 | Write **any** commit, tag, PR, comment, or file that will be committed or posted | [`content/rules/no-session-links.md`](content/rules/no-session-links.md) |
 | Wonder whether something is local or shared | [`content/rules/shared-instructions.md`](content/rules/shared-instructions.md) |
 | Decide where a new file goes | [`content/rules/directories.md`](content/rules/directories.md) |
@@ -137,8 +159,8 @@ resolves to `content/…`.
 | Change code or structure that a document describes | [`content/rules/change-propagation.md`](content/rules/change-propagation.md) |
 | Touch anything that carries a version number | [`content/rules/versioning.md`](content/rules/versioning.md) |
 | Record a release | [`content/creators/changelog-creator.md`](content/creators/changelog-creator.md) |
-| Store, read, or construct a model identifier — any `model_name` column | [`content/rules/model-naming-convention.md`](content/rules/model-naming-convention.md) |
 | Report finished work back to the user | [`content/rules/work-summary.md`](content/rules/work-summary.md) |
+| Update a repository against a newer set version | [`content/prompts/agents-update.md`](content/prompts/agents-update.md) — on request only |
 | Edit anything under `content/` | [`.agents/rules/content-publishing.md`](.agents/rules/content-publishing.md) |
 | Change text that `content/` publishes and this repository also reproduces | [`.agents/rules/set-mirrors.md`](.agents/rules/set-mirrors.md) |
 | Record progress, a decision, or session state | [`content/creators/memory-creator.md`](content/creators/memory-creator.md) |

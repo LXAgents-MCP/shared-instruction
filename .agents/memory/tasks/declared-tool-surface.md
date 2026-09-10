@@ -275,3 +275,31 @@ version" is the obvious-looking change that would break it.
 One test asserts the generated file contains neither `agents_auto_activation` nor the phrase
 "at the start of every session", case-insensitively. That sentence is what made the old
 surface expensive, and a scaffolder is exactly where it would quietly come back.
+
+## Task 8 — docs/tool-surface
+
+Rewrote this repository's own entry point and every page that lists the surface: `AGENTS.md`,
+`.agents/rules/set-mirrors.md`, `README.md`, `wiki/reference/mcp-surface.md`,
+`wiki/information/overview.md`, `wiki/guides/connect-a-repository.md`. 101 tests pass.
+
+**The root `AGENTS.md` now carries a declaration block like any consumer's**, with a third
+column naming the `content/` file each tool resolves to — the producer reads the working
+tree, not a deployed connector. Its stamp says so in words rather than carrying a version:
+this repository tracks its branch, and a release number there would be false the moment
+someone edits `content/`. The trigger table kept only the rows for conventions that have no
+tool of their own.
+
+**`set-mirrors.md` gained a fourth mirror.** `src/server/create-server.js` restates the
+routing model in the `initialize` text every client receives, which makes it set text living
+outside `content/` — the definition the rule uses. It had been a mirror since the instructions
+were first written and was never listed. The obligation line now also names a change to the
+tool set in `src/constants.js`, since adding a tool changes what four of these files claim.
+
+The mirror table also records which is worst to miss: `buildAgentsDoc`, because it ships
+into repositories nobody will think to re-check.
+
+**A sweep for stale names came back clean** apart from four categories that must stay:
+deliberate historical references in `src/server/tools.js` and two test comments, three tests
+asserting the old name is *absent*, released log rows (`versioning.md` — never rewritten),
+and past task records. `.agents/memory/state/repository-state.md` still describes an 8-tool
+surface; that is current state rather than history, and task 9 corrects it.

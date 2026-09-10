@@ -36,7 +36,7 @@ a block to paste into `AGENTS.md`, is in
 ## 2. Run the setup prompt
 
 Invoke the **`agents-setup`** prompt in the repository you are adopting — or call the
-**`agents_setup`** tool if your client surfaces tools rather than prompts. They deliver
+**`setup_shared_agents_instruction`** tool if your client surfaces tools rather than prompts. They deliver
 identical instructions. It runs the
 whole procedure: discovery, the batched question round, the instruction-set selection,
 then the files.
@@ -68,7 +68,7 @@ then go stale.
 ## 4. If the repository already has an `.agents/` tree
 
 Do not merge it by hand. Invoke **`check-duplicate-agents-instruction`** (or the
-**`agents_check_duplicate_instructions`** tool), which:
+**`check_duplicate_shared_agents_instruction`** tool), which:
 
 1. Compares every local instruction file against the manifest — by `name` first, since
    that is the override key, then by content hash, then by path.
