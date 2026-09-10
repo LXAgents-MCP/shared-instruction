@@ -38,3 +38,4 @@ the same commit that creates it.
 | [`../memory/tasks/activation-inlining-audit.md`](../memory/tasks/activation-inlining-audit.md) | Auditing whether `agents_auto_activation` still inlines `planning/task-workflow.md`, and closing the test gap that let the question stay open. |
 | [`../memory/tasks/activation-security.md`](../memory/tasks/activation-security.md) | Making plan approval a third permission gate, defining the workflow-fallback recovery, and adding this repository's own security context. |
 | [`../memory/tasks/security-creator.md`](../memory/tasks/security-creator.md) | Publishing `security/` as a real instruction folder, and the `security-creator` that fixes the shape of every security file. |
+| [`../memory/tasks/declared-tool-surface.md`](../memory/tasks/declared-tool-surface.md) | Replacing the one-call activation tool with per-convention tools each repository declares in its own `AGENTS.md`; the `1.0.0` release. |
