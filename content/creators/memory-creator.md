@@ -1,6 +1,8 @@
 ---
 name: memory-creator
 description: Maintains .agents/memory/ — the one creator exempt from the approval gate, because memory that waits for permission never gets written.
+version: 1.0.0
+author: LXAgents
 ---
 
 # Memory Creator

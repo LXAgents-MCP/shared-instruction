@@ -1,6 +1,8 @@
 ---
 name: agents-setup-prompt
 description: The full AGENTS-SETUP procedure — build a repository's instruction, knowledge, and memory system against the set this connector serves.
+version: 1.0.0
+author: LXAgents
 ---
 
 # AGENTS-SETUP

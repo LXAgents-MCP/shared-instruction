@@ -1,6 +1,8 @@
 ---
 name: shared-agents-entry-point
 description: The LXAgents shared agent instruction set, delivered over MCP — the contract every consuming repository relies on.
+version: 1.0.0
+author: LXAgents
 ---
 
 # LXAgents Shared Agent Instruction Set

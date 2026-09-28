@@ -1,6 +1,8 @@
 ---
 name: work-summary
 description: Finished work is reported back — what changed, what was verified, what was not done, and what still needs a decision.
+version: 1.0.0
+author: LXAgents
 ---
 
 # Work Summary

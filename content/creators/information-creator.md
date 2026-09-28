@@ -1,6 +1,8 @@
 ---
 name: information-creator
 description: Creates and maintains both wiki trees — routes every page by audience first, and never mirrors a fact between them.
+version: 1.0.0
+author: LXAgents
 ---
 
 # Information Creator

@@ -1,6 +1,8 @@
 ---
 name: branching-strategy
 description: One task, one branch — naming as {type}/{primary-noun}, no tool-preset prefixes, no session identifiers, stacked in dependency order.
+version: 1.0.0
+author: LXAgents
 ---
 
 # Branching Strategy

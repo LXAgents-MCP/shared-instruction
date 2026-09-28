@@ -1,6 +1,8 @@
 ---
 name: index-creator
 description: Owns the shape of every index file in every set — the centralized mandate, the split threshold, the canonical template, and the audit.
+version: 1.0.0
+author: LXAgents
 ---
 
 # Index Creator

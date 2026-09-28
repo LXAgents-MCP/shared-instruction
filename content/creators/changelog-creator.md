@@ -1,6 +1,8 @@
 ---
 name: changelog-creator
 description: Maintains wiki/logs/{Major}/{Minor}/{Patch}/ — version directory shape, changelog sections, and the session digest cut at each release.
+version: 1.0.0
+author: LXAgents
 ---
 
 # Changelog Creator

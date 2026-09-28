@@ -1,6 +1,8 @@
 ---
 name: duplicate-instruction-audit
 description: On request only — find instructions a repository duplicates from the shared set, and remove them so the connector stays the single source.
+version: 1.0.0
+author: LXAgents
 ---
 
 # Duplicate Instruction Audit

@@ -1,6 +1,8 @@
 ---
 name: auto-activation
 description: How a repository declares which conventions fire unasked, what outranks what, and the recovery when activation does not take.
+version: 1.0.0
+author: LXAgents
 ---
 
 # Auto-Activation

@@ -1,6 +1,8 @@
 ---
 name: shared-instructions-index
 description: Index of the shared instruction set — every rule, git convention, planning file, standing prompt, and creator.
+version: 1.0.0
+author: LXAgents
 ---
 
 # Shared Instructions Index

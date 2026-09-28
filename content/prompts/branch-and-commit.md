@@ -1,6 +1,8 @@
 ---
 name: branch-and-commit-prompt
 description: The standing branch-and-commit loop — always active, so the user never has to restate the convention.
+version: 1.0.0
+author: LXAgents
 ---
 
 # Branch and Commit

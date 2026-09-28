@@ -1,6 +1,8 @@
 ---
 name: task-workflow
 description: How a request becomes tasks — the reserved record and release slots, stacked branches, in-order execution, and the three gates.
+version: 1.0.0
+author: LXAgents
 ---
 
 # Task Workflow

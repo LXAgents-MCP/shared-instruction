@@ -1,6 +1,8 @@
 ---
 name: security-creator
 description: Writes security files in either set — the three destinations, one concern per file, and the structure every security page follows.
+version: 1.0.0
+author: LXAgents
 ---
 
 # Security Creator

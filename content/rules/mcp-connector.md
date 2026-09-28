@@ -1,6 +1,8 @@
 ---
 name: mcp-connector-resolution
 description: How a repository resolves the shared instruction set through the lxagents-agents-base MCP connector instead of cloning it.
+version: 1.0.0
+author: LXAgents
 ---
 
 # MCP Connector Resolution

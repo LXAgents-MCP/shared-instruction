@@ -1,6 +1,8 @@
 ---
 name: commit-conventions
 description: Conventional Commits for commit messages only — format, scope, body, the no-session-trailer rule, and what rides in the same commit.
+version: 1.0.0
+author: LXAgents
 ---
 
 # Commit Conventions

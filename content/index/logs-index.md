@@ -1,6 +1,8 @@
 ---
 name: shared-logs-index
 description: Release history of the shared instruction set, newest first — what changed and what consumers must do about it.
+version: 1.0.0
+author: LXAgents
 ---
 
 # Shared Logs Index

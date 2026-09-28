@@ -1,6 +1,8 @@
 ---
 name: change-propagation
 description: A change to code or structure updates the documentation describing it, in the same commit, and proposes the instructions it made stale.
+version: 1.0.0
+author: LXAgents
 ---
 
 # Change Propagation

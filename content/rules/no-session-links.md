@@ -1,6 +1,8 @@
 ---
 name: no-session-links
 description: Never record an assistant or tool session link — what counts, why, what to write instead, and verifying the artifact after you post it.
+version: 1.0.0
+author: LXAgents
 ---
 
 # No Session Links
