@@ -1,21 +1,21 @@
 ---
 name: server-registry
-description: The four instruction and security MCP servers, what each one is for, and which project each fits.
+description: The three sibling instruction and security MCP servers, what each one is for, and which project each fits.
 version: 1.0.0
 author: LXAgents
 ---
 
 # Server Registry
 
-Four servers. Each one serves a **set** of instruction files over MCP, read-only, so a
+Three servers. Each one serves a **set** of instruction files over MCP, read-only, so a
 repository connects one instead of copying its text.
 
-**Every repository resolves `lxagents-agents-base`.** The other three are added on top of
-it, by project type.
+**You are already connected to this one.** The server reading you this page is
+`lxagents-agents-base` — the org-wide set. It is not listed below, because you do not
+install the server you are already talking to. What follows is what you may *add*.
 
 | Server | What it holds | Use it in |
 |---|---|---|
-| `LXAgents-MCP/shared-instruction` | The org-wide set — branch strategy, commit conventions, task workflow, rules, creators, pull requests | Every repository |
 | `LXAgents-MCP/security` | Security review for web stacks — Python, JavaScript/TypeScript, Go | Any repository running a service |
 | `RBAgents-MCP/shared-instruction` | Roblox development — Luau, Rojo, package architecture, asset submodules, data stores, auras, naming | Roblox repositories only |
 | `RBAgents-MCP/security` | Roblox security — client zero-trust networking, server trust boundaries | Roblox repositories only |
@@ -24,7 +24,8 @@ it, by project type.
 
 Read the project, then read this table:
 
-- **Any repository** → `lxagents-agents-base`. Always.
+- **Any repository** → nothing to add. You already have the org set; that is the
+  baseline every repository resolves.
 - **A service in Python, JavaScript/TypeScript, or Go** → also
   `LXAgents-MCP/security`. The threat model is a remote client against a server that owns
   state.
@@ -38,7 +39,6 @@ branch is named and how the commit is written; the Roblox set governs what goes 
 ## Cloning
 
 ```
-https://github.com/LXAgents-MCP/shared-instruction
 https://github.com/LXAgents-MCP/security
 https://github.com/RBAgents-MCP/shared-instruction
 https://github.com/RBAgents-MCP/security
@@ -46,6 +46,10 @@ https://github.com/RBAgents-MCP/security
 
 Register as a local stdio connector, with `command: node` and `args: ["src/index.js"]`
 pointed at the checkout.
+
+A clone is for a server you are **adding**. Cloning this one into a repository that
+already resolves it vendors the set, which is the drift the connector exists to prevent —
+see [`../AGENTS.md`](../AGENTS.md).
 
 ## Suggested, not installed
 
