@@ -67,3 +67,4 @@ universal security rule has been written yet. Shape and placement:
 | [`index-creator.md`](agents://creators/index-creator.md) | Owns the shape of every index file. |
 | [`memory-creator.md`](agents://creators/memory-creator.md) | Writes `.agents/memory/` — the ungated creator. |
 | [`changelog-creator.md`](agents://creators/changelog-creator.md) | Writes `wiki/logs/{Major}/{Minor}/{Patch}/`. |
+| [`plan-creator.md`](agents://creators/plan-creator.md) | Writes the untracked working plan under a repository's `.agents/plans/`, with `tasks.md` as the center. |

@@ -95,6 +95,7 @@ each is read with `read_shared_agents_instruction`.
 | Record progress, a decision, or session state | `{shared}/creators/memory-creator.md` |
 | Touch anything that carries a version number | `{shared}/rules/versioning.md` |
 | Record a release | `{shared}/creators/changelog-creator.md` |
+| Plan a task of more than one step, before any file is written | `{shared}/creators/plan-creator.md` |
 | Report finished work back to the user | `{shared}/rules/work-summary.md` |
 | Need project facts, commands, or orientation | `{repo}/.agents/wiki/context/repository-map.md` |
 | Do anything at all in this project | `{repo}/.agents/rules/repository.md` |
