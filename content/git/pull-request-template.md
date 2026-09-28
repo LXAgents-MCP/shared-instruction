@@ -1,6 +1,8 @@
 ---
 name: pull-request-template
 description: Pull request title rules (human-readable, never a commit prefix) and the required Overview / Added / Modified / Deleted / Summary body.
+version: 1.0.0
+author: LXAgents
 ---
 
 # Pull Request Template

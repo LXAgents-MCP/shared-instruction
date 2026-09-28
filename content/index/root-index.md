@@ -1,6 +1,8 @@
 ---
 name: shared-root-index
 description: Router for the shared instruction set — lists every shared index and nothing else.
+version: 1.0.0
+author: LXAgents
 ---
 
 # Shared Root Index

@@ -1,6 +1,8 @@
 ---
 name: shared-instructions
 description: How shared and local sets combine — precedence, overrides, promotion, adoption, and the always-on task and git workflow mandate.
+version: 1.0.0
+author: LXAgents
 ---
 
 # Shared Instructions

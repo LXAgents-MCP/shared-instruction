@@ -1,6 +1,8 @@
 ---
 name: agents-update-prompt
 description: Move a repository from the shared-set version it adopted to the current one — read the stamp, apply each Consumers must line, re-sync.
+version: 1.0.0
+author: LXAgents
 ---
 
 # AGENTS-UPDATE

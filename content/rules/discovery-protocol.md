@@ -1,6 +1,8 @@
 ---
 name: discovery-protocol
 description: How to handle a rule you think should exist — propose it, never self-apply it; what is gated, and where the canonical block is copied.
+version: 1.0.0
+author: LXAgents
 ---
 
 # Discovery Protocol

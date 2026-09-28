@@ -1,6 +1,8 @@
 ---
 name: directory-architecture
 description: The placement authority — the four trees, the two-wiki audience test, the shared/local split, and the algorithm for placing any new file.
+version: 1.0.0
+author: LXAgents
 ---
 
 # Directory Architecture

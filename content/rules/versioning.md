@@ -1,6 +1,8 @@
 ---
 name: versioning-rules
 description: Never bump a version on your own initiative — what counts as a version carrier, how to propose a bump, and why the shared set is included.
+version: 1.0.0
+author: LXAgents
 ---
 
 # Versioning Rules

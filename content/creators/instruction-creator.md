@@ -1,6 +1,8 @@
 ---
 name: instruction-creator
 description: Writes instruction files in either set — decide the set, confirm it is new, write it testable, register it, wire its trigger.
+version: 1.0.0
+author: LXAgents
 ---
 
 # Instruction Creator

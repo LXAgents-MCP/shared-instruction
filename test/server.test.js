@@ -25,6 +25,85 @@ function textOf(result) {
   return result.content[0].text;
 }
 
+/** Every markdown file in the served set, as [path-relative-to-content, absolute]. */
+async function markdownFiles() {
+  const { readdir } = await import("node:fs/promises");
+  const { join, relative, sep } = await import("node:path");
+
+  const walk = async (dir) => {
+    const found = [];
+    for (const entry of await readdir(dir, { withFileTypes: true })) {
+      const full = join(dir, entry.name);
+      if (entry.isDirectory()) found.push(...(await walk(full)));
+      else if (entry.name.endsWith(".md")) {
+        found.push([relative(CONTENT_DIR, full).split(sep).join("/"), full]);
+      }
+    }
+    return found;
+  };
+
+  return (await walk(CONTENT_DIR)).sort(([a], [b]) => a.localeCompare(b));
+}
+
+test("every served file declares the four-field frontmatter", async () => {
+  // name, description, version, author. `version` is the only record of what
+  // changed in a file — there is no upgrade step, so without it a stale file
+  // looks identical to a fresh one, and a consumer cannot tell them apart.
+  for (const [path] of await markdownFiles()) {
+    const { readFile } = await import("node:fs/promises");
+    const { join } = await import("node:path");
+    const text = await readFile(join(CONTENT_DIR, path), "utf8");
+    const block = text.match(/^---\s*\n(.*?)\n---/s);
+
+    assert.ok(block, `${path} has no frontmatter`);
+    for (const field of ["name", "description", "version", "author"]) {
+      assert.match(
+        block[1],
+        new RegExp(`^${field}:\\s*\\S`, "m"),
+        `${path} is missing \`${field}:\` in its frontmatter`,
+      );
+    }
+  }
+});
+
+test("every creator carries the shared procedure", async () => {
+  // The procedure is duplicated across the folder by design, so it can drift
+  // with nothing to catch it. plan-creator.md shipped without it; this test is
+  // what stops the next one from doing the same.
+  const { readFile } = await import("node:fs/promises");
+  const { join } = await import("node:path");
+  const creators = (await markdownFiles()).filter(([path]) =>
+    path.startsWith("creators/"),
+  );
+
+  assert.ok(creators.length >= 7, `expected the full creator set, found ${creators.length}`);
+
+  // Split on headings rather than matching one: a checkout on Windows serves
+  // CRLF, and a `^## ` lookahead does not match "\r\n## ".
+  const section = (text) => {
+    const parts = text.replace(/\r\n/g, "\n").split(/^## /m);
+    return parts.find((p) => p.startsWith("Branch & Commit Convention\n")) ?? null;
+  };
+
+  const reference = section(
+    await readFile(join(CONTENT_DIR, "creators/memory-creator.md"), "utf8"),
+  );
+  assert.ok(reference, "memory-creator.md must carry the procedure");
+
+  for (const [path] of creators) {
+    const text = await readFile(join(CONTENT_DIR, path), "utf8");
+    assert.ok(
+      section(text),
+      `${path} is a creator and must carry the shared procedure`,
+    );
+    assert.equal(
+      section(text).replace(/\r\n/g, "\n"),
+      reference.replace(/\r\n/g, "\n"),
+      `${path} has drifted from the shared procedure in memory-creator.md`,
+    );
+  }
+});
+
 test("both tools are registered", async () => {
   const { client } = await connect();
   const { tools } = await client.listTools();
@@ -146,28 +225,13 @@ test("the set root itself is not a file", async () => {
 });
 
 test("every file in the set is reachable through the tool", async () => {
-  const { readdir } = await import("node:fs/promises");
-  const { join, relative, sep } = await import("node:path");
-
+  const files = await markdownFiles();
   const { client } = await connect();
 
-  // Walk content/ and ask for every file found. A file that exists but is not
-  // served is a hole in the set, and nothing else here would catch one.
-  const walk = async (dir) => {
-    const found = [];
-    for (const entry of await readdir(dir, { withFileTypes: true })) {
-      const full = join(dir, entry.name);
-      if (entry.isDirectory()) found.push(...(await walk(full)));
-      else if (entry.name.endsWith(".md")) found.push(full);
-    }
-    return found;
-  };
-
-  const files = await walk(CONTENT_DIR);
   assert.ok(files.length > 20, `expected a real set, found ${files.length} files`);
 
-  for (const file of files) {
-    const path = relative(CONTENT_DIR, file).split(sep).join("/");
+  for (const [path, full] of files) {
+    void full;
     const text = textOf(
       await client.callTool({ name: "instruction", arguments: { path } }),
     );

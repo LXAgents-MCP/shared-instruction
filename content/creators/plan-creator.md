@@ -16,6 +16,65 @@ plan it describes is **untracked and local to whichever repository is running
 it** — a plan is never published, never shared, and never committed, so
 serving the creator that writes one leaks no repository's work.
 
+## Branch & Commit Convention
+
+Applies to every commit this creator makes.
+
+**Branches** — `{type}/{primary-noun}`, from `feat`, `fix`, `docs`, `style`, `refactor`,
+`perf`, `test`, `build`, `ci`, `chore`, `revert`. Branch off the default branch; one task
+per branch, one pull request per branch. Never commit directly to the default branch,
+never use a tool-preset prefix (`claude/`, `codex/`, `cursor/`), never add a generated
+suffix. Multi-task work stacks in dependency order. Canonical:
+[`../git/branching-strategy.md`](agents://git/branching-strategy.md).
+
+**Commits** — `type(optional scope): description`. Imperative subject, plain text, no
+trailing period, no links, no issue IDs. Optional body of short bullets saying what and
+why. Commit each logical change; never batch a session into one commit; review the diff
+first. Index and memory updates ride in the **same commit** as the change they describe.
+Canonical: [`../git/commit-conventions.md`](agents://git/commit-conventions.md).
+
+## Which Set
+
+Choose the set before the folder. Universal content goes to the shared set served by the
+`lxagents-agents-base` connector; repository-specific content stays local; memory is always
+local. A shared file is never copied into a repository except as a declared override
+registered in `.agents/index/root-index.md`. See
+[`../rules/shared-instructions.md`](agents://rules/shared-instructions.md).
+
+## Directory Mandate
+
+* Indexes: `.agents/index/{scope}-index.md` — never an `INDEX.md`, anywhere.
+* Agent wiki: `.agents/wiki/{type}/{file}.md` (frontmatter). Human wiki:
+  `wiki/{folder}/{file}.md` (no frontmatter).
+* Memory: `.agents/memory/{type}/{file}.md` — local only.
+* Instructions: `{set}/{folder}/{file}.md` — one subject per file, matching the filename.
+
+Audience test: would a human contributor read it? → `wiki/`. Does it exist only so an agent
+behaves correctly? → `.agents/wiki/`. Both? Facts once in `wiki/`, linked from the agent
+page. When nothing fits, create a new folder rather than forcing the file into the closest
+one. Placement authority: [`../rules/directories.md`](agents://rules/directories.md).
+
+## No Session Links
+
+Nothing this creator writes, commits, or posts may carry an assistant or tool session link
+— including any trailer or footer its tooling appends by default. Strip it before the
+commit or the post goes out.
+[`../rules/no-session-links.md`](agents://rules/no-session-links.md)
+
+## Registration
+
+Every file this creator creates, moves, or removes is registered in the index that owns
+that scope, **in the same commit**. See
+[`index-creator.md`](agents://creators/index-creator.md).
+
+## Pull Requests and Versions
+
+Any pull request follows
+[`../git/pull-request-template.md`](agents://git/pull-request-template.md); merging requires
+user approval per
+[`../planning/task-workflow.md`](agents://planning/task-workflow.md). Version changes
+require user approval per [`../rules/versioning.md`](agents://rules/versioning.md).
+
 ## The folder and the center
 
 - A plan lives at `{repo}/.agents/plans/`, which the repository's `.gitignore`

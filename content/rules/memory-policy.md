@@ -1,6 +1,8 @@
 ---
 name: memory-policy
 description: What may be written to a repository's memory and how — the ungated exception to the discovery protocol, and the list of what never goes in.
+version: 1.0.0
+author: LXAgents
 ---
 
 # Memory Policy
