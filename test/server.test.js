@@ -75,13 +75,31 @@ test("mcp_list returns the registry with every sibling", async () => {
   );
 
   for (const repo of [
-    "LXAgents-MCP/shared-instruction",
     "LXAgents-MCP/security",
     "RBAgents-MCP/shared-instruction",
     "RBAgents-MCP/security",
   ]) {
     assert.ok(text.includes(repo), `registry must name ${repo}`);
   }
+});
+
+test("mcp_list does not tell a caller to install the server it is on", async () => {
+  const { client } = await connect();
+  const text = textOf(
+    await client.callTool({ name: "mcp_list", arguments: {} }),
+  );
+
+  // A server listing itself invites a repository to clone and vendor the set it
+  // is already connected to - the exact drift the connector exists to prevent.
+  assert.doesNotMatch(
+    text,
+    /LXAgents-MCP\/shared-instruction/,
+    "the registry must not name its own repository",
+  );
+  assert.ok(
+    text.includes("already connected"),
+    "the registry should say why its own server is absent",
+  );
 });
 
 test("a traversal attempt reports not found and leaks nothing", async () => {
@@ -125,6 +143,64 @@ test("the set root itself is not a file", async () => {
   );
 
   assert.match(text, /^not found:/);
+});
+
+test("every file in the set is reachable through the tool", async () => {
+  const { readdir } = await import("node:fs/promises");
+  const { join, relative, sep } = await import("node:path");
+
+  const { client } = await connect();
+
+  // Walk content/ and ask for every file found. A file that exists but is not
+  // served is a hole in the set, and nothing else here would catch one.
+  const walk = async (dir) => {
+    const found = [];
+    for (const entry of await readdir(dir, { withFileTypes: true })) {
+      const full = join(dir, entry.name);
+      if (entry.isDirectory()) found.push(...(await walk(full)));
+      else if (entry.name.endsWith(".md")) found.push(full);
+    }
+    return found;
+  };
+
+  const files = await walk(CONTENT_DIR);
+  assert.ok(files.length > 20, `expected a real set, found ${files.length} files`);
+
+  for (const file of files) {
+    const path = relative(CONTENT_DIR, file).split(sep).join("/");
+    const text = textOf(
+      await client.callTool({ name: "instruction", arguments: { path } }),
+    );
+    assert.doesNotMatch(
+      text,
+      /^not found:/,
+      `${path} exists in content/ but the tool cannot serve it`,
+    );
+  }
+});
+
+test("the instructions index routes every convention it should", async () => {
+  const { client } = await connect();
+  const text = textOf(
+    await client.callTool({
+      name: "instruction",
+      arguments: { path: "index/instructions-index.md" },
+    }),
+  );
+
+  // The gap that prompted this pass was a served file nothing routed to, so
+  // the routing is asserted rather than assumed.
+  for (const path of [
+    "creators/plan-creator.md",
+    "creators/memory-creator.md",
+    "creators/instruction-creator.md",
+    "creators/security-creator.md",
+    "rules/versioning.md",
+    "rules/no-session-links.md",
+    "planning/task-workflow.md",
+  ]) {
+    assert.ok(text.includes(path), `the index must route ${path}`);
+  }
 });
 
 test("the surface is read-only: no tool takes a verb", async () => {

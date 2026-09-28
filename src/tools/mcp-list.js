@@ -5,7 +5,7 @@ const REGISTRY_PATH = "index/server-registry.md";
 export const config = {
   name: "mcp_list",
   description:
-    "List the available instruction and security MCP servers and what each is for. Use this before cloning one, to pick the server that matches the project. Returns every server with its scope and clone URL.",
+    "List the sibling instruction and security MCP servers and what each is for, with its scope and clone URL. Use this before cloning one, to pick the server that matches the project. Does not list this server - you are already connected to it.",
 };
 
 export async function handler() {
