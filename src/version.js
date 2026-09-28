@@ -1,28 +1,20 @@
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const here = dirname(fileURLToPath(import.meta.url));
+
+/** The repository root, resolved from this file rather than from cwd. */
+export const ROOT = join(here, "..");
+
 /**
- * Resolves the server version from package.json, so there is exactly one place
- * to bump it. Falls back to a constant when package.json is unreadable — a
- * bundled or vendored copy should still start rather than crash on a version
- * string.
+ * The published set. Every served file is read from inside this directory and
+ * nowhere else, so containment is a property of the constant rather than of
+ * what a caller passed in.
  */
+export const CONTENT_DIR = join(ROOT, "content");
 
-import { readFile } from 'node:fs/promises';
-import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+const pkg = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8"));
 
-import { FALLBACK_VERSION } from './constants.js';
-
-const PACKAGE_JSON = resolve(dirname(fileURLToPath(import.meta.url)), '..', 'package.json');
-
-let cached = null;
-
-/** @returns {Promise<string>} */
-export async function resolveVersion() {
-  if (cached) return cached;
-  try {
-    const { version } = JSON.parse(await readFile(PACKAGE_JSON, 'utf8'));
-    cached = typeof version === 'string' && version ? version : FALLBACK_VERSION;
-  } catch {
-    cached = FALLBACK_VERSION;
-  }
-  return cached;
-}
+export const VERSION = pkg.version;
+export const SERVER_NAME = "lxagents-agents-base";
