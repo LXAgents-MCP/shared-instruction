@@ -40,7 +40,7 @@ test("mcp_list takes no arguments", async () => {
 
   assert.deepEqual(list.inputSchema.properties ?? {}, {});
   assert.ok(
-    list.description.includes("which instruction and security servers"),
+    list.description.includes("before cloning"),
     "description must name the routing decision, so a caller can choose without calling",
   );
 });
@@ -62,7 +62,9 @@ test("instruction returns a file from the set", async () => {
   });
 
   const text = textOf(result);
-  assert.match(text, /^---\n/, "frontmatter is part of the served text");
+  // \r? because a checkout on Windows serves CRLF, and the bytes are served as
+  // they are on disk.
+  assert.match(text, /^---\r?\n/, "frontmatter is part of the served text");
   assert.ok(text.includes("name:"), "frontmatter is not stripped");
 });
 
