@@ -19,8 +19,5 @@ npm-debug.log*
 coverage/
 *.pid
 
-# Scratch targets from the mcp-creator tests, which must sit inside cwd
-.mcp-creator-test-*/
-
 # Untracked working plan - never staged, never committed
 /.agents/plans/
