@@ -71,3 +71,35 @@ the pattern matches was touched: a folded multi-line value still fails, a line n
 starting with a letter or underscore still fails, and a missing `description` still
 lands as the empty-string falsy value that `buildContentTools` rejects at startup.
 No shared file touched, so nothing is published by this task.
+
+### Task 3 — `chore/fix-sonar-issues-plan`
+
+Cleared the Express version disclosure at `src/http.js:72`, the security hotspot on the
+HTTP transport:
+
+    const app = express();
+    + app.disable("x-powered-by");
+
+Express sets `X-Powered-By: Express` on every response unless told otherwise, so any
+client reaching the listener — which `npm run start:http` binds to `0.0.0.0` by default
+— was told the framework and the exact version serving it. That is free reconnaissance
+against an unauthenticated port: the version maps directly to published advisories and to
+the upgrade it needs.
+
+The call goes directly after `express()` and above the `hostHeaderValidation`
+registration. It is a configuration of the app rather than a member of the request chain,
+so it has to be in force before anything is mounted; placing it further down would still
+work today but would read as though it were scoped to the routes beneath it. Left of the
+allow-list block rather than inside it, because the header must stay off whether or not
+`MCP_ALLOWED_HOSTS` is configured — a control that only applied on one branch of that `if`
+would be a control that a default deployment does without.
+
+The comment above it says the omission is deliberate and is the security control, not an
+unfinished thought, because the line is otherwise indistinguishable from a leftover.
+
+Pinned in `test/http.test.js` by a new test asserting the header is absent from a real
+response over a real socket. It is asserted against the catch-all 404 rather than `/sse`
+so it covers the whole app rather than one route, and it is asserted on the `Response`
+from `fetch`, whose `headers.get` returns `null` for an absent header — so the assertion is
+"absent" and not "set to something else". No shared file touched, so nothing is published
+by this task.
