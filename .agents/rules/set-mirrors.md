@@ -18,36 +18,48 @@ of it — a consuming repository is forbidden from copying shared files at all, 
 
 | Mirror | What it reproduces |
 |---|---|
-| [`AGENTS.md`](../../AGENTS.md) (repository root) | The **Shared instruction tools** declaration block; the inline gates; the trigger table for everything without a tool; and the *Using the connector* section, which summarises [`content/rules/mcp-connector.md`](../../content/rules/mcp-connector.md) — the read sequence, the transports, and the unavailable-connector obligation. This repository consumes its own set, so its entry point goes stale exactly like a consumer's. |
-| [`src/tools/mcp-creator.js`](../../src/tools/mcp-creator.js) | `buildAgentsDoc` hard-codes the declaration block and the inline gates into every `AGENTS.md` the tool scaffolds. The worst-consequence mirror in the table: a miss here ships the old model into repositories nobody will think to re-check. Pinned by `test/mcp-creator.test.js`. |
+| [`AGENTS.md`](../../AGENTS.md) (repository root) | The **Shared instruction tools** declaration block; the inline gates; the trigger table for the rest of the set; and the *Using the connector* section, which summarises [`content/rules/mcp-connector.md`](../../content/rules/mcp-connector.md) — the read sequence, the transport, and the unavailable-connector obligation. This repository consumes its own set, so its entry point goes stale exactly like a consumer's. |
 | [`content/prompts/agents-setup.md`](../../content/prompts/agents-setup.md) | Dictates the auto-activation contract and the declaration block a new consuming repository writes into its own `AGENTS.md`. Published, but a mirror all the same. |
-| [`src/server/create-server.js`](../../src/server/create-server.js) | `buildInstructions` restates the routing model — call nothing at session start, one convention per tool — in the text every client receives at `initialize`. Pinned by `test/tools.test.js`. |
+| [`src/server.js`](../../src/server.js) | The `instructions` string restates the routing model — call nothing at session start, one file per tool, route from the index — in the text every client receives at `initialize`. A client that reads only that gets the model without the set. |
 
 The discovery-protocol block has its own bounded copy list, owned by
-[`content/rules/discovery-protocol.md`](../../content/rules/discovery-protocol.md) §F
-and enforced by `test/registry.test.js`. This table covers everything that list does
-not.
+[`content/rules/discovery-protocol.md`](../../content/rules/discovery-protocol.md) §F. It is
+deliberately listed there rather than here, because it duplicates a *block*, not a model.
+This table covers everything that list does not.
 
 ## Not a mirror
 
-`src/server/payloads.js` reads from the registry instead of restating it, which is why
-it has never drifted. **Prefer that shape.** New code that needs set text reads it from
-the registry; hard-coding is what puts a file in the table above.
+[`src/tools/from-content.js`](../../src/tools/from-content.js) reads `content/` and
+derives each tool from the file it serves — the name from the path, the description from
+the file's own frontmatter. It restates nothing, which is why it cannot drift from the set
+and needs no entry in the table above. **Prefer that shape.** New code that needs set text
+reads it from `content/`; hard-coding is what puts a file in the table.
 
 ## The obligation
 
 A change to [`content/rules/auto-activation.md`](../../content/rules/auto-activation.md),
-to `shared-instructions.md` §H, to the set of tools in `src/constants.js`, or to any text a
-mirror reproduces updates every affected mirror **in the same commit** — the rule
+to `shared-instructions.md` §H, to the routing model, or to any text a mirror reproduces
+updates every affected mirror **in the same commit** — the rule
 [`content/rules/change-propagation.md`](../../content/rules/change-propagation.md)
 applies to documentation, extended to the source and prompt copies nothing else covers.
 
 Before committing a change under `content/`, grep for a distinctive sentence you
 changed. If it appears outside `content/`, it is a mirror and it is in scope.
 
+**Adding a file to `content/` is not this obligation.** A new file becomes a tool on the
+next boot, with its name and description read from itself — there is no tool list, no
+registry, and no source file to edit. Adding one is a one-file change. Renaming or
+deleting a file *is* a breaking change to the tool surface, so it needs the mirrors updated
+and a major version.
+
 ## Why this exists
 
 The `0.8.0` request named four files to edit. Three more carried the same text and would
-have shipped the old count — one of them into every repository `mcp_creator` creates,
-and one into every repository set up from the `agents-setup` prompt. Nothing written down
-would have caught it.
+have shipped the old count — one into every repository set up from the `agents-setup`
+prompt, one into every `AGENTS.md` a scaffolding tool wrote, and one into the string every
+client sees at `initialize`. Nothing written down would have caught it.
+
+The scaffolding tool is gone, and with it the worst mirror in the table: for a while the
+same block was written into every new repository from two directions at once. The
+remaining three are all files a human opens deliberately, which is a much smaller blast
+radius — but they are still mirrors, and this is the list that says so.

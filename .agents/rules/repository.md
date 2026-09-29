@@ -30,10 +30,10 @@ authority; the deployed server is a snapshot that may be older than your branch.
 
 | Path | Holds | Published? |
 |---|---|---|
-| `content/` | The shared instruction set. | **Yes** — served as `agents://` resources. |
+| `content/` | The shared instruction set. | **Yes** — one tool per file. |
 | `.agents/` | This repository's own rules, indexes, agent wiki, memory. | No. |
 | `wiki/` | This repository's human documentation. | No. |
-| `src/`, `test/` | The server and CLI implementation and its tests. | No. |
+| `src/`, `test/` | The server implementation and its tests. | No. |
 
 Never put a repository-specific rule in `content/`, and never put a universal
 convention in `.agents/`. The routing question is the one in
@@ -49,14 +49,14 @@ do not introduce TypeScript, a bundler, or a transpiler without agreement.
 |---|---|
 | Install | `npm install` |
 | Test | `npm test` |
-| Run locally (stdio) | `npm start` |
-| Run the connector surface | `npm run start:http` |
-| Run the CLI | `npm run cli -- <command>` |
+| Run (stdio) | `npm start` |
 | Inspect the MCP surface | `npm run inspect` |
-| Container | `docker compose up --build` |
+
+There is no `start:http`, no `npm run cli`, and no `docker compose`. `src/index.js`
+connects a stdio transport and nothing else.
 
 **`npm install` before `npm test`, once per checkout.** A fresh clone has no
-`node_modules`, and the suite does not say so: six of the seven test files fail with
+`node_modules`, and the suite does not say so: the test file fails with
 `ERR_MODULE_NOT_FOUND`, which reads as broken code rather than an uninstalled tree.
 That matters here because [`content-publishing.md`](content-publishing.md) sends you to
 `npm test` before any commit under `content/` — so the first test result an agent sees in
@@ -67,21 +67,21 @@ Full orientation: [`../wiki/context/repository-map.md`](../wiki/context/reposito
 ## Code conventions the codebase already follows
 
 * **ESM only.** `import`/`export`, `.js` extensions in relative specifiers, no `require`.
-* **Nothing writes to stdout except the CLI.** On the stdio transport stdout is the
-  JSON-RPC channel, so all logging goes through `src/logger.js` to stderr. The one
-  exception is CLI output, which is the CLI's whole product and is safe because `serve`
-  prints nothing itself — it must go through `src/cli/output.js`. A `console.log`
-  anywhere in `src/` is still a bug.
-* **The registry is frozen and shared.** Never mutate a registry entry, and never add a
-  per-request cache keyed on shared state — that is what makes concurrent clients safe.
-* **Read set text from the registry; never hard-code it.** `src/server/payloads.js` is
-  the pattern — it reads `content/` and has never drifted. `src/tools/mcp-creator.js`
-  hard-codes instruction prose into the repositories it scaffolds and has drifted
-  because of it. A new copy is a new mirror to maintain; see
+* **Nothing writes to stdout.** On the stdio transport stdout *is* the JSON-RPC channel.
+  There is no logger module and no `console.log` anywhere in `src/`; a `console.log` added
+  there is a bug that corrupts the protocol stream.
+* **The set is read once at boot and frozen.** Never mutate an entry of the map
+  `src/tools/from-content.js` builds, and never add a per-request cache keyed on shared
+  state — that is what makes concurrent clients safe.
+* **Read set text from `content/`; never hard-code it.** A file's own frontmatter supplies
+  its tool description, which is why the description can never disagree with the file. A
+  hard-coded copy in `src/` is a new mirror to maintain; see
   [`set-mirrors.md`](set-mirrors.md).
-* **One `McpServer` per session.** Never hoist a server instance to module scope.
-* **Fail at boot, not at first call.** Content problems — missing frontmatter, a
-  duplicate `name` — are startup errors by design. Keep them that way.
+* **One `McpServer` per connection.** `createServer()` builds a fresh instance; never hoist
+  one to module scope.
+* **Fail at boot, not at first call.** Content problems — a name that is not a valid MCP
+  identifier, two files deriving the same name, a missing frontmatter `description` — are
+  startup errors by design. Keep them that way.
 * **Comments explain why, not what.**
 
 ## Testing
@@ -89,26 +89,26 @@ Full orientation: [`../wiki/context/repository-map.md`](../wiki/context/reposito
 Every behavioural change ships with a test in `test/`, using `node:test` and
 `node:assert/strict`. The suite must pass before any commit.
 
-Prefer a test that pins an invariant over one that pins a string: the useful tests here
-are the ones asserting that all three surfaces — prompts, tools, and the CLI — return
-identical text, that manifest hashes reproduce from the served file, and that concurrent
-sessions do not cross.
+There is one test file, `test/server.test.js`, and it is the whole suite. Prefer a test
+that pins an invariant over one that pins a string: the useful ones here assert that
+files and tools are a bijection in both directions, that no tool takes an argument, and
+that the total characters served equals the total bytes on disk.
 
 ## What must not be introduced
 
 * A build step, or any compiled output committed to the repository.
-* A dependency added to serve one call site. The runtime dependencies are the MCP SDK,
-  express, and zod; adding a fourth needs a reason in
-  `.agents/memory/decisions/`.
-* Filesystem or network I/O on the resource-read path. Reads are in-memory lookups, and
-  keeping them that way is why a slow client cannot block others.
+* A dependency added to serve one call site. The runtime dependencies are the MCP SDK and
+  zod; adding a third needs a reason in `.agents/memory/decisions/`.
+* An argument on a tool. Every tool names one file, and the absence of a path is what makes
+  traversal impossible — a tool that needs a path is a tool that needs the argument back,
+  and that is a design decision, not a convenience.
+* Filesystem or network I/O on the read path. Reads are map lookups, and keeping them that
+  way is why a slow client cannot block others.
 * A third documentation tree. `wiki/` and `.agents/wiki/` are the only two.
 * Anything under `content/` that is not part of the published set.
 
 ## Deployment
 
-Deployed on Render from `master`, serving streamable HTTP. The connector URL **must**
-include the `/mcp` path — see
-[`content/rules/mcp-connector.md`](../../content/rules/mcp-connector.md). The free tier
-spins down when idle, so the first request after a pause takes 50+ seconds; that is
-expected, not a fault.
+Published to npm as `@lxagents-mcp/shared-instruction`, and consumed as a stdio
+subprocess. There is no remote deployment, no listener, and no port — the package exposes
+one bin, `lxagents-agents-base`, which is the server.

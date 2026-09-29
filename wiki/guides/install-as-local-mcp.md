@@ -1,35 +1,30 @@
 # Install as a Local MCP Server
 
-How to run the shared instruction set from a clone on your own disk, instead of reaching
-the deployed connector over the network.
+How to run the shared instruction set from a clone on your own disk.
 
-The remote connector is still the normal case — see
-[Connect a repository](connect-a-repository.md). Use this when it is not the right
-answer:
+The published npm package is the normal case — see
+[Connect a repository](connect-a-repository.md). Use a clone when:
 
-* **The host is cold.** The deployment is on a free tier that spins down when idle, so
-  the first request after a pause takes 50+ seconds.
-* **You are offline**, or behind a network that will not reach the deployment.
-* **Your client cannot add a remote connector**, only a local command.
 * **You are working on the instruction set itself** and want your edits live.
+* **You are offline**, or behind a network that will not reach the registry.
+* **Your client cannot run `npx`**, only a local command.
 
 ## The one rule that makes this safe
 
 **The clone is a runtime, not a copy of the instruction set.**
 
-That distinction is the whole reason this is allowed. `rules/mcp-connector.md` and
-`rules/shared-instructions.md` both forbid vendoring the shared set into a repository,
-and they still mean it. What you are cloning here is the **server that serves** the set.
-Three conditions keep the two apart, and all three are required:
+That distinction is the whole reason this is allowed. `content/rules/mcp-connector.md` and
+`content/rules/shared-instructions.md` both forbid vendoring the shared set into a
+repository, and they still mean it. What you are cloning here is the **server that serves**
+the set. Three conditions keep the two apart, and all three are required:
 
 1. **`mcps/` is gitignored.** It never enters your repository's history. A committed
-   `./mcps/` *is* a vendored copy, and `check-duplicate-agents-instruction` should flag
-   it as one.
-2. **Instructions are still read as `agents://` resources**, through the connector.
-   Never open `./mcps/LXAgents-MCP/shared-instruction/content/…` by file path — that is
-   reading a snapshot, which is exactly the drift the connector exists to remove.
+   `./mcps/` *is* a vendored copy, and `duplicate_instruction_audit` should flag it as one.
+2. **Instructions are still read through the connector.** Never open
+   `./mcps/LXAgents-MCP/shared-instruction/content/…` by file path — that is reading a
+   snapshot, which is exactly the drift the connector exists to remove.
 3. **Nothing is copied out of it** into `.agents/`. The adoption rules are unchanged: if
-   you can read it from `agents://`, it must not exist in your repository as a file.
+   you can read it from the connector, it must not exist in your repository as a file.
 
 Get those wrong and you have not installed a server, you have vendored the set with
 extra steps.
@@ -67,7 +62,7 @@ npm install
 npm test
 ```
 
-Node 20 or newer. There is no build step. `npm test` should report 66 passing — if the
+Node 20 or newer. There is no build step. `npm test` reports **19 passing** — if the
 registry refuses to start, the error names the file and the invariant it broke.
 
 ## 3. Ignore it — do this before your next commit
@@ -103,10 +98,8 @@ the transport did.
 If your client needs an absolute path, give it one — the relative form above is what the
 layout is for, but nothing depends on it.
 
-Prefer HTTP? `npm run start:http` serves streamable HTTP on `:3000`, and the connector
-URL is `http://localhost:3000/mcp` — **including the `/mcp` path**. Without it the
-handshake fails and most clients report that as a sign-in error rather than a wrong
-address.
+There is no HTTP alternative. `npm run start:http` does not exist; stdio is the only
+transport.
 
 ## 5. Paste this into your `AGENTS.md`
 
@@ -133,30 +126,26 @@ Then register it as a stdio MCP server named `lxagents-agents-base`, with
 **`mcps/` must be in this repository's `.gitignore`.** The clone is a runtime, not
 content. It is never committed.
 
-Once it resolves, read `agents://manifest.json` once, then `agents://index/root-index.md`,
-and route from there. Address every shared file as `agents://{folder}/{file}.md` — never
-by a path into `./mcps/`. Never copy a shared file into this repository: if you can read
-it from `agents://`, it must not exist here as a file.
+Once it resolves, start at `root_index` and route from there. Every file in the set is
+its own tool, named after its filename, so the tool list is the index — call the one whose
+trigger fired. Never copy a shared file into this repository: if you can read it from the
+connector, it must not exist here as a file.
 ```
 
 ## Keeping it current
 
 A clone is a snapshot, so it goes stale — that is the cost you accepted by not using the
-deployment.
+published package.
 
 ```bash
 cd ./mcps/LXAgents-MCP/shared-instruction && git pull && npm install
 ```
 
-Then **restart the server**. Content is read once at boot into a frozen registry, so a
+Then **restart the server**. The set is read once at boot into a frozen map, so a
 `git pull` does nothing to a process that is already running.
 
-Check what you are running against what is published:
-
-```bash
-npm run cli -- read versioning-rules   # any file, to confirm the clone answers
-cat package.json | grep '"version"'    # against the latest wiki/logs/ entry
-```
+To see what you are running against, `npm run inspect` lists the live surface, and
+`package.json` carries the version.
 
 ## Removing it
 
@@ -164,11 +153,11 @@ cat package.json | grep '"version"'    # against the latest wiki/logs/ entry
 rm -rf ./mcps/LXAgents-MCP/shared-instruction
 ```
 
-Nothing else to undo — that is the point of keeping it out of git. Then add the remote
+Nothing else to undo — that is the point of keeping it out of git. Then add the npm
 connector per [Connect a repository](connect-a-repository.md).
 
 ## Related pages
 
-- [Connect a repository](connect-a-repository.md) — the normal, remote path.
-- [Local setup](../environments/setup.md) — running both modes in detail.
-- [MCP surface](../reference/mcp-surface.md) — every prompt, resource, and tool.
+- [Connect a repository](connect-a-repository.md) — the normal, published path.
+- [Local setup](../environments/setup.md) — running the server in detail.
+- [MCP surface](../reference/mcp-surface.md) — the tool surface.
