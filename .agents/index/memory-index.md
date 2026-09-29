@@ -48,3 +48,4 @@ the same commit that creates it.
 | [`../memory/tasks/per-file-tools.md`](../memory/tasks/per-file-tools.md) | Replacing the single path-taking instruction tool with one generated tool per content file, across all four instruction MCP servers; the `2.0.0` release. |
 | [`../memory/tasks/feat-http-transport.md`](../memory/tasks/feat-http-transport.md) | Adding an HTTP/SSE transport alongside stdio so the server can run as a Web Service, and correcting every page that claimed there was no listener. |
 | [`../memory/tasks/fix-sonar-issues.md`](../memory/tasks/fix-sonar-issues.md) | Clearing the two remaining SonarCloud findings — a super-linear frontmatter regex, and Express framework version disclosure. |
+| [`../memory/tasks/merge-workflow.md`](../memory/tasks/merge-workflow.md) | Merging `planning/task-workflow.md` into `creators/plan-creator.md` and deleting the original — the tool-surface break, the retired `planning/` folder, and the `3.0.0` release. |
