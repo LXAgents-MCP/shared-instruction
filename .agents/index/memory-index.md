@@ -24,6 +24,12 @@ the same commit that creates it.
 |---|---|
 | [`../memory/decisions/express-for-http-transport.md`](../memory/decisions/express-for-http-transport.md) | Why `express` became the third runtime dependency, for the HTTP transport. |
 
+## findings/
+
+| File | Purpose |
+|---|---|
+| [`../memory/findings/workflow-merge-findings.md`](../memory/findings/workflow-merge-findings.md) | Three instruction findings raised by the `3.0.0` merge and never applied — the stale version field, the merge gate restated seven times, and the gates the set never states as a list. |
+
 ## tasks/
 
 | File | Purpose |
