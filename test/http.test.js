@@ -175,7 +175,7 @@ test("the HTTP transport serves the same tools as stdio", async (t) => {
     viaMemory,
     "the transport must not change the tool surface",
   );
-  assert.equal(viaHttp.length, 32, "32 tools: 31 generated from content/ plus mcp_list");
+  assert.equal(viaHttp.length, 31, "31 tools: 30 generated from content/ plus mcp_list");
 });
 
 test("a tool call over HTTP returns the file byte-identically", async (t) => {
@@ -280,7 +280,7 @@ test("an unknown session id is a 404, not a crash or a new session", async (t) =
 
   // A real client still works afterwards — a stale session must not poison the process.
   const client = await connect(server.url);
-  assert.equal((await client.listTools()).tools.length, 32);
+  assert.equal((await client.listTools()).tools.length, 31);
 });
 
 test("a session does not outlive its stream", async (t) => {
@@ -304,7 +304,7 @@ test("a session does not outlive its stream", async (t) => {
 
   // The process is healthy and still serving.
   const client = await connect(server.url);
-  assert.equal((await client.listTools()).tools.length, 32);
+  assert.equal((await client.listTools()).tools.length, 31);
 });
 
 test("a live session is drained on shutdown", async (t) => {

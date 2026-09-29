@@ -36,7 +36,7 @@ spawned per client. Start it with `npm run start:http` — it binds `0.0.0.0:300
 }
 ```
 
-Same 32 tools either way; the transport changes how you reach them, not what they are.
+Same 31 tools either way; the transport changes how you reach them, not what they are.
 **Prefer stdio for a repository that can spawn a process** — it needs no port to expose and
 no process to keep alive. Choose HTTP when the server's lifecycle should not be tied to one
 client. If you expose it beyond loopback, set `MCP_ALLOWED_HOSTS` — see
@@ -99,7 +99,7 @@ Ask the agent to confirm:
   repository pastes, so it is worth diffing against the current set rather than trusting an
   older copy.
 - `AGENTS.md` declares the **four mandatory tools** in its Shared instruction tools block —
-  `task_workflow`, `branching_strategy`, `commit_conventions`, `discovery_protocol` — and
+  `plan_creator`, `branching_strategy`, `commit_conventions`, `discovery_protocol` — and
   carries the three permission gates **inline**, not deferred to a tool.
 - **Every tool name in that block is one the connector actually publishes.** Tool names
   are derived from filenames, so a block copied from an older set will name tools that no

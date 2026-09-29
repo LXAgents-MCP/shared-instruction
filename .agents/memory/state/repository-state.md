@@ -28,19 +28,19 @@ restate it — three mirrors, listed in `.agents/rules/set-mirrors.md`.
 and `.agents/wiki/security/security-boundaries.md` (the SOP), loaded by a **local** trigger
 row. Its first rule is that a security context never crosses repositories.
 
-**Structure.** `content/` holds 31 published instruction files. `.agents/rules/` holds
+**Structure.** `content/` holds 30 published instruction files. `.agents/rules/` holds
 three local rules: `repository.md`, `content-publishing.md`, and `set-mirrors.md`. `wiki/`
 holds human documentation. `src/` is seven files and `test/` is two.
 
-**Surface — one tool per file.** 32 tools: 31 generated from `content/`, one per file,
+**Surface — one tool per file.** 31 tools: 30 generated from `content/`, one per file,
 plus `mcp_list`. The name is derived from the path (folder stripped, `.md` dropped, kebab →
 snake), with one override: `AGENTS.md` → `agents_entry_point`. The description is the
 file's own frontmatter `description`, verbatim. **No tool takes an argument.**
 
 That is a change from `1.0.0`, where six hand-named convention tools replaced the
 single 31,000-character `agents_auto_activation` call. The four mandatory ones are still
-`task_workflow`, `branching_strategy`, `commit_conventions`, and `discovery_protocol`, but
-they are no longer a fixed set: there are 31 files, and a repository declares in its own
+`plan_creator`, `branching_strategy`, `commit_conventions`, and `discovery_protocol`, but
+they are no longer a fixed set: there are 30 files, and a repository declares in its own
 `AGENTS.md` which of them it uses.
 
 `mcp_list` is the one hand-written tool, and the only one that reaches `readSetFile` in

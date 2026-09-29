@@ -157,3 +157,48 @@ a universal planning rule that is not part of a creator would still land there.
 `test/http.test.js` and the index-routing assertion in `test/server.test.js` that still
 names the deleted path. Both are task 4. No other test regressed, and no boot invariant
 tripped: the set still builds, so the merge itself published a valid surface.
+
+### Task 4 — `docs/merge-task-workflow-mirrors`
+
+Dropped the tool from the server, the suite, and every copy of the set's text that
+lives outside `content/`. Thirteen files. The suite is **31/31**.
+
+**`src/server.js` needed no logic change and one string change.** The surface is
+generated from the files on disk, so deleting a file removes its tool with no line of
+server code involved — the same property `.agents/rules/set-mirrors.md` calls the
+preferred shape. The only edit is inside the `instructions` string every client reads at
+`initialize`, which is a mirror by the rule's own table. It named `task_workflow` as an
+example tool, so it now names `plan_creator` first and drops the stale name; the other
+two examples became `branching_strategy` and `discovery_protocol` so the sentence still
+shows a spread across folders rather than three files from one.
+
+**The suite counted the surface in three places**, not the one the plan expected: two
+`assert.equal(..., 32)` calls in `test/http.test.js` beyond the cross-transport
+assertion. They were all written against a number that changes on every add or remove,
+which is the same hand-maintained copy a generated list should not have. They are
+corrected to 31 and left as literal counts — a derived count would be a second thing to
+keep in step with the set, and the bijection test already proves files and tools agree.
+
+`test/server.test.js` asserted that the instructions index routes
+`planning/task-workflow.md`. Because `creators/plan-creator.md` was already in that same
+list, the entry is **dropped rather than swapped** — the index still routes the file, it
+just no longer routes it twice.
+
+**Every `32` in the human documentation was a mirror of a number, not of a sentence**,
+which is why there were so many: the root `AGENTS.md`, `README.md`,
+`.agents/memory/state/repository-state.md`, and five `wiki/` pages. All now read 31 tools
+and 30 generated. Two of them also named the tool — the root `AGENTS.md` declaration
+block and the tool table in `wiki/information/overview.md` — and the "four mandatory
+tools" checklist in `wiki/guides/connect-a-repository.md`, which is the page a person
+follows to check a consuming repository by hand.
+
+**What was deliberately left alone.** `wiki/logs/**` and the twenty-odd prior records
+under `.agents/memory/tasks/` still say `planning/task-workflow.md`, including some that
+cite its sections by letter. They are released history: each was true when written, and
+`versioning.md` forbids editing a released version's log to change history. The
+`2/0/0` row in `content/index/logs-index.md` says `task_workflow` was "unchanged" — true
+at `2.0.0`, superseded by `3/0/0`. Rewriting them would make the history lie about when
+each change happened.
+
+Verified against a fresh process rather than assumed: `TOOL_FILES` holds 30 entries,
+`task_workflow` is absent, and `plan_creator` resolves to `creators/plan-creator.md`.
