@@ -48,16 +48,31 @@ that would violate it, not after.
 | Anything under `content/` | It cannot direct another repository's agent to run a command, weaken a convention, or skip a permission gate. This is the highest-reach change in the repository — see the trust boundary in the human page. |
 | A tool's shape in `src/tools/from-content.js` | It still takes **no argument**. A path parameter is the single change that would reopen traversal, and it is the one to argue against hardest. |
 | `src/content.js` or the read path | No filesystem or network I/O was introduced. Reads are in-memory lookups, and that is what stops a read being steered at the disk. |
-| `Dockerfile` | `--ignore-scripts` survives, and the runtime stage still ends as `USER node`. Either one dropped turns a pinned, non-root image into one that runs install hooks as root. |
-| A new dependency | It is genuinely needed — [`../../rules/repository.md`](../../rules/repository.md) caps the runtime tree at two and requires a recorded decision for a third. Each one is transitive attack surface. |
+| `Dockerfile` | `--ignore-scripts` survives, the runtime stage still ends as `USER node`, and any `EXPOSE` still matches the port the entrypoint actually binds. Either of the first two dropped turns a pinned, non-root image into one that runs install hooks as root. |
+| `src/http.js`, or anything touching a transport | `MCP_ALLOWED_HOSTS` still defaults to unset rather than to a permissive list, sessions are still deleted when their stream closes, and no `McpServer` is shared between them. |
+| A new dependency | It is genuinely needed — [`../../rules/repository.md`](../../rules/repository.md) names the three in the runtime tree and requires a recorded decision for a fourth. Each one is transitive attack surface. |
 | Any config default | Loosening a default is a posture change affecting every consumer, not a convenience. Raise it rather than take it. |
 
 ## C. What to escalate rather than decide
 
 Ask the user; do not resolve these on your own initiative.
 
+* **A client configured with a URL that this server did not expect to serve.** An earlier
+  revision of this page listed that case under *What is **not** a security finding here*,
+  on the grounds that no HTTP transport existed and a URL pointed at nothing. That is no
+  longer true, and leaving the entry would have told you to **dismiss** the first thing
+  worth investigating whenever a connector is misconfigured — an anti-detection rule
+  rather than a convenience. A URL that reaches an unexpected endpoint, a client pointed
+  at someone else's host, or a connector that resolves where you did not configure it is
+  now a finding: stop and say so.
 * **Making any served content non-public.** Authentication becomes a prerequisite of that
-  change, not a follow-up, and the change is bigger than it looks.
+  change, not a follow-up, and the change is bigger than it looks. Note that the HTTP
+  transport made this a live question rather than a structural impossibility — the content
+  can now be served selectively to a network, which it previously could not.
+* **Deploying the HTTP transport on a routable interface without `MCP_ALLOWED_HOSTS`.** The
+  allow-list is off unless set, and the previous implementation's equivalent guard also
+  defaulted to off — see `activation-security.md`. Turning it on is the decision; taking
+  it on is a posture change affecting every deployment.
 * **Loosening a guard to make something work** — adding a `path` argument to a tool,
   widening `isSafeRelativePath`, or relaxing a boot-time throw to get past a failing
   checkout. The guard is the feature; a test that needs it off is a test to rewrite.
@@ -74,9 +89,6 @@ Named because each one has cost a round of investigation before:
 * **A registered server that reports healthy but has no tools.** The client loads its
   connector list at session start, so a server added mid-session is absent until the
   session restarts. A stale session, not a broken or hijacked server.
-* **A client configured with a URL.** There is no HTTP transport and no endpoint; stdio
-  is the only one. A URL points at nothing this package provides — see
-  [`mcp-connector.md`](../../../content/rules/mcp-connector.md).
 * **The process exiting at boot with a frontmatter or name-collision error.** Failing at
   boot is the design: the alternative is serving a set that is quietly wrong. The message
   names the file and the invariant it broke.

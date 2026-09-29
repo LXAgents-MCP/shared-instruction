@@ -3,8 +3,9 @@
 Everything `lxagents-shared-instruction` exposes.
 
 **It exposes tools, and nothing else.** 32 of them: 31 generated — one per markdown file
-in `content/` — plus `mcp_list`, which is hand-written. There are no prompts, no resources,
-and no HTTP transport. See [What this server does not expose](#what-this-server-does-not-expose).
+in `content/` — plus `mcp_list`, which is hand-written. There are no prompts and no
+resources. It is reachable over two transports, and they expose the same tools. See
+[What this server does not expose](#what-this-server-does-not-expose).
 
 ## Server identity
 
@@ -12,7 +13,10 @@ and no HTTP transport. See [What this server does not expose](#what-this-server-
 |---|---|
 | `name` | `lxagents-shared-instruction` |
 | `version` | from `package.json`, read at import by `src/version.js` |
-| transport | stdio (`src/index.js`) |
+| transport | stdio (`src/index.js`) or HTTP/SSE (`src/http.js`, `/sse`) |
+
+Both entry points call the same `createServer()`, so the surface is identical by
+construction. A test asserts the two agree, tool for tool and byte for byte on a call.
 
 `initialize` also returns `instructions`, which names real tools, points a first-time
 caller at `root_index` or `agents_entry_point` rather than at everything, and says plainly
@@ -109,17 +113,22 @@ of the files on disk, so nothing can be served short.
 
 ## What this server does not expose
 
-This is the more useful half of the page, because the previous version of this file
+This is the more useful half of the page, because previous versions of this file
 documented all of the following as if it were shipped. None of it is.
 
 | Not exposed | Notes |
 |---|---|
 | **Prompts** | `agents-setup`, `agents-update` and the duplicate audit are **files**, served as the tools `agents_setup`, `agents_update` and `duplicate_instruction_audit`. |
 | **Resources** | There is no `agents://` URI scheme to fetch and no `manifest.json`. `agents://` survives in the instruction set as the *prose notation* its links use, not as a fetchable endpoint. |
-| **HTTP transport** | `src/index.js` connects `StdioServerTransport` and nothing else. No `POST /mcp`, no `/healthz`, no `/readyz`, no `MCP_PATH`. |
 | **A CLI** | `package.json` declares one bin, `lxagents-shared-instruction`, which is the server. There is no `lxagents-agents`, no `list`/`read`/`setup`/`audit` subcommands, and no `npm run cli`. |
 | **A writer** | Every tool is read-only. The tools that would write the set are not registered rather than disabled, so pointing a repository at this server cannot mutate it. A test asserts that no tool accepts a write verb or a credential. |
 | **A registry of tools** | `src/constants.js`, `src/server/` and `src/cli.js` were removed. The surface is built by `src/tools/from-content.js` and the array in `src/server.js`. |
+| **Health and readiness endpoints** | No `/healthz`, no `/readyz`. The HTTP transport answers `/sse` and `/message`, and a 404 for anything else. A probe endpoint on a server that serves only public markdown is a route that exists to be scanned. |
+| **Authentication** | Neither transport has any, and adding it would not make the content less public — it is on npm. See the [security model](../security/security-model.md). |
+
+**What the HTTP transport does expose** is the same 32 tools, at `GET /sse` (open a
+session) and `POST /message` (send to it). An unknown session id is a 404 rather than a new
+session, and a session lives only as long as its stream.
 
 The full tool list is whatever the client enumerates from `tools/list`; it is never written
 down here, because a hand-maintained copy of a generated list is a copy that goes stale.
@@ -134,11 +143,19 @@ hypothetical one. `src/server.js`'s `instructions` string says so at `initialize
 
 ## Tests
 
-`test/server.test.js` is the whole suite — 19 tests over a real MCP client on an
-in-memory transport, not a mock. It covers the frontmatter contract, the shared creator
-procedure, the bijection both ways, name derivation, uniqueness and descriptions, the
-zero-argument claim, byte-for-byte fidelity, total-served equality, reachability, index
-routing, `mcp_list` in isolation, and the read-only claim.
+`test/server.test.js` is 19 tests over a real MCP client on an in-memory transport, not a
+mock. It covers the frontmatter contract, the shared creator procedure, the bijection both
+ways, name derivation, uniqueness and descriptions, the zero-argument claim, byte-for-byte
+fidelity, total-served equality, reachability, index routing, `mcp_list` in isolation, and
+the read-only claim.
+
+`test/http.test.js` is 11 more, over a real client against a real listening process rather
+than an in-memory transport, because the things that can go wrong on the HTTP path are
+about sockets and sessions and do not reproduce in memory. It asserts the two transports
+expose the same tools and return byte-identical payloads, that concurrent sessions do not
+cross-talk, that an unknown session id is a 404, that a session dies with its stream, that
+shutdown drains before it closes, and that a `Host` header outside `MCP_ALLOWED_HOSTS` is
+actually rejected.
 
 There is no `test/tools.test.js` and no `test/logs.test.js`. Those covered the six-tool
 convention surface and the changelog delta parser, both of which were removed.

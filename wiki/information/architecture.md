@@ -1,12 +1,13 @@
 # Architecture
 
-Plain JavaScript (Node ESM), no build step, no dependencies beyond the MCP SDK. The whole
-server is six files.
+Plain JavaScript (Node ESM), no build step. Two dependencies: the MCP SDK, and `express`
+for the HTTP transport. The whole server is seven files.
 
 ```
 content/                      the instruction set — 31 markdown files
 src/
   index.js                    entry — stdio transport, what a client spawns
+  http.js                     entry — HTTP/SSE transport, for running as a service
   server.js                   builds the McpServer and registers the tool surface
   version.js                  ROOT, CONTENT_DIR, VERSION, SERVER_NAME
   content.js                  readSetFile — the one path-taking read, and its guard
@@ -15,6 +16,7 @@ src/
     mcp-list.js               the one hand-written tool
 test/
   server.test.js              19 tests over a real client on an in-memory transport
+  http.test.js                11 tests over a real client against a real listening process
 ```
 
 ## The tool surface is generated, not declared
@@ -50,15 +52,22 @@ state — request ids, progress tokens, the transport — and sharing one instan
 concurrent clients is how responses get delivered to the wrong connection. Instances are
 cheap; what they share is the already-loaded map.
 
-## One transport
+## Two transports
 
-`src/index.js` connects `StdioServerTransport` and nothing else. `SIGINT` closes the server
-and exits.
+`src/index.js` connects `StdioServerTransport`. `src/http.js` connects
+`SSEServerTransport` and binds a port. Both call the same `createServer()`, so the surface
+they expose is identical by construction rather than by discipline — a change to the tool
+set cannot reach one transport and miss the other.
 
-There is no HTTP transport, no session store, no worker pool and no clustering. All of that
-was removed along with the surface it served; see
-[the MCP surface page](../reference/mcp-surface.md#what-this-server-does-not-expose) for
-the list of what this server used to claim and does not now provide.
+The HTTP path adds a session store, because SSE is stateful: `GET /sse` mints a session and
+holds it open, and the transport tells the client to POST to `/message` with that session
+id. The store is a `Map` keyed by connection and deleted on close, so it is bounded by
+live connections rather than by total requests.
+
+There is still no worker pool and no clustering. Neither transport needs one at this size,
+and a shared `McpServer` across connections is the thing to avoid — see *One server
+instance per connection* above, which the HTTP transport turns from a nicety into the
+invariant that keeps concurrent sessions from cross-talking.
 
 ## The one path-taking read
 
@@ -75,11 +84,16 @@ a check that runs afterwards is a check against a value the caller already influ
 
 ## Shutdown
 
-`SIGINT` closes the server and exits `0`. The stdio transport has no open connections to
-drain, so there is no ordering to get wrong.
+The stdio transport has no open connections to drain, so `SIGINT` closes the server and
+exits `0` with nothing to order.
+
+The HTTP transport does have live connections, and the ordering is not optional: close the
+listener first so nothing new arrives, then close each session so its peer sees a clean end
+rather than a dropped socket. A removed implementation had the same drain-before-close
+ordering — see [`wiki/logs/0/0/0/CHANGELOG.md`](../logs/0/0/0/CHANGELOG.md).
 
 ## Related pages
 
 - [Overview](overview.md) — what this serves and why.
 - [MCP surface](../reference/mcp-surface.md) — the tool surface, and what is not exposed.
-- [Environment variables](../environments/env.md) — which is to say, none.
+- [Environment variables](../environments/env.md) — the three the HTTP transport reads.

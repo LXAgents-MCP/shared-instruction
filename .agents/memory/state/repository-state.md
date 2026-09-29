@@ -30,7 +30,7 @@ row. Its first rule is that a security context never crosses repositories.
 
 **Structure.** `content/` holds 31 published instruction files. `.agents/rules/` holds
 three local rules: `repository.md`, `content-publishing.md`, and `set-mirrors.md`. `wiki/`
-holds human documentation. `src/` is six files and `test/` is one.
+holds human documentation. `src/` is seven files and `test/` is two.
 
 **Surface — one tool per file.** 32 tools: 31 generated from `content/`, one per file,
 plus `mcp_list`. The name is derived from the path (folder stripped, `.md` dropped, kebab →
@@ -48,20 +48,27 @@ they are no longer a fixed set: there are 31 files, and a repository declares in
 for a caller to traverse with; the zero-argument design is the replacement for the old
 traversal check, not a weaker version of it.
 
-**Transports.** stdio only. `src/index.js` connects a stdio transport and handles
-`SIGINT`. The streamable-HTTP transport, session store, and cluster workers were removed
-in #63.
+**Transports.** Two, both calling the same `createServer()`, so the surface is identical by
+construction: `src/index.js` (stdio) and `src/http.js` (HTTP/SSE at `/sse`, `POST
+/message`). The HTTP entry point is new and its `SSEServerTransport` is **deprecated in the
+SDK** — "Use StreamableHTTPServerTransport instead" — built as explicitly instructed, with
+the deprecation recorded in the file header and the swap noted as a one-file change. Three
+environment variables reach it, none of them a secret: `PORT`, `HOST`, and
+`MCP_ALLOWED_HOSTS`. **The allow-list is off unless set**; the same control in the removed
+transport defaulted to off, which made it inert. Cluster workers and `/healthz` are still
+not there.
 
-**Not deployed anywhere.** There is no Render service, no listener, and no port. The
-previous version of this file named a Render hostname and warned that it was unverified;
-that deployment is gone with the transport it served. Consuming repositories reach this
-package through `npx`, a local clone, or `docker run -i`.
+**Not deployed anywhere.** There is no Render service and nothing is routed. The
+`src/http.js` listener is a capability, not a deployment — who runs it, on what address,
+behind what, is the operator's decision. Consuming repositories reach this package through
+`npx`, a local clone, `docker run -i`, or the HTTP endpoint of an instance someone deployed.
 
 **A `Dockerfile` exists, and is not a deployment.** Single stage, `node:22-alpine`,
-`npm ci --ignore-scripts --omit=dev`, `USER node`, entrypoint `node src/index.js`. No
-`EXPOSE` and no compose file, both deliberate: stdio is a pipe, not a port. The image was
-**never built** — Docker is not installed in the environment this was written in, so
-whether it builds is unverified. `.dockerignore` excludes `node_modules`, `test`, `wiki`,
+`npm ci --ignore-scripts --omit=dev`, `USER node`, entrypoint `node src/index.js`, now with
+`EXPOSE 3000`. There is still no compose file: a compose file encodes a deployment, and
+this repository has none. The image was **never built** — Docker is not installed in the
+environment this was written in, so neither the `EXPOSE` nor the entrypoint override has
+been verified by a build. `.dockerignore` excludes `node_modules`, `test`, `wiki`,
 `.agents` and the markdown at the root, which means the image cannot run its own test
 suite.
 
@@ -85,9 +92,11 @@ always the release, and the work goes between them. Each task appends its own
 `### Task k — {branch}` entry to `.agents/memory/tasks/{slug}.md` in the same commit as
 its work, so `git log -p` on that file replays the request task by task.
 
-**Tests.** 19, all passing, in one file. A fresh checkout has no `node_modules` and the
-file then fails with `ERR_MODULE_NOT_FOUND` — run `npm install` first, per
-`.agents/rules/repository.md`.
+**Tests.** 30, all passing, in two files. `server.test.js` (19) drives a real MCP client on
+an in-memory transport; `http.test.js` (11) drives a real client against a real listening
+process, because sockets and sessions do not reproduce in memory. A fresh checkout has no
+`node_modules` and the suite then fails with `ERR_MODULE_NOT_FOUND` — run `npm install`
+first, per `.agents/rules/repository.md`.
 
 **Not built yet.**
 
@@ -100,7 +109,11 @@ file then fails with `ERR_MODULE_NOT_FOUND` — run `npm install` first, per
   path-taking tool, left on disk after #63. Deleting it needs the owner's `git rm`; it was
   not removed unilaterally.
 * The `Dockerfile` has never been built. Docker was unavailable in the environment that
-  wrote it. It should be built once and the entrypoint checked before anyone relies on it.
+  wrote it, and the HTTP work has since added an `EXPOSE` and an entrypoint override that
+  are equally unverified. It should be built once, both run forms checked, before anyone
+  relies on it.
+* The HTTP transport has never been run outside its own tests. Nothing is deployed, so
+  there is no address, no ingress, and no evidence about how it behaves behind a proxy.
 
-**Next obvious step.** Build the image once to confirm the entrypoint, and delete the
-dead `instruction.js`.
+**Next obvious step.** Build the image once and check both run forms, and delete the dead
+`instruction.js`.

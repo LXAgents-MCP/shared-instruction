@@ -4,7 +4,7 @@ How to put a repository onto the shared instruction set.
 
 ## 1. Add the connector
 
-The server is **stdio only**, so this is a local command:
+The server speaks **stdio by default**, so this is a local command:
 
 ```json
 {
@@ -21,8 +21,26 @@ To run it from a checkout instead, point `command: node` at `src/index.js` with 
 to the clone — the full procedure, including where to put the clone, is in
 [Install as a local MCP server](install-as-local-mcp.md).
 
-There is no remote form. A client configured with a URL is pointed at nothing this package
-provides, because `src/index.js` connects a stdio transport and nothing else.
+**There is also a remote form**, for a server running at a fixed address rather than
+spawned per client. Start it with `npm run start:http` — it binds `0.0.0.0:3000` unless
+`PORT` says otherwise — and register it by URL:
+
+```json
+{
+  "mcpServers": {
+    "lxagents-shared-instruction": {
+      "type": "sse",
+      "url": "https://shared-instruction.example.com/sse"
+    }
+  }
+}
+```
+
+Same 32 tools either way; the transport changes how you reach them, not what they are.
+**Prefer stdio for a repository that can spawn a process** — it needs no port to expose and
+no process to keep alive. Choose HTTP when the server's lifecycle should not be tied to one
+client. If you expose it beyond loopback, set `MCP_ALLOWED_HOSTS` — see
+[Security model](../security/security-model.md).
 
 **Registering does not reach a running session.** A client loads its connector list at
 session start, so a server added mid-session reports healthy and is still absent from the

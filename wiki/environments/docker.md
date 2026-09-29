@@ -1,22 +1,24 @@
 # Docker
 
-The server runs in a container. There is no registry, no service, and no port — this
-is a stdio server, and a container is a way to run it with a pinned toolchain rather
-than a network endpoint.
+The server runs in a container. The image supports **both transports**: its default
+entrypoint is the stdio server, and the HTTP one is a command away.
+
+An earlier revision of this page said `EXPOSE` was deliberately absent because it would be
+a lie. That was true while stdio was the whole interface, and it is the reason the port is
+now declared: the server has a listener, so the image says so.
 
 ## What a container is for here
 
-A client spawns this server as a subprocess and speaks JSON-RPC over its stdin and
-stdout. In a container that pipe is still the whole interface. What the image buys:
+A client can spawn this server as a subprocess and speak JSON-RPC over its stdin and
+stdout, or reach it over HTTP. What the image buys either way:
 
 * **A pinned toolchain.** `node:22-alpine` instead of whatever is on the host.
 * **A clean dependency tree.** `npm ci --ignore-scripts --omit=dev` from the lockfile.
   `npm ci` fails rather than resolving something the lockfile does not contain.
 * **A non-root process.** The image ends as `USER node`.
 * **Isolation from the host**, which matters if the client is on a different machine.
-
-What it does not buy: a listener. There is no HTTP transport in this package, so
-`EXPOSE` would be a lie and is deliberately absent.
+* **A network boundary**, if you run it as a service — which it did not before the HTTP
+  transport existed, and which is now a real option rather than a claim to avoid.
 
 ## Build
 
@@ -27,7 +29,7 @@ docker build -t lxagents-shared-instruction:2.0.0 .
 Tag it with the version in `package.json` rather than `latest`. The image's job is to
 be reproducible, and `latest` is the one tag that cannot be.
 
-## Run
+## Run — stdio
 
 stdio means the container's stdin has to stay open and attached:
 
@@ -37,8 +39,31 @@ docker run --rm -i lxagents-shared-instruction:2.0.0
 
 **`-i` is not optional.** Without it Docker does not attach stdin, the server sees
 closed input, and it exits immediately — which reads as a broken image rather than a
-missing flag. There is no `-p`, and adding one would do nothing: there is no port
-listening.
+missing flag. There is nothing to publish: this form has no port.
+
+## Run — HTTP
+
+Override the entrypoint to serve instead of attaching a pipe:
+
+```bash
+docker run --rm -p 3000:3000 lxagents-shared-instruction:2.0.0 node src/http.js
+```
+
+**`-p` is what makes it reachable**, and forgetting it produces a container that is
+running, healthy, and connectable from nowhere. `EXPOSE 3000` documents the port; it does
+not publish it, which is the part that surprises people.
+
+Set `MCP_ALLOWED_HOSTS` when it is reachable from anywhere but this machine — the
+allow-list is off unless you set it:
+
+```bash
+docker run --rm -p 3000:3000 \
+  -e MCP_ALLOWED_HOSTS=shared-instruction.example.com \
+  lxagents-shared-instruction:2.0.0 node src/http.js
+```
+
+See [Environment variables](env.md) and the
+[security model](../security/security-model.md).
 
 To point an MCP client at it, give it the same command with the container attached:
 
@@ -53,10 +78,14 @@ To point an MCP client at it, give it the same command with the container attach
 }
 ```
 
-Most clients do not attach a persistent stdin to a spawned process, so this form
+Most clients do not attach a persistent stdin to a spawned process, so the stdio form
 works only where the client does. The npx and local-clone forms in
 [Connect a repository](../guides/connect-a-repository.md) are the ones that work
 everywhere; the container is for a host that cannot run Node 20.
+
+**The HTTP form reverses that.** Serving over a port is the shape every client and every
+host already understands, so as a Web Service the container is now the *most* portable of
+the three rather than the least.
 
 ## What is in the image
 
@@ -71,13 +100,18 @@ everywhere; the container is for a host that cannot run Node 20.
 its own test suite** — `npm test` needs `test/`, and the suite is a gate on the
 repository, not on the artifact.
 
-## There is no compose file, deliberately
+## There is no compose file, still
 
 A `compose.yaml` for a stdio server is a footgun: it invites `docker compose up` and
 a healthcheck against a port that does not exist, both of which fail in ways that
-look like a broken image. The image takes one command and one flag. If a future
-change adds a real transport, a compose file becomes worth writing — and the reason
-to write one then is that there is something to route to.
+look like a broken image.
+
+**This page previously said a compose file would become worth writing once a real
+transport existed** — and one now does. It is still not written, for a different reason:
+a compose file encodes a deployment, and this repository has none. It ships an image that
+can be deployed, not a deployment. Whoever operates the service decides how it is routed,
+what it is called, and what fronts it; that is not a decision this repository can make on
+their behalf.
 
 ## Verifying an image
 
@@ -89,9 +123,18 @@ With stdin closed the server exits at once, so this checks that the entrypoint
 resolves and Node starts — not that the set is correct. To check the set, run
 `npm test` in a checkout.
 
+For the HTTP form, `docker run --rm -p 3000:3000 … node src/http.js` and then
+`curl -N http://localhost:3000/sse` — the stream stays open, which is the correct
+response, not a hang.
+
+> **This image has never been built.** Docker is not available in the environment these
+> changes were written in, so neither the `EXPOSE` nor the entrypoint override has been
+> verified by a build. Treat both as written-and-untested.
+
 ## Related pages
 
 - [Local setup](setup.md) — running the server without a container.
-- [Architecture](../information/architecture.md) — the one transport it has.
+- [Architecture](../information/architecture.md) — the two transports it has.
+- [Environment variables](env.md) — `PORT`, `HOST`, `MCP_ALLOWED_HOSTS`.
 - [Security model](../security/security-model.md) — what a container does and does
   not change about exposure.

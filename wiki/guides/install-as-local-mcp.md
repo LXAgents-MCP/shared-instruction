@@ -98,8 +98,29 @@ has to be updated.
 If your client needs an absolute path, give it one — the relative form above is what the
 layout is for, but nothing depends on it.
 
-There is no HTTP alternative. `npm run start:http` does not exist; stdio is the only
-transport.
+**This page is about the local stdio path, and stdio is the right default here.** A clone
+you run per client needs no port, no host, and no process kept alive between sessions.
+
+The server also speaks HTTP, for when you want one instance serving several clients from a
+fixed address rather than one per client:
+
+```bash
+npm run start:http    # binds 0.0.0.0:3000, or $PORT
+```
+
+```json
+{
+  "mcpServers": {
+    "lxagents-shared-instruction": {
+      "type": "sse",
+      "url": "http://localhost:3000/sse"
+    }
+  }
+}
+```
+
+Same 32 tools either way. Set `MCP_ALLOWED_HOSTS` to a comma-separated list of hostnames
+if you expose it beyond loopback — see [Security model](../security/security-model.md).
 
 ## 5. Paste this into your `AGENTS.md`
 
@@ -121,7 +142,8 @@ block. If it is not, install it locally:
 
 Then register it as a stdio MCP server named `lxagents-shared-instruction`, with
 `command: node`, `args: ["src/index.js"]`, and
-`cwd: ./mcps/LXAgents-MCP/shared-instruction`.
+`cwd: ./mcps/LXAgents-MCP/shared-instruction`. A host serving it over HTTP registers
+`type: sse` and `url: https://<host>/sse` instead, under the same name.
 
 **`mcps/` must be in this repository's `.gitignore`.** The clone is a runtime, not
 content. It is never committed.

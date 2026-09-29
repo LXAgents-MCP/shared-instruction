@@ -7,7 +7,8 @@ instead of cloning or vendoring a copy of them.
 
 - **Server id:** `lxagents-shared-instruction`
 - **Package:** `@lxagents-mcp/shared-instruction`
-- **Transport:** stdio. There is no HTTP server and no remote endpoint.
+- **Transport:** stdio, or HTTP/SSE at `/sse` for running it as a service at a fixed
+  address. Both serve the same 32 tools.
 - **Surface:** 32 tools. 31 are generated — one per markdown file in `content/` — and one
   is hand-written. Every one is read-only and every one takes no arguments.
 - **Requirements:** Node >= 20. ESM, no build step.
@@ -57,6 +58,12 @@ Serve it to an MCP client over stdio:
 npm start
 ```
 
+Or as a service over HTTP:
+
+```bash
+npm run start:http
+```
+
 Or inspect the surface by hand:
 
 ```bash
@@ -85,6 +92,25 @@ For npm consumers the package exposes that binary, so `command: "npx"` with
 `args: ["-y", "@lxagents-mcp/shared-instruction"]` works without a checkout. See
 [`wiki/guides/connect-a-repository.md`](wiki/guides/connect-a-repository.md).
 
+A server running at a fixed address is reached over HTTP instead:
+
+```json
+{
+  "mcpServers": {
+    "lxagents-shared-instruction": {
+      "type": "sse",
+      "url": "http://shared-instruction.example.com:3000/sse"
+    }
+  }
+}
+```
+
+**stdio is still the right default** wherever the client can spawn a process — it has no
+port to secure and nothing to deploy. The HTTP form is for a host that cannot run Node 20,
+or for one service several clients share. Set `MCP_ALLOWED_HOSTS` on anything reachable
+beyond your own machine; the allow-list is off unless you set it. See
+[`wiki/environments/env.md`](wiki/environments/env.md).
+
 **Registering a server does not reach a session that is already running.** A client loads
 its connector list at session start, so a server added mid-session reports healthy and is
 still absent from the tool surface until the session restarts.
@@ -93,12 +119,14 @@ still absent from the tool surface until the session restarts.
 
 ```bash
 docker build -t lxagents-shared-instruction:2.0.0 .
-docker run --rm -i lxagents-shared-instruction:2.0.0
+docker run --rm -i lxagents-shared-instruction:2.0.0                            # stdio
+docker run --rm -p 3000:3000 lxagents-shared-instruction:2.0.0 node src/http.js  # HTTP
 ```
 
-A pinned, non-root image for hosts that cannot run Node 20. It is **not** a service —
-stdio is a pipe, not a port, so there is no `EXPOSE` and nothing to publish. The `-i` is
-not optional; without it the server sees closed stdin and exits. Details in
+A pinned, non-root image for hosts that cannot run Node 20. The default entrypoint is
+stdio, so `-i` is not optional there — without it the server sees closed stdin and exits.
+Overriding the entrypoint to `src/http.js` serves on port 3000 instead, and `-p` is what
+makes that reachable; `EXPOSE` documents the port, it does not publish it. Details in
 [Docker](wiki/environments/docker.md).
 
 ## Documentation

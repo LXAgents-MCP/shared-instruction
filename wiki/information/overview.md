@@ -30,7 +30,8 @@ to vendor by mistake, and every repository reads the same bytes.
 ## What it serves
 
 **32 tools, and nothing else.** 31 are generated — one per markdown file in `content/` —
-and one is hand-written. No prompts, no resources, no HTTP transport.
+and one is hand-written. No prompts, no resources. Reachable over stdio or HTTP/SSE; both
+serve the same tools, because both call the same `createServer()`.
 
 | Tool | Serves |
 |---|---|
