@@ -75,12 +75,14 @@ Full orientation: [`../wiki/context/repository-map.md`](../wiki/context/reposito
 ## Code conventions the codebase already follows
 
 * **ESM only.** `import`/`export`, `.js` extensions in relative specifiers, no `require`.
-* **Nothing writes to stdout on the stdio path.** On the stdio transport stdout *is* the
-  JSON-RPC channel. There is no logger module and no `console.log` anywhere in `src/`
-  except `src/http.js`; a `console.log` added to the stdio path is a bug that corrupts
-  the protocol stream. `src/http.js` is the deliberate exception — the protocol is on a
-  socket there, so stdout is an ordinary log channel — and the rule is per-file because a
-  single "never write to stdout" would forbid correct behaviour in one of them.
+* **Nothing writes to stdout.** On the stdio transport stdout *is* the JSON-RPC channel.
+  There is no logger module and no `console.log` anywhere in `src/`. `src/http.js` used to
+  be the deliberate exception — the protocol is on a socket there, so stdout was an
+  ordinary log channel — and it no longer is, because `src/index.js` now reaches it by
+  dynamic import and the same process can be one transport or the other. It logs to stderr.
+  A log line drifting onto stdout is a bug that corrupts the protocol stream in the one
+  configuration where stdout is the stream, and that is why it is one rule and not a
+  per-file exception.
 * **The set is read once at boot and frozen.** Never mutate an entry of the map
   `src/tools/from-content.js` builds, and never add a per-request cache keyed on shared
   state — that is what makes concurrent clients safe.
@@ -121,9 +123,9 @@ transports agree tool for tool.
 * Filesystem or network I/O on the read path. Reads are map lookups, and keeping them that
   way is why a slow client cannot block others.
 * A new listener, route, or environment variable without a say-so. The server has two
-  transports and three variables, and each of those was a deliberate decision someone
-  approved. `wiki/environments/env.md` says what the current three do; a fourth is a
-  change to a public surface, not an implementation detail.
+  transports and four variables, and each of those was a deliberate decision someone
+  approved. `wiki/environments/env.md` says what the current four do; a fifth is a change
+  to a public surface, not an implementation detail.
 * A third documentation tree. `wiki/` and `.agents/wiki/` are the only two.
 * Anything under `content/` that is not part of the published set.
 
@@ -133,10 +135,10 @@ Published to npm as `@lxagents-mcp/shared-instruction`, and consumed mostly as a
 subprocess. The package exposes one bin, `lxagents-shared-instruction`, which is the
 server.
 
-`src/http.js` can also serve the same tools over SSE for a client that reaches a fixed
-address instead of spawning a process. **It is a capability, not a deployment** — this
-repository routes nothing, names no host, and decides no ingress. The distinction matters
-because a listener with no front door is a security claim, and
+`src/http.js` can also serve the same tools at `POST /mcp` for a client that reaches a
+fixed address instead of spawning a process. **It is a capability, not a deployment** —
+this repository routes nothing, names no host, and decides no ingress. The distinction
+matters because a listener with no front door is a security claim, and
 [`../wiki/security/security-model.md`](../wiki/security/security-model.md) is where that
 is argued.
 

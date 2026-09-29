@@ -1,182 +1,104 @@
 #!/usr/bin/env node
-import express from "express";
-import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
-import { hostHeaderValidation } from "@modelcontextprotocol/sdk/server/middleware/hostHeaderValidation.js";
-import { createServer } from "./server.js";
+import { allowedHosts, createApp } from "./app.js";
+import { SERVER_NAME, VERSION } from "./version.js";
 
 /**
- * The HTTP transport — the second way to reach this server.
+ * The HTTP entry point.
  *
- * `src/index.js` is still the default and still speaks stdio. Nothing here changes what
- * the server serves: `createServer()` is the same factory, and it returns a fresh
- * `McpServer` per call, so each session gets its own. Sharing one across sessions would
- * be a real bug — `McpServer` holds per-connection state — and this file is the reason
- * that rule has a second reader.
+ * **This file, and not `src/index.js`, is what `npm run start:http` and the `Dockerfile`
+ * name** — and neither may change, because the documented Docker command is
+ * `node src/http.js`. Everywhere else in the organization the cluster and the port live
+ * in `src/index.js`; here they live here, and `src/index.js` reaches this file by dynamic
+ * import when `MCP_TRANSPORT=http` is set. One extra hop, forced by a file that must not
+ * move. The task record under `.agents/memory/tasks/` has the reasoning.
  *
- * **SSE, and it is deprecated.** `@modelcontextprotocol/sdk` marks `SSEServerTransport`
- * as deprecated in favour of `StreamableHTTPServerTransport`, and deprecates its own
- * `allowedHosts` and `enableDnsRebindingProtection` options in favour of the
- * `hostHeaderValidation` middleware used below. The transport was specified explicitly
- * and is built as asked; the deprecation is recorded here and in the release log rather
- * than left for the next reader to discover. Moving to Streamable HTTP is a change to
- * this file and this comment.
+ * The application itself is in `src/app.js`, which builds and returns an express app and
+ * does not listen. This file owns the port, the interface, the startup lines, and the
+ * drain.
  */
 
 const PORT = Number(process.env.PORT) || 3000;
 const HOST = process.env.HOST || "0.0.0.0";
 
 /**
- * Live sessions, keyed by the session id the transport mints.
+ * Where the process says things.
  *
- * `/sse` and `/message` are not two independent routes. The first opens a stream and
- * mints a session; the transport tells the client to POST to the second with that
- * session id, and the entry here is what routes the message back. An SSE transport is
- * therefore stateful, and this map is the state.
- *
- * It is bounded by connection lifetime rather than by anything else: `res.on("close")`
- * deletes the entry when the stream ends, so a client that opens a stream and
- * disconnects does not leak one. Without that, an unauthenticated public port is a
- * memory-growth primitive.
- *
- * @type {Map<string, SSEServerTransport>}
+ * stderr, and not stdout. The stdio entry point is the reason: on that transport stdout
+ * *is* the JSON-RPC channel, and `src/index.js` now reaches this file to start HTTP, so a
+ * process that logs to stdout would be correct on one entry point and a protocol
+ * corruption on the other. The rule is easier to hold as one rule than as an exception.
  */
-const sessions = new Map();
-
-/**
- * The `Host` header allow-list, when one is configured.
- *
- * This is the control that used to default to off. The removed implementation shipped
- * `MCP_DNS_REBINDING_PROTECTION` defaulting to `false`, which made its allow-lists inert
- * — see `.agents/memory/tasks/activation-security.md`. The SDK's `createMcpExpressApp`
- * applies the same idea automatically, but only when the host is loopback, and a
- * container binds `0.0.0.0`. So the protection would be off in exactly the deployment
- * this file exists to enable, which is the same trap one level up.
- *
- * `MCP_ALLOWED_HOSTS` (comma-separated) turns it on. Unset means the check is skipped
- * rather than guessed at: a wrong allow-list silently refusing every request is a worse
- * failure than an absent one, and the transport serves public markdown either way. This
- * is stated in the same terms as the rest of the security posture — see
- * `wiki/security/security-model.md`.
- *
- * @returns {string[]}
- */
-function allowedHosts() {
-  const raw = process.env.MCP_ALLOWED_HOSTS;
-  if (!raw) return [];
-  return raw
-    .split(",")
-    .map((host) => host.trim())
-    .filter(Boolean);
+function log(line) {
+  process.stderr.write(`${new Date().toISOString()} ${line}\n`);
 }
 
-const app = express();
-
-// Express stamps `X-Powered-By: Express` on every response it sends, which hands an
-// unauthenticated caller the framework and the exact version serving the port — a free
-// upgrade suggestion, and a narrowing of what an attacker has to guess. The header is
-// removed here deliberately and this line is a security control, not an omission: do not
-// restore it because a route looks like it is missing a header.
-//
-// `disable` rather than `app.set` because this is a setting of the app itself and it must
-// hold for every response, including the ones no route here produces. It sits above the
-// middleware below because it configures the app rather than joining the request chain.
-app.disable("x-powered-by");
-
-const hosts = allowedHosts();
-if (hosts.length > 0) {
-  app.use(hostHeaderValidation(hosts));
-}
-
-app.use(express.json());
-
 /**
- * Open a session. The stream stays open for the life of the connection; the transport
- * sends the endpoint event that tells the client where to POST.
- */
-app.get("/sse", async (_req, res) => {
-  // The first argument is where the client is told to POST. It is not optional — a
-  // transport constructed without it accepts messages it has nowhere to route.
-  const transport = new SSEServerTransport("/message", res);
-  sessions.set(transport.sessionId, transport);
-
-  // Fires on disconnect as well as on a clean close, which is the case that leaks.
-  res.on("close", () => {
-    sessions.delete(transport.sessionId);
-  });
-
-  await createServer().connect(transport);
-});
-
-/**
- * Deliver one message to the session it belongs to.
+ * Requests currently being answered, and the closers that end them.
  *
- * An unknown or expired session id is a 404. It is not a crash and not a new session:
- * silently opening one here would hand a caller a session id it did not negotiate, and
- * crashing would turn a stale client into a denial of service for everyone else.
- */
-app.post("/message", async (req, res) => {
-  const sessionId = req.query.sessionId;
-  const transport =
-    typeof sessionId === "string" ? sessions.get(sessionId) : undefined;
-
-  if (!transport) {
-    res.status(404).json({
-      error: "Unknown session",
-      detail:
-        "This session id is not open. Sessions live only as long as their SSE stream, " +
-        "so reconnect to /sse and use the id it returns.",
-    });
-    return;
-  }
-
-  await transport.handlePostMessage(req, res, req.body);
-});
-
-// Anything else is not a route this server has. A 404 that says so is more useful to a
-// client than a bare one, and it is the only place a request is answered with prose.
-app.use((_req, res) => {
-  res.status(404).json({
-    error: "Not found",
-    detail: "This server serves MCP over SSE: GET /sse to open a session, POST /message to send to it.",
-  });
-});
-
-/**
- * Shutdown.
+ * **This is what replaced the SSE session map, and it is deliberately not the same
+ * shape.** The map counted live *sessions* — state a client held open across requests,
+ * keyed by an id it was handed, deleted when its stream closed. None of that exists here:
+ * each request carries everything it needs, so there is nothing to key and nothing to
+ * look up. A `Set` of closers is what a shutdown can actually act on, which is why it
+ * replaces the map rather than impersonating it: `inFlight.size` is the drain count, and
+ * the entries are how a stuck request is ended rather than waited on forever.
  *
- * Order matters, and the stdio entry point has no equivalent problem: the listener is
- * closed first so nothing new arrives, then each session is closed so its peer sees a
- * clean end rather than a dropped socket. The removed implementation had this same
- * drain-before-close ordering — see `wiki/logs/0/0/0/CHANGELOG.md`.
- *
- * `stdio` does not get a logger, because on that transport stdout *is* the JSON-RPC
- * channel. This process has no such constraint, which is why logging to stdout here is
- * correct and would be a protocol corruption one file over.
+ * @type {Set<() => void>}
  */
-const server = app.listen(PORT, HOST, () => {
+const inFlight = new Set();
+
+const server = createApp({ inFlight }).listen(PORT, HOST, () => {
   const where = HOST === "0.0.0.0" ? "all interfaces" : HOST;
-  process.stdout.write(
-    `${new Date().toISOString()} lxagents-shared-instruction listening on http://${HOST}:${PORT} (${where})\n`,
-  );
-  if (hosts.length === 0) {
-    process.stdout.write(
-      `${new Date().toISOString()} MCP_ALLOWED_HOSTS is unset, so no Host header allow-list is applied.\n`,
-    );
+  log(`${SERVER_NAME} ${VERSION} serving over http on :${PORT}/mcp (${where})`);
+
+  // Said out loud, because the default is the unguarded one. Someone reading a
+  // container's startup log is the only person who can act on it, and a control that is
+  // off silently is worse than no control at all — it reads as present.
+  if (allowedHosts().length === 0) {
+    log(`${SERVER_NAME} ${VERSION} MCP_ALLOWED_HOSTS is unset, so no Host header allow-list is applied.`);
   }
 });
 
 let shuttingDown = false;
 
-async function shutdown(signal) {
-  if (shuttingDown) return;
+/**
+ * Shutdown, in this order.
+ *
+ * The listener closes first, so nothing new arrives — a request accepted during the drain
+ * gets an answer rather than a refused connection. Then idle keep-alive sockets are
+ * closed, because `close()` waits on them and a client that opened one and went quiet
+ * would hold the process open indefinitely for a request that no longer exists. Then a
+ * short grace period, after which whatever is genuinely still in flight is cut off
+ * rather than waited on forever.
+ *
+ * The count in the drain line is `inFlight.size`, and that is the number the SSE version
+ * printed as `sessions.size` with a different word. **There is no session store to drain
+ * here** — each request is self-contained, a fresh `McpServer` closed when its response
+ * closes — so what drains is the requests. The line changes shape with that, and so does
+ * the test that reads it.
+ *
+ * @param {string} signal
+ */
+function shutdown(signal) {
+  // A second signal means the operator has stopped waiting.
+  if (shuttingDown) {
+    process.exit(0);
+  }
   shuttingDown = true;
-  process.stdout.write(`${new Date().toISOString()} ${signal}, draining ${sessions.size} session(s)\n`);
+  log(`${signal}, draining ${inFlight.size} in-flight request(s)`);
 
-  await new Promise((resolve) => server.close(resolve));
-  await Promise.allSettled([...sessions.values()].map((t) => t.close()));
+  const forced = setTimeout(() => {
+    server.closeAllConnections();
+    for (const close of [...inFlight]) close();
+  }, 5000);
+  forced.unref();
 
-  process.exit(0);
+  server.close(() => {
+    clearTimeout(forced);
+    process.exit(0);
+  });
+  server.closeIdleConnections();
 }
 
-process.on("SIGINT", () => void shutdown("SIGINT"));
-process.on("SIGTERM", () => void shutdown("SIGTERM"));
+process.on("SIGTERM", () => shutdown("SIGTERM"));
+process.on("SIGINT", () => shutdown("SIGINT"));

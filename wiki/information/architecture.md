@@ -1,13 +1,14 @@
 # Architecture
 
 Plain JavaScript (Node ESM), no build step. Two dependencies: the MCP SDK, and `express`
-for the HTTP transport. The whole server is seven files.
+for the HTTP transport. The whole server is eight files.
 
 ```
 content/                      the instruction set — 31 markdown files
 src/
-  index.js                    entry — stdio transport, what a client spawns
-  http.js                     entry — HTTP/SSE transport, for running as a service
+  index.js                    entry — picks the transport; stdio by default
+  app.js                      the HTTP transport as an application — /mcp, /healthz. Does not listen.
+  http.js                     entry — the port, the drain, and the workers
   server.js                   builds the McpServer and registers the tool surface
   version.js                  ROOT, CONTENT_DIR, VERSION, SERVER_NAME
   content.js                  readSetFile — the one path-taking read, and its guard
@@ -16,7 +17,7 @@ src/
     mcp-list.js               the one hand-written tool
 test/
   server.test.js              19 tests over a real client on an in-memory transport
-  http.test.js                11 tests over a real client against a real listening process
+  http.test.js                23 tests over a real client against a real listening process
 ```
 
 ## The tool surface is generated, not declared
@@ -54,20 +55,31 @@ cheap; what they share is the already-loaded map.
 
 ## Two transports
 
-`src/index.js` connects `StdioServerTransport`. `src/http.js` connects
-`SSEServerTransport` and binds a port. Both call the same `createServer()`, so the surface
-they expose is identical by construction rather than by discipline — a change to the tool
-set cannot reach one transport and miss the other.
+`src/index.js` connects `StdioServerTransport`. `src/http.js` builds the express
+application in `src/app.js` and binds a port. Both call the same `createServer()`, so the
+surface they expose is identical by construction rather than by discipline — a change to
+the tool set cannot reach one transport and miss the other.
 
-The HTTP path adds a session store, because SSE is stateful: `GET /sse` mints a session and
-holds it open, and the transport tells the client to POST to `/message` with that session
-id. The store is a `Map` keyed by connection and deleted on close, so it is bounded by
-live connections rather than by total requests.
+`src/index.js` reaches `src/http.js` on `MCP_TRANSPORT=http`, by dynamic import. It is
+dynamic because `src/index.js` is the stdio entry point and stdout there *is* the JSON-RPC
+channel: a static import would load express into that process whether or not HTTP was
+selected. The two files stay separate because `package.json`'s `start:http` and the
+`Dockerfile` both name `src/http.js` and neither may change — so the HTTP path has one more
+hop than the other four servers in the organization, and the reason is a file that is not
+allowed to move.
+
+**The HTTP transport is stateless.** `POST /mcp` builds a fresh `McpServer` and a fresh
+`StreamableHTTPServerTransport` per request, with no session id minted, so the server keeps
+nothing between one request and the next. The SSE implementation this replaced held a
+`Map` of live sessions keyed by a connection id the client was handed, and the map was the
+state. **There is no equivalent store here and nothing replacing it** — the only thing a
+shutdown needs to know is what is running right now, so `src/http.js` keeps a `Set` of
+per-request closers, and that is the whole of it.
 
 There is still no worker pool and no clustering. Neither transport needs one at this size,
 and a shared `McpServer` across connections is the thing to avoid — see *One server
 instance per connection* above, which the HTTP transport turns from a nicety into the
-invariant that keeps concurrent sessions from cross-talking.
+invariant that keeps concurrent requests from cross-talking.
 
 ## The one path-taking read
 
@@ -87,13 +99,18 @@ a check that runs afterwards is a check against a value the caller already influ
 The stdio transport has no open connections to drain, so `SIGINT` closes the server and
 exits `0` with nothing to order.
 
-The HTTP transport does have live connections, and the ordering is not optional: close the
-listener first so nothing new arrives, then close each session so its peer sees a clean end
-rather than a dropped socket. A removed implementation had the same drain-before-close
-ordering — see [`wiki/logs/0/0/0/CHANGELOG.md`](../logs/0/0/0/CHANGELOG.md).
+The HTTP transport does have requests in flight, and the ordering is not optional: close the
+listener first so nothing new arrives, then close the idle keep-alive sockets `close()` is
+otherwise waiting on, then cut off whatever is still running after a short grace period.
+A removed implementation had the same drain-before-close ordering — see
+[`wiki/logs/0/0/0/CHANGELOG.md`](../logs/0/0/0/CHANGELOG.md).
+
+The drain line names what is actually being drained, which is why it changed shape:
+`draining {n} session(s)` became `draining {n} in-flight request(s)`. There are no sessions
+to count, and a line still counting them would describe a transport that no longer exists.
 
 ## Related pages
 
 - [Overview](overview.md) — what this serves and why.
 - [MCP surface](../reference/mcp-surface.md) — the tool surface, and what is not exposed.
-- [Environment variables](../environments/env.md) — the three the HTTP transport reads.
+- [Environment variables](../environments/env.md) — the four the HTTP transport reads.

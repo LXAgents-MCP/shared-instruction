@@ -112,8 +112,8 @@ npm run start:http    # binds 0.0.0.0:3000, or $PORT
 {
   "mcpServers": {
     "lxagents-shared-instruction": {
-      "type": "sse",
-      "url": "http://localhost:3000/sse"
+      "type": "http",
+      "url": "http://localhost:3000/mcp"
     }
   }
 }
@@ -143,7 +143,7 @@ block. If it is not, install it locally:
 Then register it as a stdio MCP server named `lxagents-shared-instruction`, with
 `command: node`, `args: ["src/index.js"]`, and
 `cwd: ./mcps/LXAgents-MCP/shared-instruction`. A host serving it over HTTP registers
-`type: sse` and `url: https://<host>/sse` instead, under the same name.
+`type: http` and `url: https://<host>/mcp` instead, under the same name.
 
 **`mcps/` must be in this repository's `.gitignore`.** The clone is a runtime, not
 content. It is never committed.

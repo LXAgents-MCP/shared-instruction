@@ -103,7 +103,7 @@ branch. Everywhere else, read `agents://`.
 |---|---|
 | Local stdio (default) | `command: node`, `args: ["src/index.js"]`, `cwd:` this checkout |
 | Published | `command: npx`, `args: ["-y", "@lxagents-mcp/shared-instruction"]` |
-| HTTP | `type: sse`, `url: https://<host>/sse` — `npm run start:http` binds `PORT \|\| 3000` |
+| HTTP | `type: http`, `url: https://<host>/mcp` — `npm run start:http` binds `PORT \|\| 3000` |
 
 Both transports serve the same 31 tools. stdio is the right default for a client that can
 spawn a process; HTTP is for running the server as a service at a fixed address.

@@ -30,7 +30,7 @@ row. Its first rule is that a security context never crosses repositories.
 
 **Structure.** `content/` holds 30 published instruction files. `.agents/rules/` holds
 three local rules: `repository.md`, `content-publishing.md`, and `set-mirrors.md`. `wiki/`
-holds human documentation. `src/` is seven files and `test/` is two.
+holds human documentation. `src/` is eight files and `test/` is two.
 
 **Surface — one tool per file.** 31 tools: 30 generated from `content/`, one per file,
 plus `mcp_list`. The name is derived from the path (folder stripped, `.md` dropped, kebab →
@@ -49,14 +49,26 @@ for a caller to traverse with; the zero-argument design is the replacement for t
 traversal check, not a weaker version of it.
 
 **Transports.** Two, both calling the same `createServer()`, so the surface is identical by
-construction: `src/index.js` (stdio) and `src/http.js` (HTTP/SSE at `/sse`, `POST
-/message`). The HTTP entry point is new and its `SSEServerTransport` is **deprecated in the
-SDK** — "Use StreamableHTTPServerTransport instead" — built as explicitly instructed, with
-the deprecation recorded in the file header and the swap noted as a one-file change. Three
-environment variables reach it, none of them a secret: `PORT`, `HOST`, and
-`MCP_ALLOWED_HOSTS`. **The allow-list is off unless set**; the same control in the removed
-transport defaulted to off, which made it inert. Cluster workers and `/healthz` are still
-not there.
+construction: `src/index.js` (stdio by default, and `MCP_TRANSPORT=http` to reach the
+other) and `src/http.js`, which binds the port and serves the express app in `src/app.js` at
+`POST /mcp` and `GET /healthz`. **The HTTP transport is stateless** — a fresh `McpServer`
+and a fresh `StreamableHTTPServerTransport` per request, no session id minted, and no
+session store. It replaced an SSE transport at `GET /sse` and `POST /message` whose
+`SSEServerTransport` was **deprecated in the SDK**; that removal is **breaking for every
+deployed client** and was a deliberate, owner-reviewed decision — see
+`.agents/memory/tasks/sse-to-mcp-transport.md`. The application is in `src/app.js` and does
+not listen, which is what lets `src/http.js` own the port, the startup lines and the drain
+without the two being tangled. `src/index.js` reaches it by **dynamic import**, so express
+never loads into a stdio process whose stdout is the JSON-RPC channel. Four environment
+variables reach the HTTP path, none of them a secret: `PORT`, `HOST`, `MCP_ALLOWED_HOSTS`,
+and `MCP_TRANSPORT`. **The allow-list is off unless set**; the same control in the removed
+transport defaulted to off, which made it inert. **Cluster workers are still not there.**
+
+**One held item on the transport change.** `content/rules/mcp-connector.md:105-112` still
+documents the connector as `"type": "sse"` at `/sse`. That is published content, and a
+change under `content/` is a release whose version does not move without the owner, so it
+is raised and not performed. The corrected pages in `wiki/` and `AGENTS.md` therefore
+**disagree with the set** until the owner releases it.
 
 **Not deployed anywhere.** There is no Render service and nothing is routed. The
 `src/http.js` listener is a capability, not a deployment — who runs it, on what address,
@@ -92,9 +104,9 @@ always the release, and the work goes between them. Each task appends its own
 `### Task k — {branch}` entry to `.agents/memory/tasks/{slug}.md` in the same commit as
 its work, so `git log -p` on that file replays the request task by task.
 
-**Tests.** 30, all passing, in two files. `server.test.js` (19) drives a real MCP client on
-an in-memory transport; `http.test.js` (11) drives a real client against a real listening
-process, because sockets and sessions do not reproduce in memory. A fresh checkout has no
+**Tests.** 42, all passing, in two files. `server.test.js` (19) drives a real MCP client on
+an in-memory transport; `http.test.js` (23) drives a real client against a real listening
+process, because sockets do not reproduce in memory. A fresh checkout has no
 `node_modules` and the suite then fails with `ERR_MODULE_NOT_FOUND` — run `npm install`
 first, per `.agents/rules/repository.md`.
 

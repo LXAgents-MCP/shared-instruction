@@ -11,7 +11,7 @@ serves it over MCP. There is no database, no user accounts, and nothing persiste
 runtime.
 
 **It has two transports, and one of them is a network listener.** `src/index.js` speaks
-stdio, which is a pipe a client spawns. `src/http.js` speaks HTTP with SSE, which binds a
+stdio, which is a pipe a client spawns. `src/http.js` speaks stateless HTTP, which binds a
 port. The second is newer than this page's previous revision, and it changes the shape of
 everything below: the interesting risk is still not data theft, because the content is
 public by design, but a listener adds a reachability question that a pipe does not have.
@@ -46,7 +46,7 @@ distribution path is a review either.
 | Tool calls | Any caller | **Nothing, and that is the design.** Every tool is read-only and takes no argument. There is no path, no verb, and no target a caller can supply. |
 | The one path-taking read | `mcp_list` only | `isSafeRelativePath` in `src/content.js`, before any filesystem call. The single caller passes a constant. Detailed below. |
 | **The HTTP listener** | **Anyone who can reach the port** | **No authentication.** The content is public, so auth would not make it less so. Optional `Host` allow-list via `MCP_ALLOWED_HOSTS`, **off unless set**. Detailed below. |
-| SSE sessions | Anyone who can reach the port | One `McpServer` per session, never shared. The session map is keyed by connection and deleted when the stream closes, so it is bounded by live connections rather than by total requests. |
+| In-flight requests | Anyone who can reach the port | One `McpServer` per request, never shared, closed when its response closes. **The set of them is per-request closers, not a map of live sessions** — a stateless transport has no id to key on and keeps nothing between requests, so there is no store to fill. |
 | Process startup | Anyone who can spawn it | Reads `package.json` and walks `content/`. Malformed content throws and the process exits rather than serving something wrong. |
 | Dependency install | Build time | `npm install` runs lifecycle scripts. `npm ci --ignore-scripts` is the safer form for a build you do not control. |
 | Publishing | Anyone with npm credentials | Publishing changes what every consumer reads. Treat a release as a security-relevant action, because it is one. |
@@ -95,16 +95,25 @@ issuing requests the victim's origin policy would otherwise block. The `Host` al
 is the mitigation. Setting it is one environment variable, and the test suite asserts that
 it rejects a disallowed `Host` rather than assuming it does.
 
-**Not included, deliberately.** No rate limiting, no TLS termination, and no `/healthz`.
-The first two belong to whatever sits in front of the process, and the third is a route
-that exists to be probed on a server that serves only public markdown. Each becomes a
-decision for whoever deploys this, and none of them is a default worth shipping.
+**Not included, deliberately.** No rate limiting and no TLS termination. Both belong to
+whatever sits in front of the process, and each is a decision for whoever deploys this.
 
-**Sessions.** SSE is stateful: `GET /sse` mints a session that lives as long as its
-stream. An unauthenticated public port with an unbounded session map is a memory-growth
-primitive, so the map is keyed by connection and deleted on close. Sessions carry no
-user data — a session id is a routing handle, not a credential, and it grants nothing
-beyond what an unauthenticated caller already has.
+**`/healthz` was in that list and is not any more.** This page previously argued for its
+absence: *"a probe endpoint on a server that serves only public markdown is a route that
+exists to be probed."* That argument was not refuted — it was met with consistency. The
+four sibling servers already answer `GET /healthz`, and the reason a probe route is
+objectionable here is the reason it is unremarkable there. What it answers is
+`{ status, server, version }`, read before any request body, so it exposes nothing the set
+does not and cannot be used to enumerate files. A deployment that needs a liveness probe
+gets one, and a deployment that does not has not lost anything it had.
+
+**There are no sessions.** The transport this replaced was stateful: it minted a session
+that lived as long as the client's stream, and an unauthenticated public port with an
+unbounded session map is a memory-growth primitive. `POST /mcp` mints nothing. Each request
+carries everything it needs, builds its own `McpServer`, and is closed when its response
+closes — so the memory-growth primitive this paragraph used to have a mitigation for is
+gone rather than bounded, and the only thing a shutdown counts is what is running right
+now. See *Attack surface* above, and the per-request row in it.
 
 ## The one path-taking read
 
@@ -140,7 +149,7 @@ different delivery mechanism rather than a key on this one.
 
 ## Secrets
 
-There are none, and that is a property worth keeping. This server reads only three
+There are none, and that is a property worth keeping. This server reads only four
 environment variables, and none of them is a credential:
 
 | Variable | Default | What it is |
@@ -148,6 +157,7 @@ environment variables, and none of them is a credential:
 | `PORT` | `3000` | The port to bind. A number. |
 | `HOST` | `0.0.0.0` | The interface to bind. An address. |
 | `MCP_ALLOWED_HOSTS` | unset | Hostnames permitted in the `Host` header. **Off when unset.** |
+| `MCP_TRANSPORT` | `stdio` | Which transport `src/index.js` speaks. A word. |
 
 There is no configuration that could become a credential, which is why the absence of
 authentication above is survivable. A future variable that takes a secret changes that, and
@@ -164,11 +174,11 @@ The server can be run two ways, and they have genuinely different exposure.
 bounded by who can run the process at all. `npm start` and `npm run start:stdio` are the
 same command, named for what it is.
 
-**HTTP** — `npm run start:http` binds a port and serves the same tools over SSE at `/sse`
-and `/message`. Exposure is bounded by who can reach that port. It is designed to be
-deployed as a Web Service, and it is not deployed anywhere by this repository: there is no
-host, no hostname, and no registry image, and the documentation says "can be deployed"
-rather than "is deployed" for that reason.
+**HTTP** — `npm run start:http` binds a port and serves the same tools, stateless, at
+`POST /mcp`, with a `GET /healthz` beside it. Exposure is bounded by who can reach that
+port. It is designed to be deployed as a Web Service, and it is not deployed anywhere by
+this repository: there is no host, no hostname, and no registry image, and the
+documentation says "can be deployed" rather than "is deployed" for that reason.
 
 **A `Dockerfile` exists and can do either.** The image pins the toolchain, installs from
 the lockfile with `--ignore-scripts`, and ends as `USER node`. It declares `EXPOSE 3000`

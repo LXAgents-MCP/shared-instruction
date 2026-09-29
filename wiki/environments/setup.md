@@ -5,7 +5,7 @@ There is no CLI. There is a container image — see [Docker](docker.md).
 
 | Mode | What it is | Who uses it |
 |---|---|---|
-| **Server mode** | An MCP server over stdio, or over HTTP/SSE | An MCP client — an editor, an agent, a connector |
+| **Server mode** | An MCP server over stdio, or over stateless HTTP | An MCP client — an editor, an agent, a connector |
 
 ## Requirements
 
@@ -16,14 +16,15 @@ npm install
 npm test
 ```
 
-The suite is two files and 30 tests. `test/server.test.js` drives a real MCP client over an
+The suite is two files and 42 tests. `test/server.test.js` drives a real MCP client over an
 in-memory transport and covers the frontmatter contract, the shared creator procedure, the
 file-to-tool bijection in both directions, name derivation, uniqueness and descriptions, the
 zero-argument claim, byte-for-byte payload fidelity, total-served equality, reachability,
 index routing, `mcp_list` in isolation, and the read-only claim. `test/http.test.js` drives
 a real client against a real listening process and covers the HTTP transport: the two
-transports agreeing, concurrent sessions, unknown sessions, session lifetime, shutdown
-ordering, the `Host` allow-list, and the startup warning when no allow-list is set.
+transports agreeing, `/healthz`, the 405 and the 404, the SSE routes being **gone**, the
+4 MB body limit, concurrent requests, shutdown ordering, the `Host` allow-list, and the
+startup warning when no allow-list is set.
 
 ---
 
@@ -60,7 +61,7 @@ From npm, the package exposes that same file as a bin, so no checkout is needed:
 ```
 
 There is a remote form as well, for a server running at a fixed address. `src/http.js`
-serves the same tools over SSE at `/sse`; see
+serves the same tools at `POST /mcp`; see
 [Connect a repository](../guides/connect-a-repository.md).
 
 ### Run
@@ -72,7 +73,8 @@ npm run start:http    # HTTP on 0.0.0.0:3000, or $PORT
 ```
 
 The two entry points differ only in transport. Same 31 tools, same content, same
-read-only surface.
+read-only surface. `MCP_TRANSPORT=http node src/index.js` is the same server reached the
+other way round, which is how the other servers in the organization select a transport.
 
 ### Inspect it
 
@@ -90,11 +92,13 @@ writes to it: there is no logger module, and no `console.log` on that path. A
 `console.log` added there would corrupt the protocol stream, which is worth knowing before
 adding one.
 
-**`src/http.js` is the exception, and deliberately.** The HTTP process speaks JSON-RPC
-over a socket, not a pipe, so stdout is an ordinary logging channel there and its startup
-line uses it. The rule is per-entry-point, not per-repository — a single shared "never
-write to stdout" would forbid correct behaviour in one file on the grounds that it is
-fatal in the other.
+**`src/http.js` used to be the exception, and no longer is.** It logged its startup lines to
+stdout, on the reasoning that the HTTP process speaks JSON-RPC over a socket rather than a
+pipe, so stdout was an ordinary logging channel there. That was true and is still true —
+and it stopped mattering when `src/index.js` gained `MCP_TRANSPORT=http` and began reaching
+`src/http.js` by dynamic import. The same file is now one hop away from a process whose
+stdout is a protocol stream, so **both HTTP entry points log to stderr**, and the rule is
+one rule rather than an exception with a footnote. A test asserts stdout stays empty.
 
 ---
 
@@ -118,5 +122,5 @@ than a runtime surprise. The fix is usually one line in `NAME_OVERRIDES` in
 ## Related pages
 
 - [MCP surface](../reference/mcp-surface.md) — the tool surface, and what is not exposed.
-- [Environment variables](env.md) — the three the HTTP transport reads.
+- [Environment variables](env.md) — the four the HTTP transport reads.
 - [Architecture](../information/architecture.md) — how the surface is generated.
