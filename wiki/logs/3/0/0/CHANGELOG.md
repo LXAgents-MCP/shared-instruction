@@ -62,17 +62,18 @@ rename. `agents_update` does both.
 
 ## One cost, named
 
-`creators/plan-creator.md` is now **20,877 bytes**, against 11,503 for `task-workflow.md`
-and about 6,500 for `plan-creator.md` alone — the largest file in the set, served by the
-tool every repository must declare. The `1/0/0` release recorded that `task_workflow`
-alone was 11,778 characters and that all four mandatory tools together were 28,965, so
-this raises the cost of a single intake call.
+`creators/plan-creator.md` is now **21,321 bytes**, against 11,573 for `task-workflow.md`
+and 8,419 for `plan-creator.md` alone — the largest file in the set, served by the tool
+every repository must declare. The four mandatory tools together go from 20,697 bytes to
+30,447.
 
-It is called once per request, at the point the plan is built, and the alternative is two
-overlapping calls that a session has to reconcile. The trade is one larger call against
-one smaller one plus the ambiguity the merge removes. The duplication that was collapsed
-rather than concatenated — the branch-and-commit convention, and the plan gate — is worth
-roughly 1,200 bytes of that total.
+The number that matters is smaller than that. What a session reads at intake at `1.0.0` was
+two calls totalling 19,992 bytes, which it had to reconcile into one plan. It is now one
+call of 21,321 bytes. The merge costs 1,329 bytes on that call and removes the
+reconciliation, which is the entire reason it is one file rather than two.
+
+All of these are byte counts of the published files, measured on the committed blobs at
+this release and at `1.0.0`.
 
 ## Not fixed here
 
