@@ -15,10 +15,10 @@ else.
 1. **Decide the set.** *Is this true for more than this repository?* Yes → shared; no →
    local. From a consuming repository a shared rule is **never written** — it is proposed
    against `LXAgents-MCP/shared-instruction`.
-2. **Confirm it does not already exist.** Check the local `agents-index.md`, then
-   `agents://manifest.json` for the shared set. If something already covers the subject,
-   extend that file instead of adding a near-duplicate — subject to the discovery protocol
-   below.
+2. **Confirm it does not already exist.** Check the local `agents-index.md`, then the
+   connector's tool list for the shared set — one tool per shared file, each carrying that
+   file's description. If something already covers the subject, extend that file instead of
+   adding a near-duplicate — subject to the discovery protocol below.
 3. **Choose or create the folder.** Use the tables in
    [`../rules/directories.md`](agents://rules/directories.md). If nothing fits, create a
    new folder — lowercase kebab-case, a plain topic noun — and register it in that file's
@@ -63,7 +63,7 @@ Canonical: [`../git/commit-conventions.md`](agents://git/commit-conventions.md).
 ## Which Set
 
 Choose the set before the folder. Universal content goes to the shared set served by the
-`lxagents-agents-base` connector; repository-specific content stays local; memory is always
+`lxagents-shared-instruction` connector; repository-specific content stays local; memory is always
 local. A shared file is never copied into a repository except as a declared override
 registered in `.agents/index/root-index.md`. See
 [`../rules/shared-instructions.md`](agents://rules/shared-instructions.md).
@@ -115,7 +115,7 @@ Collect the findings, and when the task is done present them to the user:
 
 * one finding per message block, each in its own code block;
 * state the target set — `local` (this repository) or `shared` (the organization's
-  instruction set served by the `lxagents-agents-base` connector);
+  instruction set served by the `lxagents-shared-instruction` connector);
 * include the proposed file path, `name`, `description`, and the full proposed
   body;
 * explain in one line why it is worth adding.

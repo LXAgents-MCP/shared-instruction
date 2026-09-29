@@ -49,16 +49,20 @@ against the current tool list directly rather than against a delta.
 
 ## 2. Get the delta
 
-Call `update_shared_agents_instruction` with `from_version` set to the stamp. It returns the
-**Consumers must** line for every version released since, newest first, and this procedure.
+Call `logs_index`. It is the set's release history: one row per version, newest first, and
+the **Consumers must** column is the only notice a repository gets, because consumers read
+the set live and there is no upgrade step to remind them.
 
-Called with no `from_version`, it returns the re-sync path instead of a delta. That is the
-correct call when there is no stamp; it is the wrong call when there is one, because a
-re-sync sees the current state and not the reasons it changed.
+Take every row whose version is newer than the stamp. That is your delta.
 
-**Read the lines oldest first**, whatever order they arrive in. They compose: `0.9.0` may
-introduce a file that `0.13.0` then changes, and applying the newer one first leaves the
-older edit unmade with nothing to signal it.
+**If there is no stamp**, take every row instead and treat the whole of §3 as a full
+re-sync: reconcile the declaration table against the current tool list directly rather than
+against a delta. A re-sync sees the current state, not the reasons it changed, so it is the
+right call only when there is no stamp — and the wrong one when there is one.
+
+**Read the lines oldest first**, whatever order the index lists them in. They compose:
+`0.9.0` may introduce a file that `0.13.0` then changes, and applying the newer one first
+leaves the older edit unmade with nothing to signal it.
 
 ---
 
@@ -68,14 +72,16 @@ older edit unmade with nothing to signal it.
 re-read a named file, add or delete a trigger row, or drop an override. Do them literally. A
 line that says "nothing" is done when you have read it.
 
-**b) The tool declaration table.** Call `list_shared_agents_instruction` and reconcile:
+**b) The tool declaration table.** Reconcile it against the tool list the connector
+publishes — one tool per file in the set, each named after its filename, with `AGENTS.md`
+served as `agents_entry_point`:
 
 | Situation | What to do |
 |---|---|
 | A tool this repository declares no longer exists | Remove the row. Check first whether a **Consumers must** line renamed it — if so, the row is renamed, not deleted. |
 | A tool exists that this repository needs and does not declare | Add the row, with the trigger the shared table gives it. |
 | A tool exists that this repository does not need | Leave it out. A narrower table is the point of declaring one — it is not drift. |
-| The four mandatory tools are not all present | Add the missing ones. `task_workflow`, `branch_strategy`, `commit_strategy` and `discovery_protocol` are not optional in any repository. |
+| The four mandatory tools are not all present | Add the missing ones. `task_workflow`, `branching_strategy`, `commit_conventions` and `discovery_protocol` are not optional in any repository. |
 
 **c) The override table** in `.agents/index/root-index.md`. An override matches a shared
 file by `name`. A rename or removal upstream leaves it matching nothing, at which point the
@@ -84,7 +90,7 @@ is supposed to be a deliberate, visible cost. For each row: confirm the shared `
 exists, and confirm the incompatibility that justified the override still holds. Drop the
 ones that fail either test, and say which and why.
 
-**d) The version stamp.** Rewrite it to the version the tool reported as current. **Do this
+**d) The version stamp.** Rewrite it to the newest version `logs_index` lists. **Do this
 last.** A stamp moved before the edits land claims work that has not happened, and the next
 update computes its delta from that claim.
 
@@ -94,8 +100,8 @@ update computes its delta from that claim.
 
 * The stamp names the current shared-set version, and every **Consumers must** line up to it
   has been applied.
-* Every tool named in the declaration table exists in `list_shared_agents_instruction`, and
-  the four mandatory tools are among them.
+* Every tool named in the declaration table exists in the connector's published tool list,
+  and the four mandatory tools are among them.
 * Every override row names a shared `name` that still exists, with a reason that still holds.
 * No shared file has been copied into this repository —
   [`rules/duplicate-instruction-audit.md`](agents://rules/duplicate-instruction-audit.md)

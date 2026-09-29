@@ -11,7 +11,7 @@ Writes the **local working plan** for a task in flight: an untracked checklist
 that tracks work while it runs. It writes nothing else — not the task record,
 not documentation, not code, and not the work itself.
 
-This is served by `lxagents-agents-base` and carries this set's version. The
+This is served by `lxagents-shared-instruction` and carries this set's version. The
 plan it describes is **untracked and local to whichever repository is running
 it** — a plan is never published, never shared, and never committed, so
 serving the creator that writes one leaks no repository's work.
@@ -36,7 +36,7 @@ Canonical: [`../git/commit-conventions.md`](agents://git/commit-conventions.md).
 ## Which Set
 
 Choose the set before the folder. Universal content goes to the shared set served by the
-`lxagents-agents-base` connector; repository-specific content stays local; memory is always
+`lxagents-shared-instruction` connector; repository-specific content stays local; memory is always
 local. A shared file is never copied into a repository except as a declared override
 registered in `.agents/index/root-index.md`. See
 [`../rules/shared-instructions.md`](agents://rules/shared-instructions.md).
@@ -80,6 +80,14 @@ require user approval per [`../rules/versioning.md`](agents://rules/versioning.m
 - A plan lives at `{repo}/.agents/plans/`, which the repository's `.gitignore`
   excludes as `/.agents/plans/`. Nothing in it is staged, committed, or pushed,
   ever.
+- **That exclusion is a precondition, not a wish.** The only thing keeping a
+  plan out of history is that one `.gitignore` line, and a repository without it
+  is one `git add -A` away from publishing its own working notes. Check for it
+  before writing anything — see the step in *Before writing*. If the rule is
+  missing, **ask the owner to add it, and wait.** Do not edit `.gitignore`
+  yourself: it is not this creator's file, it is the repository's, and a rule
+  added unasked is a change nobody approved. Carry on writing the plan without
+  it, and say plainly that the folder is not yet excluded.
 - **`tasks.md` is the center file.** Every other file in the plan appears in its
   routing table, and every route out of a plan file goes through it.
 - A file in `.agents/plans/` that `tasks.md` does not list is not part of the
@@ -98,6 +106,13 @@ require user approval per [`../rules/versioning.md`](agents://rules/versioning.m
    do not start a second one.
 4. **Refine before planning.** State what changes, what does not change, and
    what is being assumed where the request is silent.
+5. **Check `.gitignore` for `/.agents/plans/`.** Read the repository's
+   `.gitignore` before creating the folder. If the rule is there, the plan
+   cannot be published by accident. If it is not, ask the owner to add it —
+   name the line and the reason — and do not add it yourself. Carry on either
+   way; a missing rule is a finding to report, not a reason to withhold the
+   plan. Confirm with `git check-ignore -v .agents/plans/tasks.md`: it must
+   print the rule, or the plan is one commit away from being published.
 
 ## The gate comes before the plan
 

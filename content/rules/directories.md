@@ -53,7 +53,7 @@ Both trees are routed from `.agents/index/`. Neither contains an index file of i
 ### The federation split
 
 Conventions true across the organization are written **once**, here, and served over
-the `lxagents-agents-base` connector. Every repository carries only what is genuinely
+the `lxagents-shared-instruction` connector. Every repository carries only what is genuinely
 its own.
 
 ```
@@ -159,13 +159,17 @@ folders — never put an instruction file in them. `memory/` never exists in the
 set.
 
 **In the shared set, a folder must also be served before it holds anything.** The table
-above is the placement authority for both sets, but the connector serves only the folders
-named in `INSTRUCTION_FOLDERS` (`src/constants.js` in the producer repository): `rules/`,
-`git/`, `planning/`, `prompts/`, `creators/`, `security/`, `index/`. A file in any other
-shared folder is **not rejected — it is never collected**: absent from
-`agents://manifest.json`, absent from every resource, and absent from every test. Adding a
-shared folder therefore means adding it there in the same change. Local folders under
-`{repo}/.agents/` are unaffected, because nothing serves them.
+above is the placement authority for both sets, and the connector serves **every `.md` file
+under `content/`, in any folder**. A file is collected by being a markdown file in the set
+root — there is no folder allowlist to update, and no folder whose contents are silently
+dropped. Each one becomes a tool named after its filename.
+
+The one thing that can still go wrong is a **name collision**: two files with the same
+basename in different folders (`rules/index.md` and `index/index.md`) derive the same tool
+name, and the server refuses to start rather than let one shadow the other. That is the
+only reason a folder needs registering anywhere.
+
+Local folders under `{repo}/.agents/` are unaffected — nothing serves them.
 
 ## C. `wiki/` folders — human documentation
 

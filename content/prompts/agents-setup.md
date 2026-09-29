@@ -16,7 +16,7 @@ work equally well on an empty repository containing only `README.md` and on an e
 codebase.
 
 It is also **repository-agnostic within the organization**: the shared instruction set is
-served by the `lxagents-agents-base` connector you are reading this from, and every
+served by the `lxagents-shared-instruction` connector you are reading this from, and every
 repository carries only what is genuinely its own.
 
 ---
@@ -62,8 +62,9 @@ How to decide: if the repository's remote is `LXAgents-MCP/shared-instruction`, 
 in Mode A — stop deciding. Note that Mode A is not "no local set": the producer repository is also a
 software project, so it carries `.agents/` for its own rules, indexes, agent wiki and
 memory exactly as a consumer does. What makes it Mode A is that it *publishes* the
-shared set, not that it lacks a local one. Otherwise, if you can read `agents://manifest.json`, propose **Mode B**.
-If you cannot, ask the user in §1 whether they intend to add the connector (Mode B) or
+shared set, not that it lacks a local one. Otherwise, if the connector's tools are
+available in this session, propose **Mode B**.
+If they are not, ask the user in §1 whether they intend to add the connector (Mode B) or
 want everything local (**Mode C**).
 
 ---
@@ -275,28 +276,29 @@ for every trigger; name it as such.
 
 > ## Shared instruction tools
 >
-> Conventions come from the `lxagents-agents-base` connector. The tools below are the ones
-> this repository uses. **Call each when its trigger fires — not at session start, and
-> never all at once.** A convention with no row here does not apply to this repository.
+> Conventions come from the `lxagents-shared-instruction` connector, where **every file in the set
+> is its own tool**, named after its filename. The tools below are the ones this repository
+> uses. **Call each when its trigger fires — not at session start, and never all at once.**
+> A convention with no row here does not apply to this repository.
 >
 > Adopted shared-set version: `{version}`
 >
 > | When you are about to… | Call |
 > |---|---|
 > | Take in any request of more than one step | `task_workflow` |
-> | Create a branch | `branch_strategy` |
-> | Write a commit message | `commit_strategy` |
+> | Create a branch | `branching_strategy` |
+> | Write a commit message | `commit_conventions` |
 > | Notice a rule that should exist | `discovery_protocol` |
-> | Open or update a pull request | `pull_request_strategy` |
-> | Write to any `model_name` column | `agents_model_naming_convention` |
-> | Need any other shared convention | `list_shared_agents_instruction`, then `read_shared_agents_instruction` |
+> | Open or update a pull request | `pull_request_template` |
+> | Write to any `model_name` column | `model_naming_convention` |
+> | Find any other shared convention | the tool named after its file; start from `root_index` |
 
 Rules for filling it in:
 
 * **The first four rows are mandatory in every repository** and are never dropped,
   reordered, or repointed at a local file.
 * **The rest are selected, not mirrored.** Keep a row only if this repository actually does
-  the thing — drop `agents_model_naming_convention` from a project that stores no model
+  the thing — drop `model_naming_convention` from a project that stores no model
   identifier. A narrower table is the purpose of declaring one; it is not drift.
 * **Append rows for this repository's own local instructions**, one per file in `.agents/`
   that should fire on a trigger, below the shared rows. Without them this repository's own
@@ -313,9 +315,10 @@ Rules for filling it in:
 matches → one child branch if it delegates → only then the specific files.
 
 **f) Routing protocol:** route by reading index tables, not by reading files. Do NOT load
-every index. Do NOT bulk-scan either set to build a registry — `agents://manifest.json`
-already is one. Do NOT read an instruction body until it has been selected. The standing
-exception is `memory-index.md`, read every session because continuity depends on it.
+every index. Do NOT bulk-scan either set to build a registry — the connector's tool list
+already is one, and it costs nothing. Do NOT read an instruction body until it has been
+selected. The standing exception is `memory-index.md`, read every session because
+continuity depends on it.
 
 **g) Iron rule:** reproduce the Iron rule from
 [`AGENTS.md`](agents://AGENTS.md), phrased for this repository.
@@ -407,7 +410,7 @@ than restating, and **never restate a shared rule here**. If the project is curr
 a README, say so plainly and keep the file minimal; do not fabricate architecture.
 
 State in one short section: which mode this repository is in, that the shared set comes
-from the `lxagents-agents-base` connector, and — in Mode C — that the repository is
+from the `lxagents-shared-instruction` connector, and — in Mode C — that the repository is
 standalone.
 
 ### 5.2 The index system
@@ -532,8 +535,8 @@ Report each item.
 * The Shared instruction tools block exists, every tool it names is one the connector
   actually publishes, and every trigger matches the one `rules/auto-activation.md` gives it.
 * The declaration block carries all four mandatory tools — `task_workflow`,
-  `branch_strategy`, `commit_strategy`, `discovery_protocol` — and a version stamp naming
-  the version this connector reports.
+  `branching_strategy`, `commit_conventions`, `discovery_protocol` — and a version stamp
+  naming the version this connector reports.
 * The auto-activation contract carries all three permission gates inline — approve the
   plan, ask before opening a pull request, ask before merging — rather than deferring them
   to a tool, and states that no shared tool is called at session start.

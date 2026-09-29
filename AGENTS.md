@@ -7,7 +7,7 @@ description: Entry point for LXAgents-MCP/shared-instruction — the repository 
 
 This repository is `LXAgents-MCP/shared-instruction`. It holds the shared agent
 instruction set in [`content/`](content/) and serves it over MCP as
-`lxagents-agents-base`. Every other
+`lxagents-shared-instruction`. Every other
 repository in the organization consumes that set through a connector rather than
 copying it.
 
@@ -18,7 +18,7 @@ it carries both:
 
 | Set | Path | Published? |
 |---|---|---|
-| Shared — the product | [`content/`](content/) | **Yes.** Served as `agents://` resources. A change here changes behaviour in every consuming repository, so it is versioned and logged like a release. |
+| Shared — the product | [`content/`](content/) | **Yes.** Served as one tool per file. A change here changes behaviour in every consuming repository, so it is versioned and logged like a release. |
 | Local — this repository's own | [`.agents/`](.agents/) | No. Its rules, indexes, agent wiki, and memory. |
 
 `{shared}` resolves to `content/` **in the working tree**, not the deployed connector:
@@ -72,23 +72,27 @@ goes stale exactly like a consumer's.
 Adopted shared-set version: `content/` in the working tree — the producer tracks its branch,
 not a release.
 
+**Every file in `content/` is its own tool**, named after its filename, so the tool list is
+the file list. Start at `root_index` or `agents_entry_point` rather than calling everything.
+
 | When you are about to… | Call | Which is |
 |---|---|---|
 | Take in any request of more than one step | `task_workflow` | [`content/planning/task-workflow.md`](content/planning/task-workflow.md) |
-| Create a branch | `branch_strategy` | [`content/git/branching-strategy.md`](content/git/branching-strategy.md) |
-| Write a commit message | `commit_strategy` | [`content/git/commit-conventions.md`](content/git/commit-conventions.md) |
+| Create a branch | `branching_strategy` | [`content/git/branching-strategy.md`](content/git/branching-strategy.md) |
+| Write a commit message | `commit_conventions` | [`content/git/commit-conventions.md`](content/git/commit-conventions.md) |
 | Notice a rule that should exist | `discovery_protocol` | [`content/rules/discovery-protocol.md`](content/rules/discovery-protocol.md) |
-| Open or update a pull request | `pull_request_strategy` | [`content/git/pull-request-template.md`](content/git/pull-request-template.md) |
-| Write to any `model_name` column | `agents_model_naming_convention` | [`content/rules/model-naming-convention.md`](content/rules/model-naming-convention.md) |
+| Open or update a pull request | `pull_request_template` | [`content/git/pull-request-template.md`](content/git/pull-request-template.md) |
+| Write to any `model_name` column | `model_naming_convention` | [`content/rules/model-naming-convention.md`](content/rules/model-naming-convention.md) |
 
-The first four are mandatory in every repository, this one included.
+The first four are mandatory in every repository, this one included. **No tool takes an
+argument** — a tool names one file, so there is no path to pass.
 
 ## Using the connector
 
 Authority: [`content/rules/mcp-connector.md`](content/rules/mcp-connector.md). Setup, in
 full: [`wiki/guides/install-as-local-mcp.md`](wiki/guides/install-as-local-mcp.md).
 
-This repository **is** the server. It publishes `content/` as `lxagents-agents-base`, so
+This repository **is** the server. It publishes `content/` as `lxagents-shared-instruction`, so
 here the connector is the thing being edited, not the thing being consulted — read
 `content/` in the working tree and treat a deployed snapshot as possibly older than your
 branch. Everywhere else, read `agents://`.
@@ -98,53 +102,48 @@ branch. Everywhere else, read `agents://`.
 | Transport | How |
 |---|---|
 | Local stdio | `command: node`, `args: ["src/index.js"]`, `cwd:` this checkout |
-| Local HTTP | `npm run start:http`, then `http://localhost:3000/mcp` |
-| Remote | Settings → Connectors → Add custom connector → `https://<host>/mcp` |
+| Published | `command: npx`, `args: ["-y", "@lxagents-mcp/shared-instruction"]` |
 
-The `/mcp` path is not optional on either HTTP form. Without it the handshake fails, and
-most clients report that as a sign-in error rather than a wrong address.
-
-### Read from it
-
-1. `agents://manifest.json` once — every file with its `name`, path, description, and
-   hash. One read instead of twenty.
-2. `agents://index/root-index.md`, then route. Never bulk-read the set.
-3. Address any file as `agents://{folder}/{file}.md`.
-
-**Nothing is called at session start.** The six convention tools above each return one file
-when their trigger fires; everything else in the set is found with
-`list_shared_agents_instruction` and read with `read_shared_agents_instruction`. Calling
-every tool up front rebuilds the one oversized payload this surface replaced, one call at a
-time.
-
-Prefer prompts and resources; the tools return identical text and exist for clients that
-only enumerate tools. `mcp_creator` is not part of reading the set, and
-`check_duplicate_shared_agents_instruction` and `update_shared_agents_instruction` run only
-when the user asks.
-
-### When it will not resolve
+stdio is the only transport. There is no HTTP server and no remote endpoint — a client
+configured with a URL is pointed at nothing that exists here.
 
 **Registering a server does not reach a session that is already running.** The client
 loads connectors at session start, so `claude mcp add` mid-session leaves a server that
 reports healthy and is still absent from the tool surface until the session restarts.
 That is the common case, and it looks like a broken server rather than a stale session.
 
-Either way the rule is the same, and it is a speaking obligation: **say plainly, in your
-first message, that the connector is unavailable and which conventions you could not
-read.** Then work from the local set. Never reconstruct the missing rules from memory,
-and never clone or paste the shared set into a repository as a workaround — an
-unavailable connector is temporary, a vendored copy is permanent drift.
+### Read from it
 
-From a checkout of this repository, `npm run cli -- read <name>` and
-`npm run cli -- list` serve the same registry; `test/cli.test.js` pins that output as
-byte-identical to the resource an MCP client receives.
+1. Enumerate the tools. Every file in `content/` is one, named after its filename, with
+   its `description` attached — that list is the manifest, and it costs nothing to read.
+2. `root_index`, then route. Never bulk-call the set.
+3. Call the one tool whose trigger fired. None takes an argument.
 
-## Trigger table — everything without a tool of its own
+**Nothing is called at session start.** Each of the convention tools above returns one file
+when its trigger fires. Calling every tool up front rebuilds the one oversized payload this
+surface replaced, one call at a time — and there are more than thirty of them.
+
+`duplicate_instruction_audit` and `agents_update` run only when the user asks.
+
+### When it will not resolve
+
+A server that is registered but absent from the tool surface, or a client that shows no
+tools at all, is the case to recognise. Either way the rule is the same, and it is a
+speaking obligation: **say plainly, in your first message, that the connector is
+unavailable and which conventions you could not read.** Then work from the local set.
+Never reconstruct the missing rules from memory, and never clone or paste the shared set
+into a repository as a workaround — an unavailable connector is temporary, a vendored
+copy is permanent drift.
+
+To inspect the surface by hand while developing on the set itself, run `npm run inspect`
+and drive it with the MCP Inspector.
+
+## Trigger table — the rest of the set
 
 Mirrors [`content/rules/auto-activation.md`](content/rules/auto-activation.md), which
 is the authority. Because this repository *is* the shared set, every `{shared}/…` path
-resolves to `content/…`. The six conventions that have a tool are in the declaration block
-above and are not repeated here.
+resolves to `content/…`, and every row below is also a tool named after its file. The
+conventions declared in the block above are not repeated here.
 
 | When you are about to… | Load and obey |
 |---|---|
@@ -180,8 +179,9 @@ above and are not repeated here.
 ## Routing protocol
 
 Route by reading index tables, not by reading files. Do NOT load every index. Do NOT
-bulk-scan `content/` to build a registry — `agents://manifest.json` already is one. Do
-NOT read an instruction body until that instruction has been selected.
+bulk-scan `content/` to build a registry — every file in it is already a tool with a
+description, so the tool list is the registry. Do NOT read an instruction body until
+that instruction has been selected.
 
 ## Iron rule
 
@@ -208,7 +208,7 @@ NOT read an instruction body until that instruction has been selected.
 * Release logs → `wiki/logs/{Major}/{Minor}/{Patch}/`.
 * Server code → `src/`. Tests → `test/`.
 
-A file added to `content/` is published as a resource on the next boot, so it is not a
+A file added to `content/` is published as a tool on the next boot, so it is not a
 draft space — see
 [`.agents/rules/content-publishing.md`](.agents/rules/content-publishing.md).
 Registration in the owning index rides in the same commit.

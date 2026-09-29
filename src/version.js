@@ -17,4 +17,4 @@ export const CONTENT_DIR = join(ROOT, "content");
 const pkg = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8"));
 
 export const VERSION = pkg.version;
-export const SERVER_NAME = "lxagents-agents-base";
+export const SERVER_NAME = "lxagents-shared-instruction";

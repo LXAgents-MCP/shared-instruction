@@ -5,44 +5,44 @@ repository connects it as a connector and reads the conventions it needs — bra
 commits, pull requests, task workflow, the creators, the directory architecture —
 instead of cloning or vendoring a copy of them.
 
-- **Server id:** `lxagents-agents-base`
+- **Server id:** `lxagents-shared-instruction`
 - **Package:** `@lxagents-mcp/shared-instruction`
-- **Surface:** MCP prompts and resources, plus thirteen tools — twelve read-only, and `mcp_creator`, which writes.
-- **Dual-purpose:** the same set is reachable as a CLI (`lxagents-agents`) and as an MCP server (`lxagents-agents-base`).
+- **Transport:** stdio. There is no HTTP server and no remote endpoint.
+- **Surface:** 32 tools. 31 are generated — one per markdown file in `content/` — and one
+  is hand-written. Every one is read-only and every one takes no arguments.
+- **Requirements:** Node >= 20. ESM, no build step.
 
 ## Key features
 
-- **One convention, one tool.** `task_workflow`, `branch_strategy`, `commit_strategy`,
-  `discovery_protocol`, `pull_request_strategy` and `agents_model_naming_convention` each
-  return one file when its trigger fires. **Nothing is called at session start** — a
-  repository declares which tools it uses in its own `AGENTS.md`, and a session that only
-  branches and commits pays about 5,000 characters instead of the 31,000 the old single
-  activation call charged every time.
+- **One file, one tool.** Every `.md` under `content/` becomes a tool named after its own
+  filename, so `git/commit-conventions.md` is `commit_conventions`. **Adding a file to the
+  set adds its tool** — there is no registry to edit and no hand-written tool module to
+  write. The one documented exception is `AGENTS.md`, served as `agents_entry_point`,
+  because `agents` says nothing about which document it is.
+- **No tool takes an argument.** A tool names one file, so there is no path to pass, no
+  lookup to guess at, and **nothing for a caller to traverse with**. This is the structural
+  replacement for a path argument, not a weaker check on one: `test/server.test.js`
+  asserts that every tool's schema has no properties and no required fields, so a future
+  tool that grows an argument has to be added deliberately.
+- **Read once, at boot.** The whole set is read into a frozen map when the process starts.
+  A tool call is a map lookup — no filesystem I/O on the read path — and a malformed set
+  fails the process at startup rather than returning a wrong answer to the first caller
+  that needed the file.
+- **The description is the routing key.** A tool's description is that file's own
+  frontmatter `description`, verbatim. A file without one **fails at boot**: it would
+  publish as a tool a client cannot route on.
+- **Nothing is called at session start.** A repository declares which tools it uses in its
+  own `AGENTS.md`, and each fires on its own trigger. A session that only branches and
+  commits pays for two files, not thirty-one.
 - **Per-repository control.** The declaration block is the routing table. A repository that
   stores no model identifier does not carry a row about one, and the narrowing is visible
   in a diff rather than buried in a payload.
-- **`setup_shared_agents_instruction`** and the `agents-setup` prompt — the full procedure
-  that builds a repository's `AGENTS.md`, `.agents/` tree, wiki, and memory, and stamps the
-  set version adopted.
-- **`update_shared_agents_instruction`** — moves a repository from the version it adopted to
-  the current one, returning the **Consumers must** line for every release since, oldest
-  first. **On request only.**
-- **`check_duplicate_shared_agents_instruction`** and the
-  `check-duplicate-agents-instruction` prompt — find instructions a repository duplicates
-  from the shared set. **On request only**; deletion needs per-file approval.
-- **29 instruction resources** under `agents://`, plus `agents://manifest.json` listing
-  every file with a content hash — one read instead of walking the set. Anything without a
-  tool of its own is reached with `list_shared_agents_instruction` and
-  `read_shared_agents_instruction`.
-- **Model naming** — `agents_model_naming_convention` returns the `{platform}/{model}` rule
-  every stored model identifier follows; `agents_model_name_format` builds one, so a direct
-  API integration and a gateway route store the same string for the same model.
-- **`mcp_creator`** — scaffolds a new dual-purpose MCP repository from one name, each
-  one shipping a `wiki/environments/setup.md` that documents both CLI and server mode.
-  Plans by default; writes only when asked.
-- **Many clients at once.** Content is loaded once into a frozen registry; each
-  request or session gets its own server instance, so nothing is shared and any
-  process can serve any request.
+- **`mcp_list`** — the registry of sibling instruction and security servers, with each one's
+  scope and clone URL. Use it before cloning one. It deliberately does not list this server;
+  you are already connected to it.
+- **`agents_setup`**, **`agents_update`** and **`duplicate_instruction_audit`** — the
+  procedures for adopting, re-syncing and auditing a repository's use of the set. The last
+  two run **on request only**.
 
 ## Quick start
 
@@ -51,52 +51,74 @@ npm install
 npm test
 ```
 
-**CLI mode** — read the set at a terminal:
+Serve it to an MCP client over stdio:
 
 ```bash
-npm link                                  # puts lxagents-agents on PATH
-lxagents-agents list --folder git
-lxagents-agents read branching-strategy
-lxagents-agents setup
+npm start
 ```
 
-**Server mode** — serve the set to an MCP client:
+Or inspect the surface by hand:
 
 ```bash
-npm start              # stdio, for an editor or agent
-npm run start:http     # streamable HTTP — http://localhost:3000/mcp
+npm run inspect
 ```
 
-Both modes read the same frozen registry, so a file read at a terminal is
-byte-identical to the same file read over MCP. Full instructions for each mode are in
-[`wiki/environments/setup.md`](wiki/environments/setup.md).
-
-With Docker:
-
-```bash
-docker compose up --build
-```
+Full instructions are in [`wiki/environments/setup.md`](wiki/environments/setup.md).
 
 ## Connect it
 
-Add a custom connector pointing at `https://<host>/mcp`, named
-`lxagents-agents-base`. **Include the `/mcp` path** — without it the handshake fails,
-and clients report that as a sign-in error rather than a wrong address. For local development over stdio, see
+A local stdio server, named `lxagents-shared-instruction`:
+
+```json
+{
+  "mcpServers": {
+    "lxagents-shared-instruction": {
+      "command": "node",
+      "args": ["src/index.js"],
+      "cwd": "/path/to/shared-instruction"
+    }
+  }
+}
+```
+
+For npm consumers the package exposes that binary, so `command: "npx"` with
+`args: ["-y", "@lxagents-mcp/shared-instruction"]` works without a checkout. See
 [`wiki/guides/connect-a-repository.md`](wiki/guides/connect-a-repository.md).
+
+**Registering a server does not reach a session that is already running.** A client loads
+its connector list at session start, so a server added mid-session reports healthy and is
+still absent from the tool surface until the session restarts.
+
+## Docker
+
+```bash
+docker build -t lxagents-shared-instruction:2.0.0 .
+docker run --rm -i lxagents-shared-instruction:2.0.0
+```
+
+A pinned, non-root image for hosts that cannot run Node 20. It is **not** a service —
+stdio is a pipe, not a port, so there is no `EXPOSE` and nothing to publish. The `-i` is
+not optional; without it the server sees closed stdin and exits. Details in
+[Docker](wiki/environments/docker.md).
 
 ## Documentation
 
 - [Overview](wiki/information/overview.md) — what this serves and why it is a server.
-- [Architecture](wiki/information/architecture.md) — registry, transports, concurrency.
-- [MCP surface](wiki/reference/mcp-surface.md) — every prompt and resource.
+- [Architecture](wiki/information/architecture.md) — how the tool surface is built.
+- [MCP surface](wiki/reference/mcp-surface.md) — every tool, and what the server does not expose.
 - [Local setup](wiki/environments/setup.md) — running and testing it.
-- [Security model](wiki/security/security-model.md) — trust boundaries, attack surface, and what is deliberately not protected.
+- [Docker](wiki/environments/docker.md) — building and running the image.
+- [Security model](wiki/security/security-model.md) — trust boundaries, and what is deliberately not protected.
 
 ## Working with agents
 
 The instruction set this server delivers is also the instruction set this repository
 follows. Start at [`AGENTS.md`](AGENTS.md); the canonical content lives in
 [`content/`](content/).
+
+Because this repository *is* the producer, a change to `content/` changes behavior in
+every consuming repository at once. See [`content/rules/versioning.md`](content/rules/versioning.md)
+for what that means before you change anything there.
 
 ## License
 

@@ -1,87 +1,26 @@
 # Local Setup
 
-This package is **dual-purpose**. The same instruction set and the same code are
-reachable two ways:
+An MCP server over stdio. There is no CLI, no HTTP mode, and no container image.
 
 | Mode | What it is | Who uses it |
 |---|---|---|
-| **CLI mode** | A terminal command that prints the instruction set | A person reading, grepping, or piping the conventions |
-| **Server mode** | An MCP server over stdio or streamable HTTP | An MCP client — an editor, an agent, a connector |
-
-Both read the same frozen content registry, so a file read in one is byte-identical to
-the same file read in the other. The test suite pins that as an invariant.
+| **Server mode** | An MCP server over stdio | An MCP client — an editor, an agent, a connector |
 
 ## Requirements
 
-Node.js 20 or newer. There is no build step — the server is plain JavaScript.
+Node.js 20 or newer. There is no build step — the server is plain JavaScript (ESM).
 
 ```bash
 npm install
 npm test
 ```
 
-The suite covers the content registry, the MCP surface over an in-memory transport, the
-HTTP transport in both session modes, concurrent clients, session reaping, the manifest
-hashes, and the CLI.
-
----
-
-## CLI mode
-
-### Install
-
-```bash
-# From the repository, for development
-npm install
-npm link            # puts lxagents-agents on PATH
-
-# Or globally, from the package
-npm install -g @lxagents-mcp/shared-instruction
-```
-
-Without installing anything, run it straight out of the checkout:
-
-```bash
-node src/cli/index.js --help
-npm run cli -- --help
-```
-
-### Use
-
-```bash
-lxagents-agents list                       # every file, with its description
-lxagents-agents list --folder git          # one folder only
-lxagents-agents list --json                # machine-readable
-
-lxagents-agents read branching-strategy    # by frontmatter name
-lxagents-agents read git/commit-conventions.md
-lxagents-agents read agents://rules/directories.md
-
-lxagents-agents setup                      # the AGENTS-SETUP procedure
-lxagents-agents audit                      # the duplicate-instruction audit
-lxagents-agents manifest                   # the manifest, as JSON
-
-lxagents-agents create weather-mcp          # show the scaffold plan
-lxagents-agents create weather-mcp --write  # create the repository
-```
-
-`create` plans by default and writes only with `--write`, so exploring it cannot create
-directories by accident. It refuses a target that is not empty unless `--force` is
-passed. Every repository it creates ships its own `wiki/environments/setup.md`
-documenting both modes, generated from that repository's own names.
-
-`read` accepts a frontmatter `name`, a path, or an `agents://` URI — all three resolve
-to the same file, so whichever form you are holding works.
-
-### Exit codes
-
-| Code | Meaning |
-|---|---|
-| `0` | Success |
-| `1` | The request was understood but could not be satisfied — no such instruction, no such folder |
-| `2` | The command line itself was wrong — unknown command, missing argument, bad flag |
-
-Scripts can rely on these: `lxagents-agents read some-name >/dev/null || echo missing`.
+The suite is one file, `test/server.test.js`, and it is the whole suite: 19 tests
+driving a real MCP client over an in-memory transport. It covers the frontmatter contract,
+the shared creator procedure, the file-to-tool bijection in both directions, name
+derivation, uniqueness and descriptions, the zero-argument claim, byte-for-byte payload
+fidelity, total-served equality, reachability, index routing, `mcp_list` in isolation, and
+the read-only claim.
 
 ---
 
@@ -90,13 +29,12 @@ Scripts can rely on these: `lxagents-agents read some-name >/dev/null || echo mi
 ### Install
 
 An MCP client spawns the server as a subprocess, so "installing" it means pointing the
-client at it. Either bin works — `lxagents-agents-base` is the server directly, and
-`lxagents-agents serve` reaches the same server through the CLI.
+client at it. From a checkout:
 
 ```json
 {
   "mcpServers": {
-    "lxagents-agents-base": {
+    "lxagents-shared-instruction": {
       "command": "node",
       "args": ["src/index.js"],
       "cwd": "/path/to/shared-instruction"
@@ -105,35 +43,28 @@ client at it. Either bin works — `lxagents-agents-base` is the server directly
 }
 ```
 
-For a remote connector, point the client at `https://<host>/mcp` — **including the
-`/mcp` path**. Without it the handshake fails, and clients report that as a sign-in
-error rather than a wrong address. See
-[`connect-a-repository.md`](../guides/connect-a-repository.md).
+From npm, the package exposes that same file as a bin, so no checkout is needed:
+
+```json
+{
+  "mcpServers": {
+    "lxagents-shared-instruction": {
+      "command": "npx",
+      "args": ["-y", "@lxagents-mcp/shared-instruction"]
+    }
+  }
+}
+```
+
+There is no remote form. `src/index.js` connects `StdioServerTransport` and nothing else,
+so a client configured with a URL is pointed at nothing this package provides.
 
 ### Run
 
 ```bash
-# stdio — one client, for an editor or an agent
-npm start
-lxagents-agents serve --stdio
-
-# streamable HTTP — the connector surface
-npm run start:http
-lxagents-agents serve --http --port 3000
-
-# HTTP with reload on change
-npm run dev
+npm start        # stdio
+npm run start:stdio   # the same thing, named for what it is
 ```
-
-Check it is up:
-
-```bash
-curl -s http://localhost:3000/readyz
-# {"status":"ready","resources":26,"sessions":0}
-```
-
-Every option has an environment equivalent — see [Environment variables](env.md). The
-CLI flags set those variables before the server boots, so the two never disagree.
 
 ### Inspect it
 
@@ -141,36 +72,37 @@ CLI flags set those variables before the server boots, so the two never disagree
 npm run inspect
 ```
 
-This runs the MCP Inspector against the stdio server, listing every prompt, resource,
-and tool, and letting you read them.
+This runs the MCP Inspector against the stdio server, listing every tool and letting you
+call it. With 32 tools and no prompts or resources, the tool list is the whole surface.
 
 ### stdout belongs to the protocol
 
-On the stdio transport, stdout **is** the JSON-RPC channel. Every log line goes to
-stderr instead, and `serve` prints nothing of its own. Only the CLI commands write to
-stdout, and only through `src/cli/output.js`. A `console.log` anywhere else in `src/` is
-a bug that corrupts the protocol stream.
+On the stdio transport, stdout **is** the JSON-RPC channel. Nothing in this repository
+writes to stdout: there is no logger module, and no `console.log` in `src/`. A
+`console.log` added there would corrupt the protocol stream, which is worth knowing before
+adding one.
 
 ---
 
 ## Content changes require a restart
 
-The instruction set is read once at boot into a frozen registry, so editing anything
-under `content/` has no effect until the process restarts. `npm run dev` handles that
-for HTTP; restart manually for stdio. Each CLI command is its own short-lived process,
-so it always reads the current content.
+The instruction set is read once at boot into a frozen map, so editing anything under
+`content/` has no effect until the process restarts. This is deliberate — a versioned,
+released set that is never served half-applied is worth more than live reload — and it is
+the reason the boot-time checks below exist.
 
-Boot fails deliberately when a file under `content/` is missing `name` or `description`
-frontmatter, or when two files share a `name`. Both would break routing or precedence in
-every consuming repository, so they are startup errors rather than runtime surprises.
+Boot **fails deliberately** when a file under `content/`:
 
-A description longer than 140 characters is not a boot failure but a **test** failure —
-`npm test` rejects it, because a description that long stops being something an agent
-can route on at a glance.
+- derives a name that is not a valid MCP tool identifier
+- derives the same name as another file in a different folder
+- has no frontmatter `description`
+
+Each would break routing for every consuming repository, so each is a startup error rather
+than a runtime surprise. The fix is usually one line in `NAME_OVERRIDES` in
+`src/tools/from-content.js`.
 
 ## Related pages
 
-- [Environment variables](env.md) — every configuration knob.
-- [Docker](docker.md) — running it in a container.
-- [MCP surface](../reference/mcp-surface.md) — every prompt, resource, and tool.
-- [Architecture](../information/architecture.md) — why it is built this way.
+- [MCP surface](../reference/mcp-surface.md) — the tool surface, and what is not exposed.
+- [Environment variables](env.md) — which is to say, none.
+- [Architecture](../information/architecture.md) — how the surface is generated.

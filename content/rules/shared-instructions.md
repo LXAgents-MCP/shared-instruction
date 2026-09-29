@@ -13,7 +13,7 @@ Open this the moment you are unsure whether something is local or universal.
 
 | Set | Where it lives | What it holds |
 |---|---|---|
-| **Shared** | The `lxagents-agents-base` MCP server, addressed as `agents://` | Everything true across repositories. |
+| **Shared** | The `lxagents-shared-instruction` MCP server, addressed as `agents://` | Everything true across repositories. |
 | **Local** | `{repo}/.agents/` | Everything true of exactly one repository. |
 
 Memory, indexes, both wikis, and `rules/repository.md` are **always local**. Everything
@@ -31,10 +31,11 @@ copied into a consumer, running the other way.
 
 Full procedure in [`mcp-connector.md`](agents://rules/mcp-connector.md). In summary:
 
-1. If the `lxagents-agents-base` connector is available in this session, that is the
+1. If the `lxagents-shared-instruction` connector is available in this session, that is the
    shared set.
-2. Read `agents://manifest.json` once to learn what exists.
-3. Read `agents://index/root-index.md` and route from there.
+2. Every file in the set is its own tool, so the client's tool list already says what
+   exists. Start at `root_index`, which routes to the rest.
+3. Call the one tool whose trigger has fired. Nothing is called before that.
 4. If the connector is unavailable, say so plainly and continue on the local set only.
 
 **Never vendor the shared set.** There is no checkout to commit, and creating one by
@@ -126,7 +127,7 @@ and that file remains the single authority for how it is carried out.
 
 | On every request you must… | Authority |
 |---|---|
-| Declare the four mandatory tools in `AGENTS.md`, and carry their gates inline | `task_workflow`, `branch_strategy`, `commit_strategy`, `discovery_protocol` — [`auto-activation.md`](agents://rules/auto-activation.md) |
+| Declare the four mandatory tools in `AGENTS.md`, and carry their gates inline | `task_workflow`, `branching_strategy`, `commit_conventions`, `discovery_protocol` — [`auto-activation.md`](agents://rules/auto-activation.md) |
 | Refine the requirements and put a plan in front of the user **before** running code or writing a file | [`../planning/task-workflow.md`](agents://planning/task-workflow.md) §A |
 | Wait for the user to **approve** that plan before writing a file, creating a branch, or changing state | [`../planning/task-workflow.md`](agents://planning/task-workflow.md) §B |
 | Break the work into tasks and present the list before starting — task 1 is the record, task `n` is the release, the work goes between | [`../planning/task-workflow.md`](agents://planning/task-workflow.md) §B |
@@ -140,8 +141,8 @@ and that file remains the single authority for how it is carried out.
 
 [`auto-activation.md`](agents://rules/auto-activation.md) fires most conventions from a
 trigger, and the four below are no exception — `task_workflow` fires on a request of more
-than one step, `branch_strategy` when a branch is about to exist, and so on. What is *not*
-trigger-gated is the part that has to be standing before the work starts: **the gates
+than one step, `branching_strategy` when a branch is about to exist, and so on. What is
+*not* trigger-gated is the part that has to be standing before the work starts: **the gates
 themselves live inline in the repository's `AGENTS.md`**, read from disk at session start,
 while the tools supply the procedures that implement them.
 

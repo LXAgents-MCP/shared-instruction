@@ -12,10 +12,10 @@ that are true across repositories — branching, commits, pull requests, task
 workflow, the creators, the directory architecture — and nothing that belongs to any
 one repository.
 
-It is delivered by the `lxagents-agents-base` MCP server. A consuming repository
-**connects to it**; it does not clone it, vendor it, or copy it. Every file below is
-addressable as a resource under the `agents://` scheme, and the setup procedure is
-addressable as the `agents-setup` prompt.
+It is delivered by the `lxagents-shared-instruction` MCP server. A consuming repository
+**connects to it**; it does not clone it, vendor it, or copy it. **Every file below is
+its own tool**, named after its filename, so the client's tool list is the file list —
+`{folder}/{file}.md` is the `file` part of `file_md`. Nothing is loaded up front.
 
 ## The consumer contract
 
@@ -48,14 +48,14 @@ A repository consumes this set once it has all of:
 6. **Nothing copied from this set.** No `git/`, `planning/`, `prompts/`, or
    `creators/` folder in the consuming repository.
 
-The `agents-setup` prompt performs this whole procedure. Invoke it from the
-connector rather than reproducing it by hand.
+The `agents_setup` tool performs this whole procedure. Call it rather than reproducing
+it by hand.
 
 ## Resolution — how a repository reaches this set
 
 The full procedure, including what to do when the connector is unavailable, is in
 [`rules/mcp-connector.md`](agents://rules/mcp-connector.md). In short: the connector
-named `lxagents-agents-base` is the shared set. Refer to it as `{shared}` in prose,
+named `lxagents-shared-instruction` is the shared set. Refer to it as `{shared}` in prose,
 and address its files as `agents://{folder}/{file}.md`. There is no checkout, so
 there is nothing to keep in sync and nothing to accidentally commit.
 
@@ -109,8 +109,8 @@ must do — nothing, re-read a file, or drop an override.
 ## Routing protocol
 
 Route by reading index tables, not by reading files. Do NOT load every index. Do NOT
-bulk-read this set to build a registry — the manifest at `agents://manifest.json`
-already is one, and it is one read instead of twenty. Do NOT read an instruction body
+bulk-read this set to build a registry — every file in the set is its own tool, with a
+description, so the client's own tool list already is one. Do NOT read an instruction body
 until that instruction has been selected. Each index row's purpose text is what you
 route on; the file body is what you load after choosing.
 
@@ -146,9 +146,9 @@ Source of truth: [`rules/discovery-protocol.md`](agents://rules/discovery-protoc
 
 Four conventions are declared by **every** consuming repository — the task workflow, the
 branching strategy, the commit conventions, and the discovery protocol — served as the
-tools `task_workflow`, `branch_strategy`, `commit_strategy` and `discovery_protocol`. A
-repository narrows the rest of its declaration block to what it uses; it never narrows
-these four.
+tools `task_workflow`, `branching_strategy`, `commit_conventions` and
+`discovery_protocol`. A repository narrows the rest of its declaration block to what it
+uses; it never narrows these four.
 
 **Their gates do not wait for a trigger.** Approving the plan before anything is written,
 asking before opening a pull request, asking before merging, and the discovery-protocol
@@ -163,8 +163,8 @@ any of it is [`rules/auto-activation.md`](agents://rules/auto-activation.md).
 
 **Nothing is called at session start.** Resolving this set is not loading it: a session
 reads its own `AGENTS.md`, its root index and its memory, then calls a tool when that tool's
-trigger fires. Calling every declared tool up front rebuilds the one oversized payload this
-surface exists to replace.
+trigger fires. There are more than thirty tools, and calling them up front rebuilds the one
+oversized payload this surface exists to replace.
 
 ## Version rule
 

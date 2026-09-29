@@ -2,7 +2,7 @@
 
 `LXAgents-MCP/shared-instruction` is an MCP server that delivers the organization's
 shared agent instruction set. It is published as `@lxagents-mcp/shared-instruction`, and the MCP
-connector it serves is named `lxagents-agents-base` — the package name and the connector
+connector it serves is named `lxagents-shared-instruction` — the package name and the connector
 id are deliberately different, because renaming the id would break every consuming
 repository's client configuration.
 
@@ -29,34 +29,37 @@ to vendor by mistake, and every repository reads the same bytes.
 
 ## What it serves
 
-| Kind | Name / URI | Purpose |
-|---|---|---|
-| Prompt | `agents-setup` | The full setup procedure for a repository's instruction, knowledge, and memory system. |
-| Prompt | `check-duplicate-agents-instruction` | Finds instructions a repository duplicates from this set. Runs only when asked. |
-| Resource | `agents://manifest.json` | Every file with its `name`, path, description, and content hash. |
-| Resource | `agents://AGENTS.md` | The federation contract consuming repositories rely on. |
-| Resource | `agents://{folder}/{file}.md` | Any instruction file — 28 of them. |
-| Tool | `task_workflow`, `branch_strategy`, `commit_strategy`, `discovery_protocol` | The four conventions every repository declares. One file each, on a trigger — never at session start. |
-| Tool | `pull_request_strategy`, `agents_model_naming_convention` | Declared by the repositories that need them. |
-| Tool | `agents_model_name_format` | Builds one compliant `model_name`. The one read-only tool that computes rather than returns. |
-| Tool | `setup_shared_agents_instruction`, `update_shared_agents_instruction`, `check_duplicate_shared_agents_instruction` | The three procedures. The last two run only when the user asks. |
-| Tool | `list_shared_agents_instruction`, `read_shared_agents_instruction` | Discover and read anything without a tool of its own. |
-| Tool | `mcp_creator` | Scaffolds a new dual-purpose MCP repository. The only tool that writes; plans by default. |
+**32 tools, and nothing else.** 31 are generated — one per markdown file in `content/` —
+and one is hand-written. No prompts, no resources, no HTTP transport.
 
-## Why prompts first, and tools as well
+| Tool | Serves |
+|---|---|
+| `agents_entry_point` | `AGENTS.md`, the federation contract. The one name that is not derived from its filename. |
+| `root_index` | `index/root-index.md` — start here; it routes to the rest. |
+| `task_workflow` | `planning/task-workflow.md` |
+| `branching_strategy` | `git/branching-strategy.md` |
+| `commit_conventions` | `git/commit-conventions.md` |
+| `discovery_protocol` | `rules/discovery-protocol.md` |
+| `mcp_list` | The registry of sibling instruction and security servers. Hand-written. |
+| …and one tool for each of the other 24 files | Named after its own filename. |
 
-A tool makes an instruction set something the model *may decide* to call. A prompt makes
-it something a user invokes and the model then obeys. These are standing orders, so the
-prompt is the correct primitive and remains the preferred one.
+The complete list is whatever the client enumerates from `tools/list`. It is deliberately
+not written out here: a hand-maintained copy of a generated list is a copy that goes stale.
 
-Tools exist alongside them because several clients enumerate a connector by its tools
-alone: such a client shows a prompts-and-resources-only server as "no tools available"
-and will not let you enable it. The two procedure tools return exactly what the matching
-prompt returns, so nothing is lost by reaching the set either way.
+**No tool takes an argument.** Each one names a single file, so there is no path to pass
+and nothing for a caller to traverse with. Every tool is read-only.
 
-Resources cover the other half: an agent that has already been told to follow the set
-needs to read one file out of it, addressed by URI, without a round trip through a tool
-call.
+## Why the tools, and not prompts
+
+A tool makes an instruction set something the model *may decide* to call, and a session
+sees the full list — name and description — before deciding anything. That is what lets a
+repository route on a description without reading a body.
+
+The set's own rules are explicit that **nothing is called at session start**. Each
+convention fires on its own trigger, declared in the consuming repository's `AGENTS.md`.
+A session that only branches and commits pays for two files rather than thirty-one — which
+is the entire point of the current design, and the reason this page does not describe a
+single bulk call.
 
 ## The duplicate audit
 
@@ -64,16 +67,16 @@ Some repositories already carry a copy of these rules — set up before the conn
 existed, or scaffolded by copying another repository. Those copies override the shared
 originals by `name` and then go stale silently.
 
-`check-duplicate-agents-instruction` finds them, classifies each as an exact duplicate,
-a stale copy, a declared override, or local-only, and proposes deletions.
+`duplicate_instruction_audit` finds them, classifies each as an exact duplicate, a stale
+copy, a declared override, or local-only, and proposes deletions.
 
 It runs **only when the user asks for it**. Every other rule in the set fires
-automatically; this one does the opposite, because it proposes deletions. Making it a
-prompt is what enforces that — it cannot run unless somebody invokes it.
+automatically; this one does the opposite, because it proposes deletions.
 
 ## Related pages
 
-- [Architecture](architecture.md) — how the server is built and why it is safe under
-  concurrency.
-- [MCP surface](../reference/mcp-surface.md) — the full prompt and resource list.
+- [Architecture](architecture.md) — how the tool surface is generated, and why that makes
+  concurrency and read cost a non-issue.
+- [MCP surface](../reference/mcp-surface.md) — the generated tools, and the longer list of
+  what this server does not expose.
 - [Connect a repository](../guides/connect-a-repository.md) — adoption, step by step.

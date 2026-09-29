@@ -11,7 +11,7 @@ the agent-facing orientation and links out rather than restating.
 ## What this repository is
 
 `LXAgents-MCP/shared-instruction` — an MCP server that serves the LXAgents shared agent
-instruction set as `lxagents-agents-base`. Plain JavaScript, Node ESM, no build step.
+instruction set as `lxagents-shared-instruction`. Plain JavaScript, Node ESM, no build step.
 
 It is both the **producer** of the shared set and a **consumer** of it. See
 [`../../rules/repository.md`](../../rules/repository.md).
@@ -20,82 +20,88 @@ It is both the **producer** of the shared set and a **consumer** of it. See
 
 | Path | Contents | Touch it when |
 |---|---|---|
-| `content/` | The published instruction set — 26 markdown files served as `agents://` resources. | You are changing a convention every repository follows. **This is a release.** |
+| `content/` | The published instruction set — 31 markdown files, each served as its own tool. | You are changing a convention every repository follows. **This is a release.** |
 | `.agents/` | This repository's own rules, indexes, agent wiki, memory. | You are changing something true only here. |
 | `wiki/` | Human documentation, plus `wiki/logs/` release history. | A person needs to read it. |
-| `src/content/` | Registry, frontmatter parsing, and identifier resolution — loads `content/` once at boot. | Changing how content is loaded, validated, hashed, or looked up. |
-| `src/server/` | `create-server.js`, `resources.js`, `prompts.js`, `tools.js`, `manifest.js`, `payloads.js`, `run.js`. | Changing the MCP surface or the boot sequence. |
-| `src/cli/` | `index.js`, `run.js`, `commands.js`, `output.js` — the CLI half of the dual-purpose build. | Changing what a person sees at a terminal. |
-| `src/tools/` | Tools that act on repositories rather than on content — `mcp-creator.js`. Surfaced through both MCP and the CLI. | Adding or changing a repository-level tool. |
-| `src/transport/` | `stdio.js`, `http.js`, `session-store.js`, `cluster.js`. | Changing how clients connect or how concurrency works. |
-| `test/` | `node:test` suites — registry, server, http, manifest, tools, cli, mcp-creator. | Always. Every behavioural change ships with one. |
+| `src/tools/` | `from-content.js` builds the generated surface; `mcp-list.js` is the one hand-written tool. | Adding or changing a tool. |
+| `src/server.js` | Builds one `McpServer` and registers every tool; carries the `instructions` text. | Changing the MCP surface. |
+| `src/content.js` | The set root, the frontmatter reader, and `readSetFile` with its path check. | Changing how content is located or read. |
+| `src/version.js` | `ROOT`, `CONTENT_DIR`, `VERSION`, `SERVER_NAME`. | Renaming the server or moving the set. |
+| `Dockerfile` | A pinned, non-root image for hosts that cannot run Node 20. stdio only — no `EXPOSE`, no service. | The toolchain the image pins, or the install command it runs. |
+| `test/` | `server.test.js` — the whole suite. | Always. Every behavioural change ships with one. |
+
+There is no `src/server/`, no `src/cli/`, no `src/transport/`, and no `src/content/`
+directory. If a file you are about to edit is under one of those paths, it does not exist
+here.
 
 ## Entry points
 
-There are **two**, and they are the dual-purpose split:
+There is **one**:
 
-* `src/index.js` — the server entry, what an MCP client spawns. Delegates straight to
-  `server/run.js`.
-* `src/cli/index.js` — the CLI entry, what a person runs. `serve` hands back to the
-  server half; every other command renders for a terminal.
+* `src/index.js` — what an MCP client spawns. Connects a stdio transport, handles
+  `SIGINT`, and nothing else. It is the only transport.
 
-Behind both:
+Behind it:
 
-* `src/server/run.js` — the boot sequence. Loads content, then starts stdio or HTTP.
-  Both entry points come through here, which is what stops them drifting apart.
-* `src/server/create-server.js` — builds one `McpServer`; the single place every
-  prompt, resource, and tool is registered.
-* `src/content/registry.js` — `loadRegistry()`, the boot-time validation gate.
-* `src/content/resolve.js` — identifier resolution, shared by the tool surface and the
-  CLI so a name that resolves in one resolves in the other.
-* `src/server/payloads.js` — the procedure text shared by prompts, tools, and the CLI.
+* `src/tools/from-content.js` — walks `content/` at import, derives a tool name and
+  description per file, and reads each file once into a frozen `Map`. This is the boot-time
+  validation gate, and the only module that touches every file in the set.
+* `src/server.js` — `TOOL_MODULES`, the array every registered tool comes from. Add a
+  module here and its tools appear; nothing else registers anything.
+* `src/content.js` — `readSetFile`, reached by exactly one caller with a constant path.
 
 ## Commands
 
 ```bash
 npm install
-npm test                 # node:test, all suites
+npm test                 # node:test — one file, 19 tests
 npm start                # stdio
-npm run start:http       # streamable HTTP on :3000
-npm run dev              # HTTP with restart on change
 npm run inspect          # MCP Inspector against the stdio server
-npm run cli -- <command>  # the CLI half, e.g. -- list --folder git
-docker compose up --build
 ```
+
+`npm start` and `npm run start:stdio` are the same thing. There is no HTTP server, no watch
+mode, and no CLI. `docker build -t lxagents-shared-instruction:$(node -p "require('./package.json').version") .`
+builds the image, which runs the same entrypoint with a pinned toolchain.
 
 ## Gotchas that actually bite
 
 * **`content/` is published.** Adding a file there ships it to every consuming
-  repository on the next boot. See
+  repository on the next boot as a new tool. See
   [`../../rules/content-publishing.md`](../../rules/content-publishing.md).
-* **Content changes need a restart.** The registry is frozen at boot; editing markdown
-  does nothing to a running process.
-* **Three files outside `content/` copy its text.** The root `AGENTS.md`, the scaffold
-  in `src/tools/mcp-creator.js`, and the contract `content/prompts/agents-setup.md`
-  dictates to consumers all reproduce set text and go stale silently. Grep for a
-  sentence you changed before committing — see
-  [`../../rules/set-mirrors.md`](../../rules/set-mirrors.md).
-* **Never write to stdout — except from the CLI.** stdout is the JSON-RPC channel on
-  stdio, so the server path uses `src/logger.js`, which writes to stderr. CLI output is
-  the one exception and goes through `src/cli/output.js`; `serve` prints nothing itself,
-  so the two never collide. A `console.log` anywhere else in `src/` is a bug.
-* **Never share an `McpServer` between clients.** It holds per-connection state;
-  reusing one delivers responses to the wrong connection.
-* **Prompts, tools, and the CLI must stay identical.** All three read `payloads.js` and
-  the same frozen registry; tests assert the outputs match byte for byte. Adding a
-  fourth way to reach the content means adding it to those tests too.
-* **Declaring optional-only argument schemas breaks callers.** The SDK validates
-  arguments against an object schema that rejects `undefined`, and the spec lets clients
-  omit `arguments`. The two zero-argument tools and both prompts declare no schema for
-  this reason — do not "tidy" one in.
-* **The connector URL needs the `/mcp` path.** Without it the handshake fails and
-  clients report a sign-in error, which sends you debugging the wrong thing.
+* **Content changes need a restart.** The map is frozen at boot; editing markdown does
+  nothing to a running process.
+* **Three files outside `content/` copy its text.** The root `AGENTS.md`,
+  `content/prompts/agents-setup.md`, and the `instructions` string in `src/server.js` all
+  reproduce set text and go stale silently. Grep for a sentence you changed before
+  committing — see [`../../rules/set-mirrors.md`](../../rules/set-mirrors.md).
+* **Never write to stdout.** stdout is the JSON-RPC channel. There is no logger module
+  and no exception to the rule, because there is no CLI. A `console.log` anywhere in
+  `src/` is a bug that corrupts the protocol stream.
+* **Never share an `McpServer` between connections.** It holds per-connection state;
+  reusing one delivers responses to the wrong connection. `createServer()` builds a fresh
+  one every time.
+* **No tool declares an input schema, and none should.** An object schema that rejects
+  `undefined` breaks clients that omit `arguments` — which is why these tools declare
+  none. Do not "tidy" a schema in; if a tool needs an argument, that is a design decision
+  to make deliberately, not a cleanup.
+* **A file rename is a breaking change, not a rename.** The tool name is derived from the
+  filename, so renaming removes a tool a consumer's `AGENTS.md` may name.
+* **Two files with the same basename collide.** The folder is stripped from the name, so
+  the boot throws rather than letting one shadow the other. Resolve it with an entry in
+  `NAME_OVERRIDES`, not by renaming a file.
+* **`src/tools/instruction.js` is dead.** Nothing imports it. It is the old
+  path-taking tool, left on disk after #63; see the note in the repository's state.
 
 ## Generated and vendored paths
 
 `node_modules/` only. Nothing is generated into the tree, and there is no `dist/` —
 if you find yourself adding one, stop and re-read
 [`../../rules/repository.md`](../../rules/repository.md).
+
+A `.dockerignore` sits at the root and governs what the image copies in — it keeps
+`node_modules`, `test`, `wiki`, `.agents` and the root markdown out, which is why the image
+cannot run its own suite. There is no `compose.yaml`, deliberately — see
+[`../../../wiki/environments/docker.md`](../../../wiki/environments/docker.md).
 
 ## Where the shared set resolves from
 
@@ -105,6 +111,6 @@ so the working tree is the authority.
 ## Further reading
 
 * [`../../../wiki/information/architecture.md`](../../../wiki/information/architecture.md) — how the server is built and why.
-* [`../../../wiki/reference/mcp-surface.md`](../../../wiki/reference/mcp-surface.md) — every prompt, resource, tool, and endpoint.
+* [`../../../wiki/reference/mcp-surface.md`](../../../wiki/reference/mcp-surface.md) — the tool surface, and what it deliberately does not expose.
 * [`../../../wiki/environments/env.md`](../../../wiki/environments/env.md) — configuration.
 * [`../security/security-boundaries.md`](../security/security-boundaries.md) — the security SOP, and the rule against carrying a security context between repositories.

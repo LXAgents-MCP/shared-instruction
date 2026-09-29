@@ -5,147 +5,102 @@ description: Current known state of LXAgents-MCP/shared-instruction — what exi
 
 # Repository State
 
-## 2026-08-28
+## 2026-09-29
 
-**What this is.** A dual-purpose package that serves the LXAgents shared agent
-instruction set: an MCP server (`lxagents-agents-base`) and a CLI (`lxagents-agents`)
-over one frozen registry. Plain JavaScript, Node ESM, no build step. Published as
-`@lxagents-mcp/shared-instruction`; the MCP connector id stays `lxagents-agents-base`,
-since consuming repositories name it in their client configuration.
+**What this is.** A read-only MCP server that serves the LXAgents shared agent instruction
+set. Plain JavaScript, Node ESM, no build step. Published as
+`@lxagents-mcp/shared-instruction`; the server name is `lxagents-shared-instruction`, renamed
+from `lxagents-agents-base` in `2.0.0`. Every consuming repository named the old one in
+its client configuration, so each has to update it.
 
-**Three permission gates, not two.** As of `0.13.0`: approve the plan, ask before opening
-a pull request, ask before merging. The sentence naming them is reproduced in four places
-— `shared-instructions.md` §H owns it; `AGENTS.md`, `prompts/agents-setup.md`, and
-`src/tools/mcp-creator.js` restate it.
+**Not dual-purpose.** There is no CLI. `package.json` declares one bin,
+`lxagents-shared-instruction`, which is the server. The `lxagents-agents` CLI, the `mcp_repos`
+and `mcp_creator` tools, MCP prompts, `agents://` resources, and a `manifest.json` were all
+removed in #63. `content/index/root-index.md` and several `content/` files still used
+`agents://` link notation; that survives as prose addressing, not as a fetchable endpoint.
+
+**Three permission gates, not two.** Approve the plan, ask before opening a pull request,
+ask before merging. `shared-instructions.md` §H owns the sentence; the root `AGENTS.md`,
+`content/prompts/agents-setup.md`, and the `instructions` string in `src/server.js`
+restate it — three mirrors, listed in `.agents/rules/set-mirrors.md`.
 
 **This repository has its own security context.** `wiki/security/security-model.md` (facts)
 and `.agents/wiki/security/security-boundaries.md` (the SOP), loaded by a **local** trigger
 row. Its first rule is that a security context never crosses repositories.
 
-**Structure.** `content/` holds the 29 published instruction files. `.agents/rules/`
-holds three local rules: `repository.md`, `content-publishing.md`, and `set-mirrors.md`,
-the last naming all four places outside `content/` that copy published set text. `.agents/`
-holds
-this repository's own instruction set. `wiki/` holds human documentation. `src/` and
-`test/` hold the server and the CLI.
+**Structure.** `content/` holds 31 published instruction files. `.agents/rules/` holds
+three local rules: `repository.md`, `content-publishing.md`, and `set-mirrors.md`. `wiki/`
+holds human documentation. `src/` is six files and `test/` is one.
 
-**Surface.** 3 prompts (`agents-setup`, `agents-update`, `check-duplicate-agents-instruction`),
-30 resources (29 instruction files plus `agents://manifest.json`), and 13 tools — 12
-read-only and one that writes (`mcp_creator`, which plans by default).
+**Surface — one tool per file.** 32 tools: 31 generated from `content/`, one per file,
+plus `mcp_list`. The name is derived from the path (folder stripped, `.md` dropped, kebab →
+snake), with one override: `AGENTS.md` → `agents_entry_point`. The description is the
+file's own frontmatter `description`, verbatim. **No tool takes an argument.**
 
-**As of `1.0.0`, nothing is called at session start.** `agents_auto_activation` is gone; six
-convention tools replace it, one content file each, fired by a trigger:
+That is a change from `1.0.0`, where six hand-named convention tools replaced the
+single 31,000-character `agents_auto_activation` call. The four mandatory ones are still
+`task_workflow`, `branching_strategy`, `commit_conventions`, and `discovery_protocol`, but
+they are no longer a fixed set: there are 31 files, and a repository declares in its own
+`AGENTS.md` which of them it uses.
 
-| Tool | Serves | Chars |
-|---|---|---|
-| `task_workflow` | `planning/task-workflow.md` | 11,778 |
-| `branch_strategy` | `git/branching-strategy.md` | 2,620 |
-| `commit_strategy` | `git/commit-conventions.md` | 2,513 |
-| `discovery_protocol` | `rules/discovery-protocol.md` | 4,743 |
-| `pull_request_strategy` | `git/pull-request-template.md` | 3,173 |
-| `agents_model_naming_convention` | `rules/model-naming-convention.md` | 4,138 |
+`mcp_list` is the one hand-written tool, and the only one that reaches `readSetFile` in
+`src/content.js` — with a constant path. Because no tool takes a `path`, there is nothing
+for a caller to traverse with; the zero-argument design is the replacement for the old
+traversal check, not a weaker version of it.
 
-The first four are declared by every repository. All six together are 28,965 characters —
-less than the single call they replaced, which was charged unconditionally. Which of them a
-repository uses is declared in that repository's own `AGENTS.md`, not fixed here.
+**Transports.** stdio only. `src/index.js` connects a stdio transport and handles
+`SIGINT`. The streamable-HTTP transport, session store, and cluster workers were removed
+in #63.
 
-The other seven: `setup_shared_agents_instruction`, `update_shared_agents_instruction`,
-`check_duplicate_shared_agents_instruction`, `list_shared_agents_instruction`,
-`read_shared_agents_instruction`, `agents_model_name_format`, and `mcp_creator`. The middle
-two of the first three run **only when the user asks** — the audit proposes deletions and
-the update edits `AGENTS.md`.
+**Not deployed anywhere.** There is no Render service, no listener, and no port. The
+previous version of this file named a Render hostname and warned that it was unverified;
+that deployment is gone with the transport it served. Consuming repositories reach this
+package through `npx`, a local clone, or `docker run -i`.
 
-Prompts and tools deliver identical text from `src/server/payloads.js`, with one deliberate
-exception: `agents-update` takes no arguments, so the prompt is always the re-sync path
-while the tool takes `from_version` and returns a delta.
+**A `Dockerfile` exists, and is not a deployment.** Single stage, `node:22-alpine`,
+`npm ci --ignore-scripts --omit=dev`, `USER node`, entrypoint `node src/index.js`. No
+`EXPOSE` and no compose file, both deliberate: stdio is a pipe, not a port. The image was
+**never built** — Docker is not installed in the environment this was written in, so
+whether it builds is unverified. `.dockerignore` excludes `node_modules`, `test`, `wiki`,
+`.agents` and the markdown at the root, which means the image cannot run its own test
+suite.
 
-`agents_model_name_format` is the only read-only tool that computes rather than returns text. It
-applies `rules/model-naming-convention.md` — lowercase both segments, join with one `/` —
-and `test/tools.test.js` runs that rule's checklist against its output, so the two cannot
-drift apart silently.
+**Version.** `1.0.0`. Releases: `0.0.0` (initial set) through `0.14.0` (the security
+creator, and `security/` made servable) are in `wiki/logs/`; `1.0.0` replaced the MCP
+server with a read-only instruction set (#63), then restored the `version` and `author`
+frontmatter fields on every served file (#64, #65).
 
-**Two modes.** The package is dual-purpose as of `0.5.0`: `lxagents-agents` is a CLI over
-the same frozen registry, `lxagents-agents-base` is the MCP server. Both boot through
-`src/server/run.js`; a test pins that the two surfaces return identical bytes.
-
-**Transports.** stdio for local use; streamable HTTP for the connector, stateless by
-default, with optional stateful sessions and cluster workers.
-
-**Deployed.** Render, from `master`, free tier — so it spins down when idle and the
-first request after a pause takes 50+ seconds. Connecting works only when the `/mcp`
-path is included in the connector URL; omitting it surfaces as a sign-in error, which
-cost a debugging round and is now written into `content/rules/mcp-connector.md`.
-
-**The deployed hostname is unverified.** It was
-`https://lxagents-mcp-server.onrender.com/mcp`, named after the old repository. Whether
-Render still serves that name after the move to `LXAgents-MCP/shared-instruction` has
-not been checked from this repository. Confirm it before quoting it to anyone.
-
-**Version.** `0.14.0`. Releases so far: `0.0.0` (initial set), `0.1.0` (tool surface),
-`0.2.0` (producer/local set split), `0.3.0` (change propagation), `0.4.0` (work summary),
-`0.5.0` (always-on workflow, dual-purpose CLI, repository tools), `0.6.0` (`mcp_repos`
-withdrawn), `0.6.1` (connector surface table completed), `0.7.0` (package renamed),
-`0.8.0` (discovery protocol always on), `0.9.0` (task record as task 1), `0.10.0`
-(re-target before merging), `0.10.1` (`agents://` alone in the two-sets table), `0.11.0`
-(the model naming convention and its two tools), `0.12.0` (one-call session activation), `0.13.0` (the plan gate, the workflow-fallback recovery, and this repository's own security context), `0.14.0` (the security creator, and `security/` made servable).
-
-**`origin/master` is at `83b6f3d` and carries `0.12.0`** as of 2026-09-01, having advanced
-from `dd87eee`/`0.10.0` earlier the same day. **Re-verify with `git fetch` rather than
-trusting this SHA** — the previous version of this paragraph was added specifically to stop
-a session planning a branch point from a stale claim, and it went stale within the hour. A
-recorded commit is a snapshot; the remote is the authority.
-
-`0.13.0` and `0.14.0` are both unmerged as of writing: eight stacked branches in one line.
-`0.13.0` is four of them — `chore/activation-security-plan`,
-`feat/activation-plan-gate`, `docs/security-context`, `chore/release-0-13-0` — in that
-merge order, each branched from the one before, the first from `master`. `0.14.0` is the other four —
-`chore/security-creator-plan`, `feat/security-folder`, `feat/security-creator`,
-`chore/release-0-14-0` — stacked on top of that chain rather than on `master`, because it
-depends on the plan gate `0.13.0` defines.
-
-The `0.10.0` entry above said "unmerged, deliberately not merged this round" until
-`0.10.1` corrected it. It merged as pull request #21, with #22 (`fix/sonarcloud-findings`)
-and #23 (`docs/connector-usage`) landing after it. A state file that goes stale about what
-is merged is worse than one that says nothing, because the next session plans a branch
-point from it — so this paragraph now names the commit `master` is actually at.
+**`master` is at `cf68380`** as of 2026-09-29. **Re-verify with `git fetch` rather than
+trusting this SHA** — an earlier version of this file carried a SHA that went stale within
+the hour, and a state file that is confidently wrong is worse than one that says nothing,
+because the next session plans a branch point from it.
 
 **Local install has a fixed layout.** A clone that runs this server locally belongs at
 `./mcps/{org or owner}/{repo}/`, gitignored. It is a runtime, not a vendored set: the
-instructions are still read as `agents://` resources, never by file path into the clone.
-A committed `./mcps/` is vendoring. See `wiki/guides/install-as-local-mcp.md`.
+instructions are still read through the connector, never by file path into the clone. A
+committed `./mcps/` is vendoring. See `wiki/guides/install-as-local-mcp.md`.
 
-**Every request has the same shape.** As of `0.9.0`, task 1 is always the task record,
-task `n` is always the release, and the work goes between them. Each task appends its own
+**Every request has the same shape.** Task 1 is always the task record, task `n` is
+always the release, and the work goes between them. Each task appends its own
 `### Task k — {branch}` entry to `.agents/memory/tasks/{slug}.md` in the same commit as
 its work, so `git log -p` on that file replays the request task by task.
 
-**Four mandatory standard files, not three.** As of `0.8.0` the task workflow, the
-branching strategy, the commit conventions, and `rules/discovery-protocol.md` load on
-every request. The discovery protocol has **no trigger row** — it was deliberately
-removed, so an `AGENTS.md` that mirrors the table must carry the always-on paragraph or
-it loses the gate entirely.
-
-**Tests.** 86, all passing, across registry, server, http, manifest, tools, cli, and
-mcp-creator. A fresh checkout has no `node_modules` and six of the seven files then fail
-with `ERR_MODULE_NOT_FOUND` — run `npm install` first, per `.agents/rules/repository.md`.
+**Tests.** 19, all passing, in one file. A fresh checkout has no `node_modules` and the
+file then fails with `ERR_MODULE_NOT_FOUND` — run `npm install` first, per
+`.agents/rules/repository.md`.
 
 **Not built yet.**
 
-* No CI — nothing runs `npm test` or builds the image on push.
-* `compose.yaml` still tags the image `0.0.0`, as it has since the first release. It is
-  a local build placeholder, deliberately not moved with the package version.
-* `content/rules/mcp-connector.md` still uses a `https://<host>/mcp` placeholder rather
-  than the real Render hostname; pinning it is a deliberate decision, not an oversight.
-* No migration guide for repositories that already carry an older instruction set; the
-  prompt for it was drafted in conversation but never written to `wiki/guides/`.
-* No consuming repository has picked up the `0.8.0` trigger-row removal yet. Each one has
-  to delete the row and add the always-on paragraph by hand.
-* No consuming repository has adopted the `0.9.0` task shape yet. It applies from each
-  repository's next multi-task request; existing task records need no migration.
-* `rules/mcp-connector.md` names two ways to connect — remote, and a local stdio server at
-  an arbitrary path. `wiki/guides/install-as-local-mcp.md` now fixes that path at
-  `./mcps/{owner}/{repo}/`, but the rule has not been updated to say so. Deliberate: it is
-  a published instruction, so it goes through the discovery gate. Raised as a finding.
+* No CI — nothing runs `npm test` on push.
+* No migration guide for repositories that already carry an older instruction set.
+* No consuming repository has adopted the per-file tool surface yet. Each one has to
+  replace its declaration block with the per-file table, and the tool names in an older
+  block may not exist.
+* `src/tools/instruction.js` is dead code — nothing imports it. It is the old
+  path-taking tool, left on disk after #63. Deleting it needs the owner's `git rm`; it was
+  not removed unilaterally.
+* The `Dockerfile` has never been built. Docker was unavailable in the environment that
+  wrote it. It should be built once and the entrypoint checked before anyone relies on it.
 
-**Next obvious step.** Decide whether to pin the deployed hostname into the shared set,
-and whether to add CI.
+**Next obvious step.** Build the image once to confirm the entrypoint, and delete the
+dead `instruction.js`.

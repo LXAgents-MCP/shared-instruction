@@ -25,7 +25,7 @@ Collect the findings, and when the task is done present them to the user:
 
 * one finding per message block, each in its own code block;
 * state the target set — `local` (this repository) or `shared` (the organization's
-  instruction set served by the `lxagents-agents-base` connector);
+  instruction set served by the `lxagents-shared-instruction` connector);
 * include the proposed file path, `name`, `description`, and the full proposed
   body;
 * explain in one line why it is worth adding.
