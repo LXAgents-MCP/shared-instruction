@@ -86,7 +86,7 @@ consuming repository sits on disk.
 
 ## Connecting the server
 
-The server speaks **stdio**. There is one transport, and it is the local one:
+The server speaks **two transports**. The local one is stdio, and it is the default:
 
 ```json
 {
@@ -100,10 +100,31 @@ The server speaks **stdio**. There is one transport, and it is the local one:
 }
 ```
 
+The second is HTTP, for when the server runs somewhere other than your machine — as a
+Web Service, in a container, or beside the repositories that read it. It serves the same
+tools at `/sse`:
+
+```json
+{
+  "mcpServers": {
+    "lxagents-shared-instruction": {
+      "type": "sse",
+      "url": "https://shared-instruction.example.com/sse"
+    }
+  }
+}
+```
+
+**stdio remains the right choice for a consuming repository** unless you specifically need
+one server serving many clients from a fixed address. It needs no process to keep alive, no
+port to expose, and no host to secure. Choose HTTP when the server's lifecycle should not
+be tied to any single client — not because it is better.
+
 For npm consumers, `@lxagents-mcp/shared-instruction` exposes the `lxagents-shared-instruction`
 binary, so `command: "npx"`, `args: ["-y", "@lxagents-mcp/shared-instruction"]` works
 without a checkout. To develop on the instruction set itself, run it from a clone with
-`npm start`, or inspect it in the MCP Inspector with `npm run inspect`.
+`npm start`, serve it with `npm run start:http`, or inspect it in the MCP Inspector with
+`npm run inspect`.
 
 **Registering a server does not reach a session that is already running.** A client
 loads its connector list at session start, so a server added mid-session reports healthy
@@ -131,8 +152,8 @@ stripped, `.md` dropped, kebab to snake — with one exception: `AGENTS.md` is s
 | `mcp_list` | The registry of sibling instruction and security servers |
 
 …plus one tool for every other file in the set. The list your client enumerates is the
-complete list; there is no manifest to fetch and no second way in. Start at `root_index`
-rather than guessing which convention applies.
+complete list; there is no manifest to fetch, whichever transport you connect over. Start
+at `root_index` rather than guessing which convention applies.
 
 **No tool takes an argument.** A tool names one file, so there is no path to pass and
 nothing for a caller to traverse with. This server is read-only as a matter of structure

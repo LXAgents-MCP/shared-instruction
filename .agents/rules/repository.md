@@ -50,14 +50,15 @@ do not introduce TypeScript, a bundler, or a transpiler without agreement.
 | Install | `npm install` |
 | Test | `npm test` |
 | Run (stdio) | `npm start` |
+| Run (HTTP) | `npm run start:http` |
 | Inspect the MCP surface | `npm run inspect` |
 | Build the image | `docker build -t lxagents-shared-instruction:2.0.0 .` |
-| Run the image | `docker run --rm -i lxagents-shared-instruction:2.0.0` |
+| Run the image (stdio) | `docker run --rm -i lxagents-shared-instruction:2.0.0` |
+| Run the image (HTTP) | `docker run --rm -p 3000:3000 lxagents-shared-instruction:2.0.0 node src/http.js` |
 
-There is no `start:http` and no `npm run cli`. `src/index.js` connects a stdio
-transport and nothing else, and there is no `compose.yaml` — see
-[`../wiki/environments/docker.md`](../wiki/environments/docker.md) for why a stdio
-server does not want one.
+There is no `npm run cli`. There is still no `compose.yaml`, and the reason is no longer
+that there is no transport to compose — a compose file encodes a deployment, and this
+repository has none. See [`../wiki/environments/docker.md`](../wiki/environments/docker.md).
 
 **`docker run` needs `-i`.** Without it Docker does not attach stdin, the server sees
 closed input, and it exits immediately. It looks like a broken image and is not.
@@ -74,9 +75,12 @@ Full orientation: [`../wiki/context/repository-map.md`](../wiki/context/reposito
 ## Code conventions the codebase already follows
 
 * **ESM only.** `import`/`export`, `.js` extensions in relative specifiers, no `require`.
-* **Nothing writes to stdout.** On the stdio transport stdout *is* the JSON-RPC channel.
-  There is no logger module and no `console.log` anywhere in `src/`; a `console.log` added
-  there is a bug that corrupts the protocol stream.
+* **Nothing writes to stdout on the stdio path.** On the stdio transport stdout *is* the
+  JSON-RPC channel. There is no logger module and no `console.log` anywhere in `src/`
+  except `src/http.js`; a `console.log` added to the stdio path is a bug that corrupts
+  the protocol stream. `src/http.js` is the deliberate exception — the protocol is on a
+  socket there, so stdout is an ordinary log channel — and the rule is per-file because a
+  single "never write to stdout" would forbid correct behaviour in one of them.
 * **The set is read once at boot and frozen.** Never mutate an entry of the map
   `src/tools/from-content.js` builds, and never add a per-request cache keyed on shared
   state — that is what makes concurrent clients safe.
@@ -96,32 +100,48 @@ Full orientation: [`../wiki/context/repository-map.md`](../wiki/context/reposito
 Every behavioural change ships with a test in `test/`, using `node:test` and
 `node:assert/strict`. The suite must pass before any commit.
 
-There is one test file, `test/server.test.js`, and it is the whole suite. Prefer a test
-that pins an invariant over one that pins a string: the useful ones here assert that
-files and tools are a bijection in both directions, that no tool takes an argument, and
-that the total characters served equals the total bytes on disk.
+There are two test files. `test/server.test.js` is the surface suite; `test/http.test.js`
+covers the HTTP transport against a real listening process, because the things that go
+wrong there are about sockets and sessions and do not reproduce on an in-memory transport.
+Prefer a test that pins an invariant over one that pins a string: the useful ones here
+assert that files and tools are a bijection in both directions, that no tool takes an
+argument, that the total characters served equals the total bytes on disk, and that the two
+transports agree tool for tool.
 
 ## What must not be introduced
 
 * A build step, or any compiled output committed to the repository.
-* A dependency added to serve one call site. The runtime dependencies are the MCP SDK and
-  zod; adding a third needs a reason in `.agents/memory/decisions/`.
+* A dependency added to serve one call site. The runtime dependencies are the MCP SDK,
+  zod, and `express` — the last added for the HTTP transport and reasoned in
+  `.agents/memory/decisions/express-for-http-transport.md`. A fourth needs its own record
+  there before it lands, not after.
 * An argument on a tool. Every tool names one file, and the absence of a path is what makes
   traversal impossible — a tool that needs a path is a tool that needs the argument back,
   and that is a design decision, not a convenience.
 * Filesystem or network I/O on the read path. Reads are map lookups, and keeping them that
   way is why a slow client cannot block others.
+* A new listener, route, or environment variable without a say-so. The server has two
+  transports and three variables, and each of those was a deliberate decision someone
+  approved. `wiki/environments/env.md` says what the current three do; a fourth is a
+  change to a public surface, not an implementation detail.
 * A third documentation tree. `wiki/` and `.agents/wiki/` are the only two.
 * Anything under `content/` that is not part of the published set.
 
 ## Deployment
 
-Published to npm as `@lxagents-mcp/shared-instruction`, and consumed as a stdio
-subprocess. There is no remote deployment, no listener, and no port — the package exposes
-one bin, `lxagents-shared-instruction`, which is the server.
+Published to npm as `@lxagents-mcp/shared-instruction`, and consumed mostly as a stdio
+subprocess. The package exposes one bin, `lxagents-shared-instruction`, which is the
+server.
+
+`src/http.js` can also serve the same tools over SSE for a client that reaches a fixed
+address instead of spawning a process. **It is a capability, not a deployment** — this
+repository routes nothing, names no host, and decides no ingress. The distinction matters
+because a listener with no front door is a security claim, and
+[`../wiki/security/security-model.md`](../wiki/security/security-model.md) is where that
+is argued.
 
 A `Dockerfile` exists for hosts that cannot run Node 20, and it is a way to pin the
-toolchain rather than a deployment: no `EXPOSE`, no service, nothing published to a
-registry. It ends as `USER node` and installs with `npm ci --ignore-scripts`. **Keep both
-of those** — see the Dockerfile row in
+toolchain rather than a deployment: `EXPOSE 3000`, no service, nothing published to a
+registry, and the stdio entrypoint still the default. It ends as `USER node` and installs
+with `npm ci --ignore-scripts`. **Keep both of those** — see the Dockerfile row in
 [`../wiki/security/security-boundaries.md`](../wiki/security/security-boundaries.md).

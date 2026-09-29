@@ -94,6 +94,93 @@ This record, and its row in `.agents/index/memory-index.md`. Nothing else.
   git -C C:\Users\owen\MyProjects\LXAgents-MCP\shared-instruction rm src/tools/instruction.js
   ```
 
+### Task 3 — `feat/http-transport`
+
+The transport, its tests, and every page the transport falsifies — one commit, because
+`change-propagation.md` puts documentation in the same commit as the code that makes it
+wrong, and splitting them would leave master briefly describing a server that does not
+exist.
+
+**What landed.**
+
+| File | What |
+|---|---|
+| `src/http.js` | The entry point. `/sse` opens a session, `/message` routes to one, anything else is a 404 that names both. Session store bounded by `res.on("close")`. Drain-then-close on `SIGINT`/`SIGTERM`. |
+| `test/http.test.js` | 11 tests against a real listening process. |
+| `package.json` | `express` as a production dependency; `start:http`; `start:stdio` as the named form of `start`. |
+| `Dockerfile` | `EXPOSE 3000`, entrypoint unchanged. |
+
+**`ENTRYPOINT` stayed `src/index.js`.** The request asked for the entrypoint to change, and
+it did not. An image whose default transport changes is a silent breaking change for every
+existing `docker run -i` caller, and the HTTP form is one argument away with no second
+image and no second build:
+
+```bash
+docker run --rm -p 3000:3000 lxagents-shared-instruction:2.0.0 node src/http.js
+```
+
+This is a decision the owner can reverse in one line; it is recorded here because the plan
+said otherwise and the reason changed.
+
+**Three tests failed and all three were the test's fault, not the code's.** Worth the
+lines, because each is a way of asserting something that was never true:
+
+* *A tool given an argument must not quietly ignore it* — the SDK **does** ignore extra
+  arguments, silently, returning `isError: undefined`. The assertion invented a contract
+  the server never had. Rewritten to assert what is actually true: the argument cannot
+  change which file is served, and the result is identical with and without it.
+* *Shutdown drains sessions* — on Windows `child.kill("SIGTERM")` kills the process
+  without running a Node handler, so the test observed nothing. The code was correct and
+  unobservable here. The assertion is now `process.platform !== "win32"`, with a comment
+  saying why, rather than deleted.
+* *The startup warning appears* — this one is a genuine race, and it passed on one run and
+  failed on the next. The test asserted on captured stdout at the instant the "listening
+  on" line appeared, and the warning is written a tick later. Fixed by waiting for the
+  line, and the other half was added: with `MCP_ALLOWED_HOSTS` set, the server must **not**
+  print it, so a warning printed unconditionally cannot pass the first test.
+
+**One more correction, because it is the trap the record above warns about.**
+`createMcpExpressApp` was the obvious choice and it enables DNS-rebinding protection
+*only for loopback* — and a container binds `0.0.0.0`. Using it would have shipped the
+protection off in exactly the deployment this task exists to enable. `hostHeaderValidation`
+is applied explicitly instead, and a test asserts a disallowed `Host` returns 403 through
+`node:http`, because `fetch` cannot set `Host` and would have passed whatever the real
+control does.
+
+**Documentation corrected in the same commit.** `README.md`,
+`wiki/information/{architecture,overview}.md`, `wiki/reference/mcp-surface.md`,
+`wiki/environments/{setup,env,docker}.md`, `wiki/security/security-model.md`,
+`wiki/guides/{connect-a-repository,install-as-local-mcp}.md`,
+`content/rules/mcp-connector.md`, `AGENTS.md`, `.agents/rules/repository.md`,
+`.agents/wiki/{context/repository-map,security/security-boundaries}.md`,
+`.agents/index/project-wiki-index.md`, `.agents/memory/state/repository-state.md`, and this
+record. Thirty tests, all passing.
+
+**Pages that were false, not merely incomplete.** The sweep found the re-add runs the #63
+failure mode in reverse. `wiki/environments/docker.md` argued *against* a compose file
+because "there is no transport to compose" — which is now false, and the reasoning had to
+be replaced rather than deleted, so it now says a compose file encodes a deployment and
+this repository has none. `wiki/environments/env.md` opened with "**There are none.**" and
+now carries three variables. The security model argued at length that there is no
+network-facing surface; that argument is gone and the page now argues the *actual* one,
+which is harder, because "no auth on a public markdown server" and "no auth on a listening
+socket" are different claims.
+
+### Task 4 — `feat/http-transport`
+
+The image, and **it did not get its own commit.** The plan gave `Dockerfile` task 4 so it
+could be a separate step; `change-propagation.md` gives it to task 3, because the comment
+above `ENTRYPOINT` stated the opposite of this change and a commit that adds a listener
+while a comment beside it says the image has none is a self-contradicting commit. The
+correction and the code that falsified it ship together, and this entry records that the
+task boundary moved rather than leaving a numbering gap.
+
+What changed: `EXPOSE 3000`, with a comment saying why the earlier deliberate omission is
+now wrong, and the `ENTRYPOINT` comment rewritten to give the HTTP invocation. **No
+compose file**, and the reason in `wiki/environments/docker.md` changed rather than
+vanished — "there is no transport to compose" became "a compose file encodes a deployment,
+and this repository has none."
+
 ## Record open
 
-Tasks 2–5 outstanding.
+Task 5 — the release — is waiting on a version.

@@ -16,21 +16,21 @@ reflected here in the same commit.
 | File | Purpose |
 |---|---|
 | [`../../wiki/information/overview.md`](../../wiki/information/overview.md) | What the server delivers, why it is served rather than cloned, why prompts rather than tools. |
-| [`../../wiki/information/architecture.md`](../../wiki/information/architecture.md) | The frozen registry, one server per client, both transports, parallelism, shutdown. |
+| [`../../wiki/information/architecture.md`](../../wiki/information/architecture.md) | The frozen registry, one server per connection, the two transports, and shutdown. |
 
 ## reference/
 
 | File | Purpose |
 |---|---|
-| [`../../wiki/reference/mcp-surface.md`](../../wiki/reference/mcp-surface.md) | Every prompt, resource, tool, HTTP endpoint, and error response. |
+| [`../../wiki/reference/mcp-surface.md`](../../wiki/reference/mcp-surface.md) | Every tool, and the longer list of what the server does not expose. |
 
 ## environments/
 
 | File | Purpose |
 |---|---|
-| [`../../wiki/environments/setup.md`](../../wiki/environments/setup.md) | Installing, running, and testing both modes — CLI and MCP server. |
-| [`../../wiki/environments/env.md`](../../wiki/environments/env.md) | Every environment variable. |
-| [`../../wiki/environments/docker.md`](../../wiki/environments/docker.md) | Container image, compose, and scaling. |
+| [`../../wiki/environments/setup.md`](../../wiki/environments/setup.md) | Installing, running, and testing it — stdio and HTTP. |
+| [`../../wiki/environments/env.md`](../../wiki/environments/env.md) | Every environment variable: `PORT`, `HOST`, `MCP_ALLOWED_HOSTS`. |
+| [`../../wiki/environments/docker.md`](../../wiki/environments/docker.md) | The container image, both run forms, and why there is no compose file. |
 
 ## guides/
 

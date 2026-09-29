@@ -27,8 +27,9 @@ It is both the **producer** of the shared set and a **consumer** of it. See
 | `src/server.js` | Builds one `McpServer` and registers every tool; carries the `instructions` text. | Changing the MCP surface. |
 | `src/content.js` | The set root, the frontmatter reader, and `readSetFile` with its path check. | Changing how content is located or read. |
 | `src/version.js` | `ROOT`, `CONTENT_DIR`, `VERSION`, `SERVER_NAME`. | Renaming the server or moving the set. |
-| `Dockerfile` | A pinned, non-root image for hosts that cannot run Node 20. stdio only — no `EXPOSE`, no service. | The toolchain the image pins, or the install command it runs. |
-| `test/` | `server.test.js` — the whole suite. | Always. Every behavioural change ships with one. |
+| `src/http.js` | The HTTP entry point — session store, `/sse`, `/message`, `MCP_ALLOWED_HOSTS` validation, drain-then-close shutdown. | The HTTP surface, or anything about a listening server. |
+| `Dockerfile` | A pinned, non-root image for hosts that cannot run Node 20. Serves both transports; `EXPOSE 3000`, stdio entrypoint. | The toolchain the image pins, or the install command it runs. |
+| `test/` | `server.test.js` (19, in-memory) and `http.test.js` (11, against a real listener). | Always. Every behavioural change ships with one. |
 
 There is no `src/server/`, no `src/cli/`, no `src/transport/`, and no `src/content/`
 directory. If a file you are about to edit is under one of those paths, it does not exist
@@ -36,32 +37,38 @@ here.
 
 ## Entry points
 
-There is **one**:
+There are **two**, and they differ only in transport:
 
 * `src/index.js` — what an MCP client spawns. Connects a stdio transport, handles
-  `SIGINT`, and nothing else. It is the only transport.
+  `SIGINT`, and writes nothing to stdout.
+* `src/http.js` — `npm run start:http`. Binds `HOST`/`PORT`, serves `GET /sse` and
+  `POST /message`, and **does** log to stdout, which is correct there because the protocol
+  is on a socket rather than a pipe.
 
-Behind it:
+Behind both:
 
 * `src/tools/from-content.js` — walks `content/` at import, derives a tool name and
   description per file, and reads each file once into a frozen `Map`. This is the boot-time
   validation gate, and the only module that touches every file in the set.
 * `src/server.js` — `TOOL_MODULES`, the array every registered tool comes from. Add a
-  module here and its tools appear; nothing else registers anything.
+  module here and its tools appear; nothing else registers anything. Both entry points
+  call `createServer()`, so a change to the surface cannot reach one and miss the other.
 * `src/content.js` — `readSetFile`, reached by exactly one caller with a constant path.
 
 ## Commands
 
 ```bash
 npm install
-npm test                 # node:test — one file, 19 tests
+npm test                 # node:test — two files, 30 tests
 npm start                # stdio
+npm run start:http       # HTTP on 0.0.0.0:3000, or $PORT/$HOST
 npm run inspect          # MCP Inspector against the stdio server
 ```
 
-`npm start` and `npm run start:stdio` are the same thing. There is no HTTP server, no watch
-mode, and no CLI. `docker build -t lxagents-shared-instruction:$(node -p "require('./package.json').version") .`
-builds the image, which runs the same entrypoint with a pinned toolchain.
+`npm start` and `npm run start:stdio` are the same thing. There is no watch mode and no
+CLI. `docker build -t lxagents-shared-instruction:$(node -p "require('./package.json').version") .`
+builds the image, which runs the stdio entrypoint with a pinned toolchain; override the
+entrypoint to `src/http.js` for the HTTP form.
 
 ## Gotchas that actually bite
 
@@ -74,9 +81,15 @@ builds the image, which runs the same entrypoint with a pinned toolchain.
   `content/prompts/agents-setup.md`, and the `instructions` string in `src/server.js` all
   reproduce set text and go stale silently. Grep for a sentence you changed before
   committing — see [`../../rules/set-mirrors.md`](../../rules/set-mirrors.md).
-* **Never write to stdout.** stdout is the JSON-RPC channel. There is no logger module
-  and no exception to the rule, because there is no CLI. A `console.log` anywhere in
-  `src/` is a bug that corrupts the protocol stream.
+* **Never write to stdout from the stdio path.** stdout is the JSON-RPC channel. There is
+  no logger module, and a `console.log` in `src/index.js` or anything it imports is a bug
+  that corrupts the protocol stream. `src/http.js` is the one exception and the reason the
+  rule is per-file rather than per-repository: there the protocol is on a socket and stdout
+  is an ordinary log channel.
+* **`fetch` cannot set `Host`,** so a Host allow-list cannot be tested through it — it
+  drops the header and every request arrives as `127.0.0.1`, which passes or fails for the
+  wrong reason. `test/http.test.js` uses `node:http` for those assertions. If you add one,
+  do not "simplify" it back to `fetch`.
 * **Never share an `McpServer` between connections.** It holds per-connection state;
   reusing one delivers responses to the wrong connection. `createServer()` builds a fresh
   one every time.
@@ -100,8 +113,10 @@ if you find yourself adding one, stop and re-read
 
 A `.dockerignore` sits at the root and governs what the image copies in — it keeps
 `node_modules`, `test`, `wiki`, `.agents` and the root markdown out, which is why the image
-cannot run its own suite. There is no `compose.yaml`, deliberately — see
-[`../../../wiki/environments/docker.md`](../../../wiki/environments/docker.md).
+cannot run its own suite. There is no `compose.yaml`, still, and the reason has changed
+rather than gone away: the HTTP transport exists now, so it can no longer be "there is no
+transport to compose" — it is that a compose file encodes a deployment and this repository
+has none. See [`../../../wiki/environments/docker.md`](../../../wiki/environments/docker.md).
 
 ## Where the shared set resolves from
 

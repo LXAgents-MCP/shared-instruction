@@ -26,8 +26,24 @@ COPY content ./content
 # Not root. The process reads files and answers JSON-RPC, and nothing else.
 USER node
 
-# stdio is the only transport, so there is no port to declare and no EXPOSE.
-# A container here is a way to run the server with a pinned toolchain, not a
-# network endpoint — `docker run -i` attaches a pipe, and a client speaks
-# JSON-RPC over it. See wiki/environments/docker.md.
+# 3000 is `src/http.js`'s default, and `PORT` overrides it at runtime.
+#
+# This is declared because the server now has a listener. An earlier revision of this
+# file omitted EXPOSE deliberately, on the reasoning that it would be a lie while stdio
+# was the only transport — which was true then, and is the reason it is here now.
+#
+# EXPOSE documents; it does not publish. `docker run -p 3000:3000 …` is what makes the
+# port reachable from outside the container. See wiki/environments/docker.md.
+EXPOSE 3000
+
+# stdio stays the default, so `docker run -i` behaves as it always has and a client
+# spawning the process needs no change.
+#
+# The HTTP transport is a command away rather than a second image, because the two share
+# every byte of payload and differ only in the entry point:
+#
+#   docker run --rm -p 3000:3000 … node src/http.js
+#
+# Set MCP_ALLOWED_HOSTS when the container is reachable from anywhere but this machine;
+# the Host allow-list is off unless you set it. See wiki/environments/env.md.
 ENTRYPOINT ["node", "src/index.js"]

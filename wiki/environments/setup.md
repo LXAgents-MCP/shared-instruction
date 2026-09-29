@@ -1,10 +1,11 @@
 # Local Setup
 
-An MCP server over stdio. There is no CLI, no HTTP mode, and no container image.
+An MCP server over stdio, with an HTTP transport available for running it as a service.
+There is no CLI. There is a container image — see [Docker](docker.md).
 
 | Mode | What it is | Who uses it |
 |---|---|---|
-| **Server mode** | An MCP server over stdio | An MCP client — an editor, an agent, a connector |
+| **Server mode** | An MCP server over stdio, or over HTTP/SSE | An MCP client — an editor, an agent, a connector |
 
 ## Requirements
 
@@ -15,12 +16,14 @@ npm install
 npm test
 ```
 
-The suite is one file, `test/server.test.js`, and it is the whole suite: 19 tests
-driving a real MCP client over an in-memory transport. It covers the frontmatter contract,
-the shared creator procedure, the file-to-tool bijection in both directions, name
-derivation, uniqueness and descriptions, the zero-argument claim, byte-for-byte payload
-fidelity, total-served equality, reachability, index routing, `mcp_list` in isolation, and
-the read-only claim.
+The suite is two files and 30 tests. `test/server.test.js` drives a real MCP client over an
+in-memory transport and covers the frontmatter contract, the shared creator procedure, the
+file-to-tool bijection in both directions, name derivation, uniqueness and descriptions, the
+zero-argument claim, byte-for-byte payload fidelity, total-served equality, reachability,
+index routing, `mcp_list` in isolation, and the read-only claim. `test/http.test.js` drives
+a real client against a real listening process and covers the HTTP transport: the two
+transports agreeing, concurrent sessions, unknown sessions, session lifetime, shutdown
+ordering, the `Host` allow-list, and the startup warning when no allow-list is set.
 
 ---
 
@@ -56,15 +59,20 @@ From npm, the package exposes that same file as a bin, so no checkout is needed:
 }
 ```
 
-There is no remote form. `src/index.js` connects `StdioServerTransport` and nothing else,
-so a client configured with a URL is pointed at nothing this package provides.
+There is a remote form as well, for a server running at a fixed address. `src/http.js`
+serves the same tools over SSE at `/sse`; see
+[Connect a repository](../guides/connect-a-repository.md).
 
 ### Run
 
 ```bash
-npm start        # stdio
+npm start             # stdio
 npm run start:stdio   # the same thing, named for what it is
+npm run start:http    # HTTP on 0.0.0.0:3000, or $PORT
 ```
+
+The two entry points differ only in transport. Same 32 tools, same content, same
+read-only surface.
 
 ### Inspect it
 
@@ -75,12 +83,18 @@ npm run inspect
 This runs the MCP Inspector against the stdio server, listing every tool and letting you
 call it. With 32 tools and no prompts or resources, the tool list is the whole surface.
 
-### stdout belongs to the protocol
+### stdout belongs to the protocol — on stdio
 
-On the stdio transport, stdout **is** the JSON-RPC channel. Nothing in this repository
-writes to stdout: there is no logger module, and no `console.log` in `src/`. A
+On the stdio transport, stdout **is** the JSON-RPC channel. Nothing in `src/index.js`
+writes to it: there is no logger module, and no `console.log` on that path. A
 `console.log` added there would corrupt the protocol stream, which is worth knowing before
 adding one.
+
+**`src/http.js` is the exception, and deliberately.** The HTTP process speaks JSON-RPC
+over a socket, not a pipe, so stdout is an ordinary logging channel there and its startup
+line uses it. The rule is per-entry-point, not per-repository — a single shared "never
+write to stdout" would forbid correct behaviour in one file on the grounds that it is
+fatal in the other.
 
 ---
 
@@ -104,5 +118,5 @@ than a runtime surprise. The fix is usually one line in `NAME_OVERRIDES` in
 ## Related pages
 
 - [MCP surface](../reference/mcp-surface.md) — the tool surface, and what is not exposed.
-- [Environment variables](env.md) — which is to say, none.
+- [Environment variables](env.md) — the three the HTTP transport reads.
 - [Architecture](../information/architecture.md) — how the surface is generated.

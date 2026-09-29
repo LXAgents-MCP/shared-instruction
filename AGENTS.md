@@ -101,11 +101,12 @@ branch. Everywhere else, read `agents://`.
 
 | Transport | How |
 |---|---|
-| Local stdio | `command: node`, `args: ["src/index.js"]`, `cwd:` this checkout |
+| Local stdio (default) | `command: node`, `args: ["src/index.js"]`, `cwd:` this checkout |
 | Published | `command: npx`, `args: ["-y", "@lxagents-mcp/shared-instruction"]` |
+| HTTP | `type: sse`, `url: https://<host>/sse` — `npm run start:http` binds `PORT \|\| 3000` |
 
-stdio is the only transport. There is no HTTP server and no remote endpoint — a client
-configured with a URL is pointed at nothing that exists here.
+Both transports serve the same 32 tools. stdio is the right default for a client that can
+spawn a process; HTTP is for running the server as a service at a fixed address.
 
 **Registering a server does not reach a session that is already running.** The client
 loads connectors at session start, so `claude mcp add` mid-session leaves a server that
