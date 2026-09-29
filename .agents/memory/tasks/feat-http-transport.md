@@ -166,6 +166,21 @@ network-facing surface; that argument is gone and the page now argues the *actua
 which is harder, because "no auth on a public markdown server" and "no auth on a listening
 socket" are different claims.
 
+### Task 4 — `feat/http-transport`
+
+The image, and **it did not get its own commit.** The plan gave `Dockerfile` task 4 so it
+could be a separate step; `change-propagation.md` gives it to task 3, because the comment
+above `ENTRYPOINT` stated the opposite of this change and a commit that adds a listener
+while a comment beside it says the image has none is a self-contradicting commit. The
+correction and the code that falsified it ship together, and this entry records that the
+task boundary moved rather than leaving a numbering gap.
+
+What changed: `EXPOSE 3000`, with a comment saying why the earlier deliberate omission is
+now wrong, and the `ENTRYPOINT` comment rewritten to give the HTTP invocation. **No
+compose file**, and the reason in `wiki/environments/docker.md` changed rather than
+vanished — "there is no transport to compose" became "a compose file encodes a deployment,
+and this repository has none."
+
 ## Record open
 
-Tasks 4–5 outstanding.
+Task 5 — the release — is waiting on a version.
