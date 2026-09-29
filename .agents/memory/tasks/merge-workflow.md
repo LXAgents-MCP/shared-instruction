@@ -202,3 +202,55 @@ each change happened.
 
 Verified against a fresh process rather than assumed: `TOOL_FILES` holds 30 entries,
 `task_workflow` is absent, and `plan_creator` resolves to `creators/plan-creator.md`.
+
+### Task 5 — `docs/merge-task-workflow-release`
+
+Cut `3.0.0`. `package.json` reads `3.0.0`, `package-lock.json` was resynced rather than
+hand-edited, `wiki/logs/3/0/0/CHANGELOG.md` is new, and both logs indexes carry the row
+at the top. Suite **31/31**.
+
+**The image tag was in more places than the plan found.** `versioning.md` counts a
+container image tag as a version carrier, so every one of them is in scope — and the
+plan named only `README.md` and `.agents/rules/repository.md`. The grep turned up two
+more wiki pages carrying `lxagents-shared-instruction:2.0.0`: `wiki/environments/docker.md`
+in six places and `wiki/security/security-model.md` in two. Both now read `3.0.0`. Had
+the release shipped against the plan's list, this repository's own documentation would
+have been telling a reader to pull an image the current release does not tag.
+
+**The Consumers must line carries a second instruction, not just the rename.** The
+obvious one is `task_workflow` → `plan_creator` in the declaration block. The one that
+matters more is **dropping any override registered against the `task-workflow` name**.
+An override matches a shared file by `name`, and `task-workflow` is gone, so the match
+fails silently — the repository keeps its local copy and nothing anywhere says the shared
+rule behind it no longer exists. That is the exact failure `agents-update.md` is written
+around, and it is why the line is in both the changelog and both index rows.
+
+The line also says the trigger **widens**, so a consumer who treats this as a pure rename
+and edits only the name ends up with a row that fires too narrowly. The `3/0/0` changelog
+states the three gates are unchanged and that their terms moved files rather than wording,
+so nobody re-derives them.
+
+**Two findings were recorded and not applied**, as the discovery gate requires: `F1`, the
+`plan-creator.md` body claiming it carries the set's version while every file in the set
+sits at `1.0.0`; and `F2`, six creators restating the merge gate that `plan-creator.md`
+now owns. Both are in the working plan at `.agents/plans/discovery-findings.md` and are
+repeated in the changelog's "Not fixed here", so a consumer reading the release learns
+they were seen rather than missed. `F3`, that the set never states the three gates as a
+list, is the one worth the owner's attention: this session asked for the plan gate four
+separate times, and it is only in the set as a sentence inside a paragraph.
+
+**State at close.** Five commits on five stacked branches, none pushed, no pull request
+opened, nothing merged. The `PR` column stays empty because §F fills it once the pull
+requests exist — back-filling it now would rebase the whole stack for no gain.
+
+| # | Branch | Commit |
+|---|---|---|
+| 1 | `chore/merge-workflow-plan` | `dc2ae8f` |
+| 2 | `docs/merge-task-workflow-body` | `cb12bea` |
+| 3 | `docs/merge-task-workflow-links` | `e9519ce` |
+| 4 | `docs/merge-task-workflow-mirrors` | `febbddf` |
+| 5 | `docs/merge-task-workflow-release` | this one |
+
+**Not done:** no branch pushed, no pull request opened, nothing merged, and no consuming
+repository's `AGENTS.md` updated — this repository does not hold those repositories. The
+`3/0/0` changelog names what each of them must do.
