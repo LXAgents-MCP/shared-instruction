@@ -8,7 +8,7 @@ content/                      the instruction set — 31 markdown files
 src/
   index.js                    entry — picks the transport; stdio by default
   app.js                      the HTTP transport as an application — /mcp, /healthz. Does not listen.
-  http.js                     entry — the port, the drain, and the workers
+  http.js                     entry — the cluster, the port, and the drain
   server.js                   builds the McpServer and registers the tool surface
   version.js                  ROOT, CONTENT_DIR, VERSION, SERVER_NAME
   content.js                  readSetFile — the one path-taking read, and its guard
@@ -17,7 +17,7 @@ src/
     mcp-list.js               the one hand-written tool
 test/
   server.test.js              19 tests over a real client on an in-memory transport
-  http.test.js                23 tests over a real client against a real listening process
+  http.test.js                31 tests over a real client against a real listener and a real cluster
 ```
 
 ## The tool surface is generated, not declared
@@ -76,10 +76,21 @@ state. **There is no equivalent store here and nothing replacing it** — the on
 shutdown needs to know is what is running right now, so `src/http.js` keeps a `Set` of
 per-request closers, and that is the whole of it.
 
-There is still no worker pool and no clustering. Neither transport needs one at this size,
-and a shared `McpServer` across connections is the thing to avoid — see *One server
-instance per connection* above, which the HTTP transport turns from a nicety into the
-invariant that keeps concurrent requests from cross-talking.
+There is now a worker pool. `src/http.js` forks `os.availableParallelism()` HTTP workers
+unless `MCP_CLUSTER_WORKERS` says otherwise, and every worker binds the same `PORT` through
+the cluster's shared handle — the kernel's round-robin scheduler does the distribution, so
+no `SO_REUSEPORT` is set by hand and no sticky-session affinity is written. **The primary
+binds nothing and writes no `serving over http` line**, so a container's log carries one
+startup line per worker, from the processes that actually hold the port. `MCP_CLUSTER_WORKERS=1`
+disables the fork entirely, which is what makes the cluster bisectable against a
+single-process run.
+
+What that costs is stated rather than assumed: each worker reads `content/` at boot, so the
+boot cost is paid once per worker. That is the trade for using the CPUs instead of one, and
+it is why the pool is sized by the machine rather than by the request rate.
+
+`stdio` never forks, and cannot: stdout is the JSON-RPC channel there, and a worker's copy
+of it would corrupt the stream.
 
 ## The one path-taking read
 
@@ -109,8 +120,15 @@ The drain line names what is actually being drained, which is why it changed sha
 `draining {n} session(s)` became `draining {n} in-flight request(s)`. There are no sessions
 to count, and a line still counting them would describe a transport that no longer exists.
 
+**Under a cluster the primary relays the signal rather than handling it alone**, because the
+workers hold the listener and the requests, and it exits once the last one is gone — so the
+port is genuinely closed before the process that started it is. Each worker drains itself and
+logs its own line; a second signal during the drain exits at once rather than queueing
+behind the first. A worker whose primary is killed outright exits on the IPC disconnect,
+which is what stops an orphan holding the port for the next run.
+
 ## Related pages
 
 - [Overview](overview.md) — what this serves and why.
 - [MCP surface](../reference/mcp-surface.md) — the tool surface, and what is not exposed.
-- [Environment variables](../environments/env.md) — the four the HTTP transport reads.
+- [Environment variables](../environments/env.md) — the five the HTTP transport reads.

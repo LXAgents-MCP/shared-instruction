@@ -59,10 +59,16 @@ deployed client** and was a deliberate, owner-reviewed decision — see
 `.agents/memory/tasks/sse-to-mcp-transport.md`. The application is in `src/app.js` and does
 not listen, which is what lets `src/http.js` own the port, the startup lines and the drain
 without the two being tangled. `src/index.js` reaches it by **dynamic import**, so express
-never loads into a stdio process whose stdout is the JSON-RPC channel. Four environment
+never loads into a stdio process whose stdout is the JSON-RPC channel. Five environment
 variables reach the HTTP path, none of them a secret: `PORT`, `HOST`, `MCP_ALLOWED_HOSTS`,
-and `MCP_TRANSPORT`. **The allow-list is off unless set**; the same control in the removed
-transport defaulted to off, which made it inert. **Cluster workers are still not there.**
+`MCP_TRANSPORT` and `MCP_CLUSTER_WORKERS`. **The allow-list is off unless set**; the same
+control in the removed transport defaulted to off, which made it inert. **The HTTP entry
+point is a `node:cluster` primary**: it forks `os.availableParallelism()` workers by
+default, each binding the same `PORT` through the cluster's shared handle, and the primary
+itself binds nothing and writes no `serving over http` line — so a container's log carries
+one startup line per worker, from the processes that genuinely hold the port.
+`MCP_CLUSTER_WORKERS=1` forks nothing, and stdio never forks because a worker's copy of
+stdout would corrupt the JSON-RPC stream.
 
 **One held item on the transport change.** `content/rules/mcp-connector.md:105-112` still
 documents the connector as `"type": "sse"` at `/sse`. That is published content, and a
@@ -104,9 +110,10 @@ always the release, and the work goes between them. Each task appends its own
 `### Task k — {branch}` entry to `.agents/memory/tasks/{slug}.md` in the same commit as
 its work, so `git log -p` on that file replays the request task by task.
 
-**Tests.** 42, all passing, in two files. `server.test.js` (19) drives a real MCP client on
-an in-memory transport; `http.test.js` (23) drives a real client against a real listening
-process, because sockets do not reproduce in memory. A fresh checkout has no
+**Tests.** 50, all passing, in two files. `server.test.js` (19) drives a real MCP client on
+an in-memory transport; `http.test.js` (31) drives a real client against a real listening
+process and a real cluster, because sockets and process boundaries do not reproduce in
+memory. A fresh checkout has no
 `node_modules` and the suite then fails with `ERR_MODULE_NOT_FOUND` — run `npm install`
 first, per `.agents/rules/repository.md`.
 
