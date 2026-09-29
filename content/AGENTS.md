@@ -45,8 +45,8 @@ A repository consumes this set once it has all of:
 3. `.agents/rules/repository.md`, naming the mode and the connector it resolves.
 4. `.agents/wiki/context/repository-map.md`, filled with real discovery output.
 5. Seed memory under `.agents/memory/`.
-6. **Nothing copied from this set.** No `git/`, `planning/`, `prompts/`, or
-   `creators/` folder in the consuming repository.
+6. **Nothing copied from this set.** No `git/`, `prompts/`, or `creators/`
+   folder in the consuming repository.
 
 The `agents_setup` tool performs this whole procedure. Call it rather than reproducing
 it by hand.
@@ -144,9 +144,9 @@ Source of truth: [`rules/discovery-protocol.md`](agents://rules/discovery-protoc
 
 ## Task and git workflow
 
-Four conventions are declared by **every** consuming repository — the task workflow, the
-branching strategy, the commit conventions, and the discovery protocol — served as the
-tools `task_workflow`, `branching_strategy`, `commit_conventions` and
+Four conventions are declared by **every** consuming repository — the plan and task
+workflow, the branching strategy, the commit conventions, and the discovery protocol —
+served as the tools `plan_creator`, `branching_strategy`, `commit_conventions` and
 `discovery_protocol`. A repository narrows the rest of its declaration block to what it
 uses; it never narrows these four.
 
@@ -158,7 +158,7 @@ about to write a file has already failed, which is why the two halves are split.
 
 The mandate is [`rules/shared-instructions.md`](agents://rules/shared-instructions.md) §H;
 the procedure it points at is
-[`planning/task-workflow.md`](agents://planning/task-workflow.md); how a repository declares
+[`creators/plan-creator.md`](agents://creators/plan-creator.md); how a repository declares
 any of it is [`rules/auto-activation.md`](agents://rules/auto-activation.md).
 
 **Nothing is called at session start.** Resolving this set is not loading it: a session

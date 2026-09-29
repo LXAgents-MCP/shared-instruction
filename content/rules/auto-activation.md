@@ -51,7 +51,7 @@ file — is what a session routes on.
 
 | Tool | Serves | Fires when you are about to… |
 |---|---|---|
-| `task_workflow` | `planning/task-workflow.md` | Take in any request of more than one step |
+| `plan_creator` | `creators/plan-creator.md` | Take in any request of more than one step |
 | `branching_strategy` | `git/branching-strategy.md` | Create a branch |
 | `commit_conventions` | `git/commit-conventions.md` | Write a commit message |
 | `discovery_protocol` | `rules/discovery-protocol.md` | Notice a rule that should exist |
@@ -59,7 +59,6 @@ file — is what a session routes on.
 | `model_naming_convention` | `rules/model-naming-convention.md` | Write to any `model_name` column |
 | `no_session_links` | `rules/no-session-links.md` | Write anything that will be committed or posted |
 | `versioning` | `rules/versioning.md` | Touch anything carrying a version number |
-| `plan_creator` | `creators/plan-creator.md` | Plan a task of more than one step, before any file is written |
 | `mcp_list` | the set's own server registry | Find out which other servers exist |
 
 **No tool takes an argument.** A tool names one file, so there is no path to pass, no
@@ -72,7 +71,7 @@ same conventions, and each is read as its `agents://` resource instead.
 
 ### The four that are not optional
 
-`task_workflow`, `branching_strategy`, `commit_conventions` and `discovery_protocol`
+`plan_creator`, `branching_strategy`, `commit_conventions` and `discovery_protocol`
 appear in **every** repository's declaration block. A repository may narrow the rest of
 the table to what it actually needs; it may not narrow these.
 

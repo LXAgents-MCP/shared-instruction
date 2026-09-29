@@ -40,7 +40,7 @@ because it must work before any shared file has been read.
 >
 > **The declaration block is required.** A repository without one has no routing table,
 > so nothing fires and the omission looks exactly like a session in which no convention
-> happened to apply. It names the four mandatory tools at minimum — `task_workflow`,
+> happened to apply. It names the four mandatory tools at minimum — `plan_creator`,
 > `branching_strategy`, `commit_conventions`, `discovery_protocol` — and stamps the set
 > version adopted. Shape: `{shared}/prompts/agents-setup.md`. Keeping it current when this
 > set moves: `{shared}/prompts/agents-update.md`, on request.
@@ -140,7 +140,7 @@ stripped, `.md` dropped, kebab to snake — with one exception: `AGENTS.md` is s
 
 | Tool | Serves |
 |---|---|
-| `task_workflow` | `planning/task-workflow.md` — one of the four every repository declares |
+| `plan_creator` | `creators/plan-creator.md` — one of the four every repository declares |
 | `branching_strategy` | `git/branching-strategy.md` — one of the four |
 | `commit_conventions` | `git/commit-conventions.md` — one of the four |
 | `discovery_protocol` | `rules/discovery-protocol.md` — one of the four |

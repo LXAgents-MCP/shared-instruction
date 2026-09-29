@@ -14,7 +14,7 @@ it is always active; the user does not need to repeat it.**
 
 1. Resolve the shared set — [`../rules/mcp-connector.md`](agents://rules/mcp-connector.md).
 2. Confirm **Goal / Objective / Detail** —
-   [`../planning/task-workflow.md`](agents://planning/task-workflow.md).
+   [`../creators/plan-creator.md`](agents://creators/plan-creator.md) §A.
 3. Check `.agents/index/memory-index.md` for prior state on this work.
 4. Split the request into ordered tasks and get the list confirmed. **Task 1 is always
    the task record. Task `n` is always the release. The work goes between them.**

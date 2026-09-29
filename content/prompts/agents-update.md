@@ -25,7 +25,7 @@ and never fires because you noticed a version difference.
   touching a file. [`git/branching-strategy.md`](agents://git/branching-strategy.md).
 * **The plan gate applies.** This procedure changes `AGENTS.md`. Present what you intend to
   change and wait for approval before writing —
-  [`planning/task-workflow.md`](agents://planning/task-workflow.md) §B.
+  [`creators/plan-creator.md`](agents://creators/plan-creator.md) §B.
 * **Apply, do not improvise.** Every edit here traces to a **Consumers must** line or to the
   current tool list. A convention you think should also change is a finding for
   [`rules/discovery-protocol.md`](agents://rules/discovery-protocol.md), not an edit.
@@ -81,7 +81,7 @@ served as `agents_entry_point`:
 | A tool this repository declares no longer exists | Remove the row. Check first whether a **Consumers must** line renamed it — if so, the row is renamed, not deleted. |
 | A tool exists that this repository needs and does not declare | Add the row, with the trigger the shared table gives it. |
 | A tool exists that this repository does not need | Leave it out. A narrower table is the point of declaring one — it is not drift. |
-| The four mandatory tools are not all present | Add the missing ones. `task_workflow`, `branching_strategy`, `commit_conventions` and `discovery_protocol` are not optional in any repository. |
+| The four mandatory tools are not all present | Add the missing ones. `plan_creator`, `branching_strategy`, `commit_conventions` and `discovery_protocol` are not optional in any repository. |
 
 **c) The override table** in `.agents/index/root-index.md`. An override matches a shared
 file by `name`. A rename or removal upstream leaves it matching nothing, at which point the

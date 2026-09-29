@@ -30,7 +30,7 @@ carry a convention.
 
    | Situation | File |
    |---|---|
-   | Ongoing work | `tasks/{slug}.md` — created as **task 1** of the work it plans, then appended to by every task after it. See [`../planning/task-workflow.md`](agents://planning/task-workflow.md) §B. |
+   | Ongoing work | `tasks/{slug}.md` — created as **task 1** of the work it plans, then appended to by every task after it. See [`plan-creator.md`](agents://creators/plan-creator.md) §B. |
    | What happened in a session | `sessions/{yyyy-mm-dd}-{slug}.md` |
    | A choice with consequences | `decisions/{slug}.md` |
    | Current live state of an area | `state/{area}.md`, overwritten in place |
@@ -77,7 +77,7 @@ commit as your work.
 
 * When a task ships, mark its `tasks/` file `status: done` with a closing entry. For a
   multi-task request this happens in the **release task**, which also fills the record's
-  `PR` column — see [`../planning/task-workflow.md`](agents://planning/task-workflow.md)
+  `PR` column — see [`plan-creator.md`](agents://creators/plan-creator.md)
   §F.
 * At each release, fold `sessions/` files older than that release into one digest under the
   release's log directory, then delete the originals and their rows in `memory-index.md` —
@@ -151,7 +151,7 @@ that scope, **in the same commit**. See
 Any pull request follows
 [`../git/pull-request-template.md`](agents://git/pull-request-template.md); merging requires
 user approval per
-[`../planning/task-workflow.md`](agents://planning/task-workflow.md). Version changes
+[`plan-creator.md`](agents://creators/plan-creator.md) §F. Version changes
 require user approval per [`../rules/versioning.md`](agents://rules/versioning.md).
 
 ## Discovery Protocol

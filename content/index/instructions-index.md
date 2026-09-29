@@ -7,7 +7,7 @@ author: LXAgents
 
 # Shared Instructions Index
 
-**Scope:** `rules/`, `git/`, `planning/`, `prompts/`, `creators/`, `security/`
+**Scope:** `rules/`, `git/`, `prompts/`, `creators/`, `security/`
 **Parent:** [`root-index.md`](agents://index/root-index.md)
 
 Any file added to or removed from these folders is reflected here in the same commit. This
@@ -41,9 +41,10 @@ index lists shared files only; a consuming repository's files are routed from it
 
 ## planning/
 
-| File | Purpose |
-|---|---|
-| [`task-workflow.md`](agents://planning/task-workflow.md) | Intake, the plan gate, the reserved record and release slots, stacked branches, in-order execution, merging. |
+Empty. The folder is served — a file added here is published on the next boot — but
+`task-workflow.md` moved into [`../creators/plan-creator.md`](../creators/plan-creator.md)
+at `3.0.0`, so nothing universal about planning lives here yet. Shape and placement:
+[`../creators/instruction-creator.md`](agents://creators/instruction-creator.md).
 
 ## security/
 
@@ -69,4 +70,4 @@ universal security rule has been written yet. Shape and placement:
 | [`index-creator.md`](agents://creators/index-creator.md) | Owns the shape of every index file. |
 | [`memory-creator.md`](agents://creators/memory-creator.md) | Writes `.agents/memory/` — the ungated creator. |
 | [`changelog-creator.md`](agents://creators/changelog-creator.md) | Writes `wiki/logs/{Major}/{Minor}/{Patch}/`. |
-| [`plan-creator.md`](agents://creators/plan-creator.md) | Writes the untracked working plan under a repository's `.agents/plans/`, with `tasks.md` as the center. |
+| [`plan-creator.md`](agents://creators/plan-creator.md) | Intake, the plan gate, the record and release slots, stacked branches, merging, and the untracked working plan under a repository's `.agents/plans/`. |

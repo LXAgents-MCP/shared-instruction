@@ -58,7 +58,7 @@ long enough to conflict with itself was two tasks.
 For multi-task work, branches stack in dependency order: task 1 branches from the default
 branch, task `k` branches from task `k-1`'s branch. Each branch therefore already contains
 everything before it, which is what keeps the merges conflict-free. See
-[`../planning/task-workflow.md`](agents://planning/task-workflow.md).
+[`../creators/plan-creator.md`](agents://creators/plan-creator.md) §C.
 
 When one change spans repositories, each repository gets its own branch **with the same
 name**, and the merge order is stated in each pull request body.

@@ -155,14 +155,13 @@ wiki/
   logs/{Major}/{Minor}/{Patch}/CHANGELOG.md
 ```
 
-A consuming repository does **not** contain `git/`, `planning/`, `prompts/`, or
-`creators/`. Those are served by the connector. Creating them here is the duplication
+A consuming repository does **not** contain `git/`, `prompts/`, or `creators/`. Those are served by the connector. Creating them here is the duplication
 this architecture exists to eliminate.
 
 ### Mode C — standalone
 
-The Mode B tree **plus** the shared-only folders (`git/`, `planning/`, `prompts/`,
-`creators/`, and the shared `rules/` files) inside `.agents/`, and no bootstrap block in
+The Mode B tree **plus** the shared-only folders (`git/`, `prompts/`, `creators/`,
+and the shared `rules/` files) inside `.agents/`, and no bootstrap block in
 `AGENTS.md`. Every `{shared}/…` in this procedure resolves to `.agents/…`. State in
 `.agents/rules/repository.md` that the repository is standalone, so a later migration to
 the connector is a mechanical move rather than an archaeology exercise.
@@ -285,7 +284,7 @@ for every trigger; name it as such.
 >
 > | When you are about to… | Call |
 > |---|---|
-> | Take in any request of more than one step | `task_workflow` |
+> | Take in any request of more than one step | `plan_creator` |
 > | Create a branch | `branching_strategy` |
 > | Write a commit message | `commit_conventions` |
 > | Notice a rule that should exist | `discovery_protocol` |
@@ -476,7 +475,7 @@ Exactly two real memory files, both registered in `.agents/index/memory-index.md
   a task table with a `PR` column, then one `### Task k — {branch}` entry per task. From
   the next request onward the record is written as **task 1**, before the work, and each
   task appends its own entry in the same commit — see
-  [`planning/task-workflow.md`](agents://planning/task-workflow.md) §B and §E.
+  [`creators/plan-creator.md`](agents://creators/plan-creator.md) §B and §E.
 
 No other memory files. No empty `{type}` folders.
 
@@ -504,7 +503,7 @@ on-request procedure by design.
 Report each item.
 
 * The mode you built is stated, and the tree matches §2.
-* **No shared content duplicated** — no `git/`, `planning/`, `prompts/`, or `creators/`
+* **No shared content duplicated** — no `git/`, `prompts/`, or `creators/`
   folder in a consuming repository, and every local file whose `name` matches a shared file
   has a row in the override table with a reason.
 * `AGENTS.md` carries the connector bootstrap block verbatim, including the "do not vendor"
@@ -534,7 +533,7 @@ Report each item.
   source-of-truth link, and the no-session-links line — and no rule bodies.
 * The Shared instruction tools block exists, every tool it names is one the connector
   actually publishes, and every trigger matches the one `rules/auto-activation.md` gives it.
-* The declaration block carries all four mandatory tools — `task_workflow`,
+* The declaration block carries all four mandatory tools — `plan_creator`,
   `branching_strategy`, `commit_conventions`, `discovery_protocol` — and a version stamp
   naming the version this connector reports.
 * The auto-activation contract carries all three permission gates inline — approve the
