@@ -60,6 +60,18 @@ rename. `agents_update` does both.
 - No instruction `name` outside `task-workflow` was renamed, and no rule was removed.
   The procedure that `task-workflow` carried is intact in `plan-creator.md`.
 
+## Reading the rows before this one
+
+Release history is not rewritten, so rows dated before `3.0.0` still name
+`planning/task-workflow.md` — a path that no longer exists. Read one as its
+`creators/plan-creator.md` section of the same letter: `§A` Intake, `§B` the plan gate,
+`§C` branches, `§D` in-order execution, `§E` the record, `§F` pull requests and merging.
+The letters were kept deliberately for exactly this, so a row written against
+`task-workflow.md` §F still points at the same procedure.
+
+That mapping is a reading aid, not an edit. The rows are correct about what each release
+did; the file they name is what moved.
+
 ## One cost, named
 
 `creators/plan-creator.md` is now **21,321 bytes**, against 11,573 for `task-workflow.md`
