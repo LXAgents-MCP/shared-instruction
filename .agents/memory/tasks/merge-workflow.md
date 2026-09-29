@@ -234,9 +234,10 @@ so nobody re-derives them.
 **Two findings were recorded and not applied**, as the discovery gate requires: `F1`, the
 `plan-creator.md` body claiming it carries the set's version while every file in the set
 sits at `1.0.0`; and `F2`, six creators restating the merge gate that `plan-creator.md`
-now owns. Both are in the working plan at `.agents/plans/discovery-findings.md` and are
-repeated in the changelog's "Not fixed here", so a consumer reading the release learns
-they were seen rather than missed. `F3`, that the set never states the three gates as a
+now owns. Both were in the scratch working plan, which was deleted when this work merged;
+they now live in [`../findings/workflow-merge-findings.md`](../findings/workflow-merge-findings.md)
+and are repeated in the changelog's "Not fixed here", so a consumer reading the release
+learns they were seen rather than missed. `F3`, that the set never states the three gates as a
 list, is the one worth the owner's attention: this session asked for the plan gate four
 separate times, and it is only in the set as a sentence inside a paragraph.
 

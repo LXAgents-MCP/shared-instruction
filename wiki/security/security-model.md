@@ -175,8 +175,8 @@ the lockfile with `--ignore-scripts`, and ends as `USER node`. It declares `EXPO
 and its default entrypoint is still the stdio server; the HTTP one is a command away:
 
 ```bash
-docker run --rm -i lxagents-shared-instruction:3.0.0                     # stdio
-docker run --rm -p 3000:3000 lxagents-shared-instruction:3.0.0 \
+docker run --rm -i lxagents-shared-instruction:3.0.1                     # stdio
+docker run --rm -p 3000:3000 lxagents-shared-instruction:3.0.1 \
   node src/http.js                                                        # HTTP
 ```
 
