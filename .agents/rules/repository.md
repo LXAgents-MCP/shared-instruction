@@ -16,7 +16,7 @@ that `content/` already carries.
 
 | Role | Meaning |
 |---|---|
-| **Producer** | It holds the shared instruction set in `content/` and serves it over MCP as `lxagents-agents-base`. Editing `content/` changes behaviour in every consuming repository. |
+| **Producer** | It holds the shared instruction set in `content/` and serves it over MCP as `lxagents-shared-instruction`. Editing `content/` changes behaviour in every consuming repository. |
 | **Consumer** | It follows that same set, plus the local additions in `.agents/`. |
 
 The two must not blur. `content/` is the product; `.agents/` is this repository's own
@@ -51,9 +51,16 @@ do not introduce TypeScript, a bundler, or a transpiler without agreement.
 | Test | `npm test` |
 | Run (stdio) | `npm start` |
 | Inspect the MCP surface | `npm run inspect` |
+| Build the image | `docker build -t lxagents-shared-instruction:2.0.0 .` |
+| Run the image | `docker run --rm -i lxagents-shared-instruction:2.0.0` |
 
-There is no `start:http`, no `npm run cli`, and no `docker compose`. `src/index.js`
-connects a stdio transport and nothing else.
+There is no `start:http` and no `npm run cli`. `src/index.js` connects a stdio
+transport and nothing else, and there is no `compose.yaml` — see
+[`../wiki/environments/docker.md`](../wiki/environments/docker.md) for why a stdio
+server does not want one.
+
+**`docker run` needs `-i`.** Without it Docker does not attach stdin, the server sees
+closed input, and it exits immediately. It looks like a broken image and is not.
 
 **`npm install` before `npm test`, once per checkout.** A fresh clone has no
 `node_modules`, and the suite does not say so: the test file fails with
@@ -111,4 +118,10 @@ that the total characters served equals the total bytes on disk.
 
 Published to npm as `@lxagents-mcp/shared-instruction`, and consumed as a stdio
 subprocess. There is no remote deployment, no listener, and no port — the package exposes
-one bin, `lxagents-agents-base`, which is the server.
+one bin, `lxagents-shared-instruction`, which is the server.
+
+A `Dockerfile` exists for hosts that cannot run Node 20, and it is a way to pin the
+toolchain rather than a deployment: no `EXPOSE`, no service, nothing published to a
+registry. It ends as `USER node` and installs with `npm ci --ignore-scripts`. **Keep both
+of those** — see the Dockerfile row in
+[`../wiki/security/security-boundaries.md`](../wiki/security/security-boundaries.md).

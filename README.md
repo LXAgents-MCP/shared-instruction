@@ -5,7 +5,7 @@ repository connects it as a connector and reads the conventions it needs — bra
 commits, pull requests, task workflow, the creators, the directory architecture —
 instead of cloning or vendoring a copy of them.
 
-- **Server id:** `lxagents-agents-base`
+- **Server id:** `lxagents-shared-instruction`
 - **Package:** `@lxagents-mcp/shared-instruction`
 - **Transport:** stdio. There is no HTTP server and no remote endpoint.
 - **Surface:** 32 tools. 31 are generated — one per markdown file in `content/` — and one
@@ -67,12 +67,12 @@ Full instructions are in [`wiki/environments/setup.md`](wiki/environments/setup.
 
 ## Connect it
 
-A local stdio server, named `lxagents-agents-base`:
+A local stdio server, named `lxagents-shared-instruction`:
 
 ```json
 {
   "mcpServers": {
-    "lxagents-agents-base": {
+    "lxagents-shared-instruction": {
       "command": "node",
       "args": ["src/index.js"],
       "cwd": "/path/to/shared-instruction"
@@ -89,12 +89,25 @@ For npm consumers the package exposes that binary, so `command: "npx"` with
 its connector list at session start, so a server added mid-session reports healthy and is
 still absent from the tool surface until the session restarts.
 
+## Docker
+
+```bash
+docker build -t lxagents-shared-instruction:2.0.0 .
+docker run --rm -i lxagents-shared-instruction:2.0.0
+```
+
+A pinned, non-root image for hosts that cannot run Node 20. It is **not** a service —
+stdio is a pipe, not a port, so there is no `EXPOSE` and nothing to publish. The `-i` is
+not optional; without it the server sees closed stdin and exits. Details in
+[Docker](wiki/environments/docker.md).
+
 ## Documentation
 
 - [Overview](wiki/information/overview.md) — what this serves and why it is a server.
 - [Architecture](wiki/information/architecture.md) — how the tool surface is built.
 - [MCP surface](wiki/reference/mcp-surface.md) — every tool, and what the server does not expose.
 - [Local setup](wiki/environments/setup.md) — running and testing it.
+- [Docker](wiki/environments/docker.md) — building and running the image.
 - [Security model](wiki/security/security-model.md) — trust boundaries, and what is deliberately not protected.
 
 ## Working with agents

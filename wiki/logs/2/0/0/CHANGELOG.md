@@ -6,13 +6,27 @@ Every file in the shared set is now its own tool. There is no `path` argument, n
 registry to look up, and no list to fall out of step with the set — adding a file to
 `content/` adds its tool, and that is the whole mechanism.
 
-Major, because **every published tool name changes** and one tool is removed. A
-repository that ignores this keeps calling names that no longer exist.
+Major, because **every published tool name changes**, **the connector id changes**, and one
+tool is removed. A repository that ignores this keeps calling names that no longer exist,
+under an id the server no longer answers to.
 
-**Consumers must:** rename every tool you call. The mapping is in **Removed** below. The
-four mandatory conventions keep their names except one — `commit_strategy` is now
-`commit_conventions` — and nothing else you rely on was dropped, because each of those
-procedures is a file, and every file is a tool.
+**Consumers must:** rename every tool you call, **and rename the connector in your client
+configuration** — `lxagents-agents-base` → `lxagents-shared-instruction`. The tool mapping
+is in **Removed** below. The four mandatory conventions keep their names except one —
+`commit_strategy` is now `commit_conventions` — and nothing else you rely on was dropped,
+because each of those procedures is a file, and every file is a tool.
+
+## The connector id
+
+`lxagents-agents-base` is now **`lxagents-shared-instruction`**, matching the repository
+and the npm package. The old name survived two earlier renames on the theory that every
+consuming repository names it in configuration, so changing it is pure cost — but that
+reasoning holds only while the name is wrong for the thing it names, and it has been wrong
+since `0.7.0`. The cost is one edit per consumer, paid once.
+
+The **bin** changed with it, for coherence: `package.json` exposes one executable and it
+now matches the server it starts. Anyone invoking `lxagents-agents-base` directly rather
+than through `npx @lxagents-mcp/shared-instruction` has a second thing to update.
 
 ## Added
 
@@ -32,6 +46,12 @@ procedures is a file, and every file is a tool.
   a derived name that is not a valid MCP identifier, on two files claiming one name, on a
   file with no frontmatter `description`, or on an empty set. A name collision names both
   files; it is resolved with an explicit override, never by renaming a file to fit.
+
+- **A `Dockerfile`**, for hosts that cannot run Node 20. Single stage on `node:22-alpine`,
+  `npm ci --ignore-scripts --omit=dev` from the lockfile, ending as `USER node`. It is a
+  way to pin the toolchain, **not a deployment**: there is no `EXPOSE`, no service, and no
+  compose file, because stdio is a pipe and not a port. Run it with `docker run -i` — the
+  flag is not optional, and without it the server sees closed stdin and exits.
 
 ## Changed
 

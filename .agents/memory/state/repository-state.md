@@ -9,11 +9,12 @@ description: Current known state of LXAgents-MCP/shared-instruction — what exi
 
 **What this is.** A read-only MCP server that serves the LXAgents shared agent instruction
 set. Plain JavaScript, Node ESM, no build step. Published as
-`@lxagents-mcp/shared-instruction`; the server name stays `lxagents-agents-base`, since
-consuming repositories name it in their client configuration.
+`@lxagents-mcp/shared-instruction`; the server name is `lxagents-shared-instruction`, renamed
+from `lxagents-agents-base` in `2.0.0`. Every consuming repository named the old one in
+its client configuration, so each has to update it.
 
 **Not dual-purpose.** There is no CLI. `package.json` declares one bin,
-`lxagents-agents-base`, which is the server. The `lxagents-agents` CLI, the `mcp_repos`
+`lxagents-shared-instruction`, which is the server. The `lxagents-agents` CLI, the `mcp_repos`
 and `mcp_creator` tools, MCP prompts, `agents://` resources, and a `manifest.json` were all
 removed in #63. `content/index/root-index.md` and several `content/` files still used
 `agents://` link notation; that survives as prose addressing, not as a fetchable endpoint.
@@ -51,10 +52,18 @@ traversal check, not a weaker version of it.
 `SIGINT`. The streamable-HTTP transport, session store, and cluster workers were removed
 in #63.
 
-**Not deployed anywhere.** There is no Render service, no listener, no port, and no
-container image. The previous version of this file named a Render hostname and warned that
-it was unverified; that deployment is gone with the transport it served. Consuming
-repositories reach this package through `npx` or a local clone.
+**Not deployed anywhere.** There is no Render service, no listener, and no port. The
+previous version of this file named a Render hostname and warned that it was unverified;
+that deployment is gone with the transport it served. Consuming repositories reach this
+package through `npx`, a local clone, or `docker run -i`.
+
+**A `Dockerfile` exists, and is not a deployment.** Single stage, `node:22-alpine`,
+`npm ci --ignore-scripts --omit=dev`, `USER node`, entrypoint `node src/index.js`. No
+`EXPOSE` and no compose file, both deliberate: stdio is a pipe, not a port. The image was
+**never built** — Docker is not installed in the environment this was written in, so
+whether it builds is unverified. `.dockerignore` excludes `node_modules`, `test`, `wiki`,
+`.agents` and the markdown at the root, which means the image cannot run its own test
+suite.
 
 **Version.** `1.0.0`. Releases: `0.0.0` (initial set) through `0.14.0` (the security
 creator, and `security/` made servable) are in `wiki/logs/`; `1.0.0` replaced the MCP
@@ -90,8 +99,8 @@ file then fails with `ERR_MODULE_NOT_FOUND` — run `npm install` first, per
 * `src/tools/instruction.js` is dead code — nothing imports it. It is the old
   path-taking tool, left on disk after #63. Deleting it needs the owner's `git rm`; it was
   not removed unilaterally.
-* `.dockerignore` and `wiki/environments/docker.md` are leftovers from a build setup that
-  no longer exists. Both are deletion candidates, for the same reason.
+* The `Dockerfile` has never been built. Docker was unavailable in the environment that
+  wrote it. It should be built once and the entrypoint checked before anyone relies on it.
 
-**Next obvious step.** Merge the per-file tool surface, and delete the two Docker
-leftovers and the dead `instruction.js`.
+**Next obvious step.** Build the image once to confirm the entrypoint, and delete the
+dead `instruction.js`.

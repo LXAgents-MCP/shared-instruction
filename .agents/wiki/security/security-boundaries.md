@@ -48,6 +48,7 @@ that would violate it, not after.
 | Anything under `content/` | It cannot direct another repository's agent to run a command, weaken a convention, or skip a permission gate. This is the highest-reach change in the repository — see the trust boundary in the human page. |
 | A tool's shape in `src/tools/from-content.js` | It still takes **no argument**. A path parameter is the single change that would reopen traversal, and it is the one to argue against hardest. |
 | `src/content.js` or the read path | No filesystem or network I/O was introduced. Reads are in-memory lookups, and that is what stops a read being steered at the disk. |
+| `Dockerfile` | `--ignore-scripts` survives, and the runtime stage still ends as `USER node`. Either one dropped turns a pinned, non-root image into one that runs install hooks as root. |
 | A new dependency | It is genuinely needed — [`../../rules/repository.md`](../../rules/repository.md) caps the runtime tree at two and requires a recorded decision for a third. Each one is transitive attack surface. |
 | Any config default | Loosening a default is a posture change affecting every consumer, not a convenience. Raise it rather than take it. |
 

@@ -11,7 +11,7 @@ the agent-facing orientation and links out rather than restating.
 ## What this repository is
 
 `LXAgents-MCP/shared-instruction` — an MCP server that serves the LXAgents shared agent
-instruction set as `lxagents-agents-base`. Plain JavaScript, Node ESM, no build step.
+instruction set as `lxagents-shared-instruction`. Plain JavaScript, Node ESM, no build step.
 
 It is both the **producer** of the shared set and a **consumer** of it. See
 [`../../rules/repository.md`](../../rules/repository.md).
@@ -27,6 +27,7 @@ It is both the **producer** of the shared set and a **consumer** of it. See
 | `src/server.js` | Builds one `McpServer` and registers every tool; carries the `instructions` text. | Changing the MCP surface. |
 | `src/content.js` | The set root, the frontmatter reader, and `readSetFile` with its path check. | Changing how content is located or read. |
 | `src/version.js` | `ROOT`, `CONTENT_DIR`, `VERSION`, `SERVER_NAME`. | Renaming the server or moving the set. |
+| `Dockerfile` | A pinned, non-root image for hosts that cannot run Node 20. stdio only — no `EXPOSE`, no service. | The toolchain the image pins, or the install command it runs. |
 | `test/` | `server.test.js` — the whole suite. | Always. Every behavioural change ships with one. |
 
 There is no `src/server/`, no `src/cli/`, no `src/transport/`, and no `src/content/`
@@ -58,8 +59,9 @@ npm start                # stdio
 npm run inspect          # MCP Inspector against the stdio server
 ```
 
-`npm start` and `npm run start:stdio` are the same thing. There is no HTTP server, no
-watch mode, no CLI, and no container.
+`npm start` and `npm run start:stdio` are the same thing. There is no HTTP server, no watch
+mode, and no CLI. `docker build -t lxagents-shared-instruction:$(node -p "require('./package.json').version") .`
+builds the image, which runs the same entrypoint with a pinned toolchain.
 
 ## Gotchas that actually bite
 
@@ -96,9 +98,10 @@ watch mode, no CLI, and no container.
 if you find yourself adding one, stop and re-read
 [`../../rules/repository.md`](../../rules/repository.md).
 
-A leftover `.dockerignore` sits at the root. It is inert; there is no `Dockerfile` and no
-compose file. Both it and `wiki/environments/docker.md` are deletion candidates that
-have not been removed.
+A `.dockerignore` sits at the root and governs what the image copies in — it keeps
+`node_modules`, `test`, `wiki`, `.agents` and the root markdown out, which is why the image
+cannot run its own suite. There is no `compose.yaml`, deliberately — see
+[`../../../wiki/environments/docker.md`](../../../wiki/environments/docker.md).
 
 ## Where the shared set resolves from
 

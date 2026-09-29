@@ -89,10 +89,21 @@ ever does need a credential, it does not go in `content/` — see the boundary a
 
 ## Deployment posture
 
-There is none, and that is worth stating rather than leaving implied. The server is a stdio
-subprocess: a client spawns it and speaks JSON-RPC over a pipe. There is no remote
-deployment, no exposed port, and nothing to harden. Its exposure is bounded by who can
-read the repository and the npm package.
+There is no remote deployment, no exposed port, and no service. The server is a stdio
+subprocess: a client spawns it and speaks JSON-RPC over a pipe. Its exposure is bounded by
+who can read the repository and the npm package.
+
+**A `Dockerfile` exists and does not change that.** The image pins the toolchain, installs
+from the lockfile with `--ignore-scripts`, and ends as `USER node` — but it declares no
+`EXPOSE` and listens on nothing, because there is no transport that would. Running it is
+`docker run -i`; the pipe is still the entire interface. A container here is a way to run
+the server somewhere without Node 20, not a network boundary, and it should not be
+described as one.
+
+Two properties of the image are load-bearing and are checked before committing it: the
+install runs with lifecycle scripts disabled, and the process is not root. Either one
+dropped turns a pinned non-root image into one that runs third-party install hooks as
+root.
 
 ## Reporting something
 

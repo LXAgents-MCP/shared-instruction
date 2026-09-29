@@ -123,9 +123,10 @@ the user before the work started.
   git -C C:\Users\owen\MyProjects\LXAgents-MCP\shared-instruction rm src/tools/instruction.js
   ```
 
-* `.dockerignore` and `wiki/environments/docker.md` are the only trace of a build setup
-  that no longer exists. Both are deletion candidates; neither was removed unilaterally,
-  for the same reason.
+* `.dockerignore` and `wiki/environments/docker.md` were, for a while, deletion candidates
+  from a build setup that no longer existed. The owner asked for a `Dockerfile` instead, so
+  they are load-bearing again and both were rewritten. **The image has never been built** —
+  Docker is not installed in the environment it was written in.
 
 * Every per-file `version:` in `content/` is still `1.0.0`. The set-level bump was
   approved; per-file bumps were not, and `versioning.md` gates them on the owner. Say so
