@@ -39,3 +39,35 @@ Each task appends its own entry below, in the same commit as its work.
 
 Created this file and registered it in `.agents/index/memory-index.md`. No shared file
 touched, so nothing is published by this task.
+
+### Task 2 — `chore/fix-sonar-issues-plan`
+
+Cleared the super-linear regex finding at `src/tools/from-content.js:66`, the field
+matcher inside `parseFrontmatter`:
+
+    - /^([A-Za-z_][A-Za-z0-9_]*):[ \t]*(.*)$/
+    + /^([A-Za-z_][A-Za-z0-9_]*):[ \t]*(\S.*|)$/
+
+The value went from `.*` to `\S.*`, so the run of spaces before it and the value
+behind it are now different character classes. `[ \t]*` and `.*` both accept a
+space, so the two greedy runs overlapped and the engine could give a space from the
+first run to the second, retrying the pair from every split point on a line that
+never matches. With `\S` in front, giving a space back can never turn a failure into
+a match, and each giveback now fails on its first character instead of being a
+usable split. The key run is unchanged: `:` is not in `[A-Za-z0-9_]`, so its longest
+match is the only position where the colon can follow and there was never a
+successful backtrack to find there either.
+
+Captures are unchanged, which is what makes this safe to land on its own. `[ \t]*`
+still swallows the whole whitespace run and `\S.*` takes the value from the first
+non-space to the end of the line, so group 1 is the same key and group 2 is the same
+string as `.*` produced — the two differ only in which internal path the engine
+walks. The `|` branch covers the value-less case (`name:` with nothing after it),
+which `.*` matched as the empty string and `\S.*` alone would have rejected. The
+`+ / -` above is the whole diff; `parseFrontmatter`'s callers see identical `fields`.
+
+The cases that must not start matching are unchanged because nothing about *when*
+the pattern matches was touched: a folded multi-line value still fails, a line not
+starting with a letter or underscore still fails, and a missing `description` still
+lands as the empty-string falsy value that `buildContentTools` rejects at startup.
+No shared file touched, so nothing is published by this task.
