@@ -255,3 +255,74 @@ false.
 `npm test` passes on the default worker count, not only with `MCP_CLUSTER_WORKERS=1`, and
 the four `content/` bijection and byte-identity checks still pass: the cluster moved no
 served byte. The `Dockerfile` is still untouched.
+
+---
+
+### Task 4 — `chore/sse-to-mcp-release`
+
+The block held from task 2, released. The owner approved `3.0.2`, the correction of
+`content/rules/mcp-connector.md`, and the addition of `content/planning/task-workflow.md`.
+Version `3.0.2`, `wiki/logs/3/0/2/CHANGELOG.md`, and a newest-first row in
+`content/index/logs-index.md` and `.agents/index/logs-index.md` — the two indexes, because
+`content-publishing.md` requires both and a row in only one is a routing surface that
+disagrees with itself.
+
+**The connector document was false about the transport for the whole migration.**
+`content/rules/mcp-connector.md` published `"type": "sse"` at
+`https://shared-instruction.example.com/sse` while the server has answered `POST /mcp`
+since task 2. It is now `"type": "http"` at `…/mcp`, with the statelessness stated and
+with a paragraph saying what a **stale registration looks like** — a JSON-RPC `404` from
+the catch-all, which reads as a server that is up and misconfigured — and pointing at
+`GET /healthz` to separate that from a server that is down. No compatibility route, and
+the reason is not caution: `SSEServerTransport` is deprecated in the SDK and stateful, so
+serving `/sse` would mean carrying back the session store this migration removed, on an
+unauthenticated port.
+
+**The version number departs from the repository's own rule, and the changelog says so in
+its header.** `content/rules/versioning.md` classes a change that breaks an existing
+convention as **major** and an added file as **minor**; this release is both, and it is
+numbered `3.0.2`, a **patch**. The owner approved that number explicitly, and `AGENTS.md`
+says an explicit user instruction wins — provided the rule being set aside is said out
+loud. It is said out loud in the changelog, in the `content/index/logs-index.md` row, in
+`.agents/index/logs-index.md`, and here. The point is not tidiness: a patch number
+promises "nothing to do", and this release requires every consumer to re-register a
+connector. If the number is ever questioned, this entry is the evidence of what was
+approved and what was set aside.
+
+**`content/planning/task-workflow.md` is a split, not a resurrection.** At `3.0.0` this
+folder's only file was folded into `creators/plan-creator.md` because the two overlapped
+without either saying so. The new file carries the **shape** — plan, record, branch,
+release; which are tracked; which outlive which; the three invariants that make the chain
+reviewable — and states in its second paragraph that the procedure is `plan-creator.md`
+and that it restates none of it.
+
+**Its frontmatter `name` is `planning-lifecycle`, not `task-workflow`, deliberately.**
+Overrides key on `name`. `3.0.0` instructed consumers to *delete* any `task-workflow`
+override, precisely because a name matching nothing fails silently by making the local
+copy the only rule there is. Reclaiming that name would switch such a copy back on with no
+error — reintroducing, from the other direction, the exact failure `3.0.0` was major for.
+The filename keeps the historical path that four `AGENTS.md` trigger tables and every
+release log before `3.0.0` cite; the name stays clear. All five repositories carry **no**
+overrides, so nothing here is live in this organization — it is a hazard for the published
+set's other consumers, and it is one line of frontmatter to avoid.
+
+**The tool count is 32, was 31**, and it is a literal in thirteen places, four of them
+assertions in `test/http.test.js`. A previous release learned this the hard way
+(`.agents/memory/tasks/merge-workflow.md`) and deliberately kept literal counts rather
+than deriving them, so all seventeen were edited by hand rather than one expression
+changed. `wiki/information/architecture.md` and `.agents/wiki/context/repository-map.md`
+said "31 markdown files" while there were 30; with this file they are correct by
+coincidence rather than by having been right, which is noted rather than relied on.
+
+**`package.json` still lists `"sse"` in `keywords`** and this release does not fix it. It
+is discoverability rather than a behavioural claim, and narrowing it was not part of the
+approved change — but it will surface this package to someone looking for a server that no
+longer speaks SSE. Recorded in the changelog's "Not done" rather than fixed unasked. The
+two findings `3.0.1` carried (`F1` stale per-file versions, `F2` the merge gate restated
+in six creators) are carried forward unchanged, still in
+`.agents/memory/findings/workflow-merge-findings.md`.
+
+**The `Dockerfile` is still untouched**, and nothing in this task touches `src/` — the
+only assertions that changed are the four surface-length counts, and the `content/`
+bijection and byte-identity checks are the ones that matter here: the two new and one
+edited `content/` files are served whole, frontmatter included, exactly as on disk.

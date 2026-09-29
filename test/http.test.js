@@ -318,7 +318,7 @@ test("the HTTP transport serves the same tools as stdio", async () => {
       const viaHttp = (await http.listTools()).tools;
       const inMemory = (await memory.client.listTools()).tools;
 
-      assert.equal(viaHttp.length, 31, "30 generated from content/ plus mcp_list");
+      assert.equal(viaHttp.length, 32, "31 generated from content/ plus mcp_list");
       assert.deepEqual(
         viaHttp.map((tool) => tool.name).sort(),
         inMemory.map((tool) => tool.name).sort()
@@ -739,7 +739,7 @@ test("MCP_TRANSPORT=http reaches the same server through src/index.js", async ()
       const client = await connect(url);
       openClients.add(client);
       try {
-        assert.equal((await client.listTools()).tools.length, 31);
+        assert.equal((await client.listTools()).tools.length, 32);
       } finally {
         await client.close();
         openClients.delete(client);
@@ -780,7 +780,7 @@ test("node src/index.js still speaks stdio and writes nothing to stdout", async 
     await client.connect(transport);
 
     const { tools } = await client.listTools();
-    assert.equal(tools.length, 31, "30 generated from content/ plus mcp_list");
+    assert.equal(tools.length, 32, "31 generated from content/ plus mcp_list");
     assert.ok(textOf(await client.callTool({ name: "plan_creator", arguments: {} })).length > 0);
 
     assert.equal(stdout, "", `stdout must stay empty, got: ${stdout}`);
@@ -871,7 +871,7 @@ test("MCP_CLUSTER_WORKERS=1 forks nothing and serves on its own", async () => {
       const client = await connect(url);
       openClients.add(client);
       try {
-        assert.equal((await client.listTools()).tools.length, 31);
+        assert.equal((await client.listTools()).tools.length, 32);
       } finally {
         await client.close();
         openClients.delete(client);

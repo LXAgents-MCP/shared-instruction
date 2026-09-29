@@ -29,7 +29,7 @@ to vendor by mistake, and every repository reads the same bytes.
 
 ## What it serves
 
-**31 tools, and nothing else.** 30 are generated — one per markdown file in `content/` —
+**32 tools, and nothing else.** 31 are generated — one per markdown file in `content/` —
 and one is hand-written. No prompts, no resources. Reachable over stdio or stateless HTTP
 at `POST /mcp`; both serve the same tools, because both call the same `createServer()`.
 
@@ -58,7 +58,7 @@ repository route on a description without reading a body.
 
 The set's own rules are explicit that **nothing is called at session start**. Each
 convention fires on its own trigger, declared in the consuming repository's `AGENTS.md`.
-A session that only branches and commits pays for two files rather than thirty-one — which
+A session that only branches and commits pays for two files rather than thirty-two — which
 is the entire point of the current design, and the reason this page does not describe a
 single bulk call.
 

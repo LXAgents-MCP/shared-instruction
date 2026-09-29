@@ -32,7 +32,7 @@ row. Its first rule is that a security context never crosses repositories.
 three local rules: `repository.md`, `content-publishing.md`, and `set-mirrors.md`. `wiki/`
 holds human documentation. `src/` is eight files and `test/` is two.
 
-**Surface — one tool per file.** 31 tools: 30 generated from `content/`, one per file,
+**Surface — one tool per file.** 32 tools: 31 generated from `content/`, one per file,
 plus `mcp_list`. The name is derived from the path (folder stripped, `.md` dropped, kebab →
 snake), with one override: `AGENTS.md` → `agents_entry_point`. The description is the
 file's own frontmatter `description`, verbatim. **No tool takes an argument.**
@@ -70,11 +70,15 @@ one startup line per worker, from the processes that genuinely hold the port.
 `MCP_CLUSTER_WORKERS=1` forks nothing, and stdio never forks because a worker's copy of
 stdout would corrupt the JSON-RPC stream.
 
-**One held item on the transport change.** `content/rules/mcp-connector.md:105-112` still
-documents the connector as `"type": "sse"` at `/sse`. That is published content, and a
-change under `content/` is a release whose version does not move without the owner, so it
-is raised and not performed. The corrected pages in `wiki/` and `AGENTS.md` therefore
-**disagree with the set** until the owner releases it.
+**The held item on the transport change is released.** `content/rules/mcp-connector.md`
+documented the connector as `"type": "sse"` at `/sse` while the server answered
+`POST /mcp`; it now documents `"type": "http"` at `/mcp`, and the set and the repository
+agree again. The owner approved `3.0.2` and the addition of
+`content/planning/task-workflow.md`; both shipped in `3.0.2` with the log at
+`wiki/logs/3/0/2/CHANGELOG.md`. **The numbering is the owner's call and departs from
+`content/rules/versioning.md`**, which classes a breaking convention change as major and
+an added file as minor. The changelog says so in its own header, because a patch number
+otherwise promises there is nothing to do and there is.
 
 **Not deployed anywhere.** There is no Render service and nothing is routed. The
 `src/http.js` listener is a capability, not a deployment — who runs it, on what address,
