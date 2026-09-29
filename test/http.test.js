@@ -354,6 +354,24 @@ test("an unknown route says what this server actually serves", async (t) => {
   assert.match(body.detail, /POST \/message/);
 });
 
+test("no response discloses the framework or its version", async (t) => {
+  const server = await startServer();
+  t.after(() => server.stop());
+
+  // Express adds `X-Powered-By: Express` unless `src/http.js` disables it. The version in
+  // that header narrows what a caller has to guess about an unauthenticated port, and a
+  // test is the only thing that keeps the line from being "restored" as dead-looking code.
+  // Asserted on the 404 because that response is produced by the catch-all rather than by
+  // any route, so it holds for the whole app and not just the paths that happen to be hit.
+  const response = await fetch(`${server.url}/healthz`);
+  assert.equal(response.status, 404, "the request reached the app at all");
+  assert.equal(
+    response.headers.get("x-powered-by"),
+    null,
+    "the framework must not identify itself",
+  );
+});
+
 /**
  * A request with an explicit `Host` header, returning its status code.
  *

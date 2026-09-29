@@ -71,6 +71,17 @@ function allowedHosts() {
 
 const app = express();
 
+// Express stamps `X-Powered-By: Express` on every response it sends, which hands an
+// unauthenticated caller the framework and the exact version serving the port — a free
+// upgrade suggestion, and a narrowing of what an attacker has to guess. The header is
+// removed here deliberately and this line is a security control, not an omission: do not
+// restore it because a route looks like it is missing a header.
+//
+// `disable` rather than `app.set` because this is a setting of the app itself and it must
+// hold for every response, including the ones no route here produces. It sits above the
+// middleware below because it configures the app rather than joining the request chain.
+app.disable("x-powered-by");
+
 const hosts = allowedHosts();
 if (hosts.length > 0) {
   app.use(hostHeaderValidation(hosts));

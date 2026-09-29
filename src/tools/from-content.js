@@ -56,6 +56,12 @@ function markdownFiles(dir = CONTENT_DIR, base = CONTENT_DIR) {
  * parser, and the alternative is a dependency added to serve one call site, which
  * `.agents/rules/repository.md` forbids. A field this misses is caught below as a
  * missing description rather than silently serving an empty one.
+ *
+ * The value is matched as `\S.*` rather than `.*`, so the run of spaces in front of
+ * it and the value behind it are different character classes. Two overlapping
+ * greedy runs in a row are what let a line that fails to match be retried from
+ * every length; with `\S` in front, handing a space back can never turn a failure
+ * into a match, so a non-matching line costs one pass instead of one pass per space.
  */
 function parseFrontmatter(text) {
   const block = text.match(/^---\r?\n([\s\S]*?)\r?\n---/);
@@ -63,7 +69,7 @@ function parseFrontmatter(text) {
 
   const fields = {};
   for (const line of block[1].split(/\r?\n/)) {
-    const field = line.match(/^([A-Za-z_][A-Za-z0-9_]*):[ \t]*(.*)$/);
+    const field = line.match(/^([A-Za-z_][A-Za-z0-9_]*):[ \t]*(\S.*|)$/);
     if (field) fields[field[1]] = field[2].trim();
   }
   return fields;
