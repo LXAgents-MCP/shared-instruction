@@ -12,7 +12,7 @@ that are true across repositories — branching, commits, pull requests, task
 workflow, the creators, the directory architecture — and nothing that belongs to any
 one repository.
 
-It is delivered by the `lxagents-agents-base` MCP server. A consuming repository
+It is delivered by the `lxagents-shared-instruction` MCP server. A consuming repository
 **connects to it**; it does not clone it, vendor it, or copy it. **Every file below is
 its own tool**, named after its filename, so the client's tool list is the file list —
 `{folder}/{file}.md` is the `file` part of `file_md`. Nothing is loaded up front.
@@ -55,7 +55,7 @@ it by hand.
 
 The full procedure, including what to do when the connector is unavailable, is in
 [`rules/mcp-connector.md`](agents://rules/mcp-connector.md). In short: the connector
-named `lxagents-agents-base` is the shared set. Refer to it as `{shared}` in prose,
+named `lxagents-shared-instruction` is the shared set. Refer to it as `{shared}` in prose,
 and address its files as `agents://{folder}/{file}.md`. There is no checkout, so
 there is nothing to keep in sync and nothing to accidentally commit.
 

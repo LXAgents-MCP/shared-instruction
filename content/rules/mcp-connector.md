@@ -1,6 +1,6 @@
 ---
 name: mcp-connector-resolution
-description: How a repository resolves the shared instruction set through the lxagents-agents-base MCP connector instead of cloning it.
+description: How a repository resolves the shared instruction set through the lxagents-shared-instruction MCP connector instead of cloning it.
 version: 1.0.0
 author: LXAgents
 ---
@@ -9,7 +9,7 @@ author: LXAgents
 
 The shared instruction set is **delivered, not vendored**. There is no `.agents`
 checkout to clone, no submodule, no sibling directory, and nothing to keep in sync.
-The set is served by the `lxagents-agents-base` MCP server and read over the
+The set is served by the `lxagents-shared-instruction` MCP server and read over the
 connector.
 
 ## The bootstrap block
@@ -21,10 +21,10 @@ because it must work before any shared file has been read.
 >
 > The conventions this repository follows — branching, commits, pull requests, task
 > workflow, the creators — live in the shared instruction set served by the
-> **`lxagents-agents-base`** MCP server. This repository carries only what is its
+> **`lxagents-shared-instruction`** MCP server. This repository carries only what is its
 > own. **Resolve the shared set before doing any work:**
 >
-> 1. If the `lxagents-agents-base` connector is available in this session, that is
+> 1. If the `lxagents-shared-instruction` connector is available in this session, that is
 >    the shared set. Refer to it as `{shared}`; its files are addressed as
 >    `agents://{folder}/{file}.md`.
 > 2. **Resolving is not loading.** Do not pull any convention at session start. The
@@ -91,7 +91,7 @@ The server speaks **stdio**. There is one transport, and it is the local one:
 ```json
 {
   "mcpServers": {
-    "lxagents-agents-base": {
+    "lxagents-shared-instruction": {
       "command": "node",
       "args": ["src/index.js"],
       "cwd": "/path/to/shared-instruction"
@@ -100,7 +100,7 @@ The server speaks **stdio**. There is one transport, and it is the local one:
 }
 ```
 
-For npm consumers, `@lxagents-mcp/shared-instruction` exposes the `lxagents-agents-base`
+For npm consumers, `@lxagents-mcp/shared-instruction` exposes the `lxagents-shared-instruction`
 binary, so `command: "npx"`, `args: ["-y", "@lxagents-mcp/shared-instruction"]` works
 without a checkout. To develop on the instruction set itself, run it from a clone with
 `npm start`, or inspect it in the MCP Inspector with `npm run inspect`.

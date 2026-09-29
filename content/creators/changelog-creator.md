@@ -77,7 +77,7 @@ Canonical: [`../git/commit-conventions.md`](agents://git/commit-conventions.md).
 ## Which Set
 
 Choose the set before the folder. Universal content goes to the shared set served by the
-`lxagents-agents-base` connector; repository-specific content stays local; memory is always
+`lxagents-shared-instruction` connector; repository-specific content stays local; memory is always
 local. A shared file is never copied into a repository except as a declared override
 registered in `.agents/index/root-index.md`. See
 [`../rules/shared-instructions.md`](agents://rules/shared-instructions.md).
@@ -129,7 +129,7 @@ Collect the findings, and when the task is done present them to the user:
 
 * one finding per message block, each in its own code block;
 * state the target set — `local` (this repository) or `shared` (the organization's
-  instruction set served by the `lxagents-agents-base` connector);
+  instruction set served by the `lxagents-shared-instruction` connector);
 * include the proposed file path, `name`, `description`, and the full proposed
   body;
 * explain in one line why it is worth adding.

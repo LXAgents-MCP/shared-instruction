@@ -1,6 +1,6 @@
 # MCP Surface
 
-Everything `lxagents-agents-base` exposes.
+Everything `lxagents-shared-instruction` exposes.
 
 **It exposes tools, and nothing else.** 32 of them: 31 generated — one per markdown file
 in `content/` — plus `mcp_list`, which is hand-written. There are no prompts, no resources,
@@ -10,7 +10,7 @@ and no HTTP transport. See [What this server does not expose](#what-this-server-
 
 | Field | Value |
 |---|---|
-| `name` | `lxagents-agents-base` |
+| `name` | `lxagents-shared-instruction` |
 | `version` | from `package.json`, read at import by `src/version.js` |
 | transport | stdio (`src/index.js`) |
 
@@ -117,7 +117,7 @@ documented all of the following as if it were shipped. None of it is.
 | **Prompts** | `agents-setup`, `agents-update` and the duplicate audit are **files**, served as the tools `agents_setup`, `agents_update` and `duplicate_instruction_audit`. |
 | **Resources** | There is no `agents://` URI scheme to fetch and no `manifest.json`. `agents://` survives in the instruction set as the *prose notation* its links use, not as a fetchable endpoint. |
 | **HTTP transport** | `src/index.js` connects `StdioServerTransport` and nothing else. No `POST /mcp`, no `/healthz`, no `/readyz`, no `MCP_PATH`. |
-| **A CLI** | `package.json` declares one bin, `lxagents-agents-base`, which is the server. There is no `lxagents-agents`, no `list`/`read`/`setup`/`audit` subcommands, and no `npm run cli`. |
+| **A CLI** | `package.json` declares one bin, `lxagents-shared-instruction`, which is the server. There is no `lxagents-agents`, no `list`/`read`/`setup`/`audit` subcommands, and no `npm run cli`. |
 | **A writer** | Every tool is read-only. The tools that would write the set are not registered rather than disabled, so pointing a repository at this server cannot mutate it. A test asserts that no tool accepts a write verb or a credential. |
 | **A registry of tools** | `src/constants.js`, `src/server/` and `src/cli.js` were removed. The surface is built by `src/tools/from-content.js` and the array in `src/server.js`. |
 

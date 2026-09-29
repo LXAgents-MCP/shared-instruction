@@ -13,7 +13,7 @@ Open this the moment you are unsure whether something is local or universal.
 
 | Set | Where it lives | What it holds |
 |---|---|---|
-| **Shared** | The `lxagents-agents-base` MCP server, addressed as `agents://` | Everything true across repositories. |
+| **Shared** | The `lxagents-shared-instruction` MCP server, addressed as `agents://` | Everything true across repositories. |
 | **Local** | `{repo}/.agents/` | Everything true of exactly one repository. |
 
 Memory, indexes, both wikis, and `rules/repository.md` are **always local**. Everything
@@ -31,7 +31,7 @@ copied into a consumer, running the other way.
 
 Full procedure in [`mcp-connector.md`](agents://rules/mcp-connector.md). In summary:
 
-1. If the `lxagents-agents-base` connector is available in this session, that is the
+1. If the `lxagents-shared-instruction` connector is available in this session, that is the
    shared set.
 2. Every file in the set is its own tool, so the client's tool list already says what
    exists. Start at `root_index`, which routes to the rest.

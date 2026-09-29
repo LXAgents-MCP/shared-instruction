@@ -16,7 +16,7 @@ work equally well on an empty repository containing only `README.md` and on an e
 codebase.
 
 It is also **repository-agnostic within the organization**: the shared instruction set is
-served by the `lxagents-agents-base` connector you are reading this from, and every
+served by the `lxagents-shared-instruction` connector you are reading this from, and every
 repository carries only what is genuinely its own.
 
 ---
@@ -276,7 +276,7 @@ for every trigger; name it as such.
 
 > ## Shared instruction tools
 >
-> Conventions come from the `lxagents-agents-base` connector, where **every file in the set
+> Conventions come from the `lxagents-shared-instruction` connector, where **every file in the set
 > is its own tool**, named after its filename. The tools below are the ones this repository
 > uses. **Call each when its trigger fires — not at session start, and never all at once.**
 > A convention with no row here does not apply to this repository.
@@ -410,7 +410,7 @@ than restating, and **never restate a shared rule here**. If the project is curr
 a README, say so plainly and keep the file minimal; do not fabricate architecture.
 
 State in one short section: which mode this repository is in, that the shared set comes
-from the `lxagents-agents-base` connector, and — in Mode C — that the repository is
+from the `lxagents-shared-instruction` connector, and — in Mode C — that the repository is
 standalone.
 
 ### 5.2 The index system

@@ -11,7 +11,7 @@ Three servers. Each one serves a **set** of instruction files over MCP, read-onl
 repository connects one instead of copying its text.
 
 **You are already connected to this one.** The server reading you this page is
-`lxagents-agents-base` — the org-wide set. It is not listed below, because you do not
+`lxagents-shared-instruction` — the org-wide set. It is not listed below, because you do not
 install the server you are already talking to. What follows is what you may *add*.
 
 | Server | What it holds | Use it in |

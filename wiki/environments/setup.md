@@ -34,7 +34,7 @@ client at it. From a checkout:
 ```json
 {
   "mcpServers": {
-    "lxagents-agents-base": {
+    "lxagents-shared-instruction": {
       "command": "node",
       "args": ["src/index.js"],
       "cwd": "/path/to/shared-instruction"
@@ -48,7 +48,7 @@ From npm, the package exposes that same file as a bin, so no checkout is needed:
 ```json
 {
   "mcpServers": {
-    "lxagents-agents-base": {
+    "lxagents-shared-instruction": {
       "command": "npx",
       "args": ["-y", "@lxagents-mcp/shared-instruction"]
     }

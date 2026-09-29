@@ -7,7 +7,7 @@ description: Entry point for LXAgents-MCP/shared-instruction — the repository 
 
 This repository is `LXAgents-MCP/shared-instruction`. It holds the shared agent
 instruction set in [`content/`](content/) and serves it over MCP as
-`lxagents-agents-base`. Every other
+`lxagents-shared-instruction`. Every other
 repository in the organization consumes that set through a connector rather than
 copying it.
 
@@ -92,7 +92,7 @@ argument** — a tool names one file, so there is no path to pass.
 Authority: [`content/rules/mcp-connector.md`](content/rules/mcp-connector.md). Setup, in
 full: [`wiki/guides/install-as-local-mcp.md`](wiki/guides/install-as-local-mcp.md).
 
-This repository **is** the server. It publishes `content/` as `lxagents-agents-base`, so
+This repository **is** the server. It publishes `content/` as `lxagents-shared-instruction`, so
 here the connector is the thing being edited, not the thing being consulted — read
 `content/` in the working tree and treat a deployed snapshot as possibly older than your
 branch. Everywhere else, read `agents://`.

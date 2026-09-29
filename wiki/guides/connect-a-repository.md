@@ -9,7 +9,7 @@ The server is **stdio only**, so this is a local command:
 ```json
 {
   "mcpServers": {
-    "lxagents-agents-base": {
+    "lxagents-shared-instruction": {
       "command": "npx",
       "args": ["-y", "@lxagents-mcp/shared-instruction"]
     }

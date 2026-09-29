@@ -11,7 +11,7 @@ Writes the **local working plan** for a task in flight: an untracked checklist
 that tracks work while it runs. It writes nothing else — not the task record,
 not documentation, not code, and not the work itself.
 
-This is served by `lxagents-agents-base` and carries this set's version. The
+This is served by `lxagents-shared-instruction` and carries this set's version. The
 plan it describes is **untracked and local to whichever repository is running
 it** — a plan is never published, never shared, and never committed, so
 serving the creator that writes one leaks no repository's work.
@@ -36,7 +36,7 @@ Canonical: [`../git/commit-conventions.md`](agents://git/commit-conventions.md).
 ## Which Set
 
 Choose the set before the folder. Universal content goes to the shared set served by the
-`lxagents-agents-base` connector; repository-specific content stays local; memory is always
+`lxagents-shared-instruction` connector; repository-specific content stays local; memory is always
 local. A shared file is never copied into a repository except as a declared override
 registered in `.agents/index/root-index.md`. See
 [`../rules/shared-instructions.md`](agents://rules/shared-instructions.md).

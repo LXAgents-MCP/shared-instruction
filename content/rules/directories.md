@@ -53,7 +53,7 @@ Both trees are routed from `.agents/index/`. Neither contains an index file of i
 ### The federation split
 
 Conventions true across the organization are written **once**, here, and served over
-the `lxagents-agents-base` connector. Every repository carries only what is genuinely
+the `lxagents-shared-instruction` connector. Every repository carries only what is genuinely
 its own.
 
 ```
