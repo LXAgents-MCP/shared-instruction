@@ -39,9 +39,9 @@ whether to run the audit.
 
 ### 1. Resolve and inventory
 
-Read `agents://manifest.json`. It gives you every shared file's `name`, path,
-description, and `sha256` of its normalized body. This is one read; do not walk the
-shared set file by file.
+The connector's tool list is the inventory: one tool per file in the shared set, named
+after its filename, each carrying that file's `description`. This is already in hand; do
+not walk the shared set file by file, and do not call every tool to build a list.
 
 If the connector is unavailable, **stop**. Report that the audit cannot run without
 it. Never guess at what the shared set contains — a deletion driven by a guess is

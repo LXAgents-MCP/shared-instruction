@@ -22,5 +22,5 @@ Read exactly one branch per task.
 * Adding, removing, or renaming any file in `index/` updates this table **in the same
   commit**.
 * This set has no override table — the shared set overrides nothing.
-* `agents://manifest.json` is the machine-readable form of everything below. Prefer one
-  read of the manifest over walking the set.
+* Every file listed here is also a tool, named after its filename, so a session can
+  route by tool name without reading this table. Prefer the tool list over walking the set.

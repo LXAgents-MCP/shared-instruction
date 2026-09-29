@@ -15,10 +15,10 @@ else.
 1. **Decide the set.** *Is this true for more than this repository?* Yes → shared; no →
    local. From a consuming repository a shared rule is **never written** — it is proposed
    against `LXAgents-MCP/shared-instruction`.
-2. **Confirm it does not already exist.** Check the local `agents-index.md`, then
-   `agents://manifest.json` for the shared set. If something already covers the subject,
-   extend that file instead of adding a near-duplicate — subject to the discovery protocol
-   below.
+2. **Confirm it does not already exist.** Check the local `agents-index.md`, then the
+   connector's tool list for the shared set — one tool per shared file, each carrying that
+   file's description. If something already covers the subject, extend that file instead of
+   adding a near-duplicate — subject to the discovery protocol below.
 3. **Choose or create the folder.** Use the tables in
    [`../rules/directories.md`](agents://rules/directories.md). If nothing fits, create a
    new folder — lowercase kebab-case, a plain topic noun — and register it in that file's

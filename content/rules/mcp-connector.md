@@ -30,10 +30,10 @@ because it must work before any shared file has been read.
 > 2. **Resolving is not loading.** Do not pull any convention at session start. The
 >    **Shared instruction tools** block below declares which tools this repository
 >    uses and the trigger for each; call one when its trigger fires, and not before.
-> 3. Where the client exposes no tools, the same conventions are read as
->    `agents://{folder}/{file}.md` resources, on the same triggers.
->    `list_shared_agents_instruction` — or `agents://manifest.json` — answers "what
->    exists?" in one call. Do not bulk-read the set.
+> 3. **Every file in the set is its own tool**, named after its filename — so
+>    "what exists?" is answered by the tool list the client already has, at no cost.
+>    `root_index` routes to the rest; `mcp_list` lists the sibling servers. Do not
+>    bulk-call the set.
 > 4. If the connector is not available, say so plainly and continue with this
 >    repository's local instruction set only. **Do not reconstruct the missing rules
 >    from memory, and do not clone or copy them into this repository.**
@@ -41,9 +41,9 @@ because it must work before any shared file has been read.
 > **The declaration block is required.** A repository without one has no routing table,
 > so nothing fires and the omission looks exactly like a session in which no convention
 > happened to apply. It names the four mandatory tools at minimum — `task_workflow`,
-> `branch_strategy`, `commit_strategy`, `discovery_protocol` — and stamps the set version
-> adopted. Shape: `{shared}/prompts/agents-setup.md`. Keeping it current when this set
-> moves: `{shared}/prompts/agents-update.md`, on request.
+> `branching_strategy`, `commit_conventions`, `discovery_protocol` — and stamps the set
+> version adopted. Shape: `{shared}/prompts/agents-setup.md`. Keeping it current when this
+> set moves: `{shared}/prompts/agents-update.md`, on request.
 >
 > Never commit shared content into this repository. A file that can be read from
 > `agents://` must not exist here as a copy — see
@@ -62,17 +62,23 @@ because it must work before any shared file has been read.
   the shared set cannot be vendored by mistake.
 * **No duplication.** Every repository reads the same bytes. Drift between
   repositories stops being possible without a declared override.
-* **Cheaper context.** `agents://manifest.json` answers "what exists?" in one read;
-  a clone answers it by walking a tree.
+* **Cheaper context.** Every file is a tool with a description, so the client's own
+  tool list answers "what exists?" for free. A clone answers it by walking a tree, and
+  reading the tree to build a registry is the work the connector exists to remove.
 
 ## Addressing
 
 | You mean | You write |
 |---|---|
 | A shared file, in prose | `{shared}/rules/directories.md` |
-| A shared file, as a resource | `agents://rules/directories.md` |
+| A shared file, to fetch it | call the tool named after it — `directories` |
 | A local file, in prose from a shared file | `{repo}/.agents/index/root-index.md` |
 | A local file, from another local file | a relative path — `../rules/repository.md` |
+
+`agents://{folder}/{file}.md` is the **prose notation** this set uses in its own links and
+in a consuming repository's `AGENTS.md`. It is not a fetchable URI — the server exposes
+tools, not a resource endpoint — so a session resolves it by calling the tool, not by
+reading a URI.
 
 Relative, clickable links are used **within** a set only. A shared file never emits a
 relative path that points outside the shared set, because it has no idea where the
@@ -80,20 +86,7 @@ consuming repository sits on disk.
 
 ## Connecting the server
 
-**As a remote connector** — the normal case, and what makes this set available to a
-repository without cloning anything:
-
-1. Open **Settings → Connectors → Add custom connector**.
-2. Name it `lxagents-agents-base`.
-3. Point it at the deployed server's MCP endpoint — **including the `/mcp` path**:
-   `https://<host>/mcp`.
-
-The path is not optional. A URL without it lands on a route that speaks no MCP, and
-clients tend to read that failure as "this server needs authentication" and report a
-sign-in or registration error rather than a wrong address. If connecting fails that
-way, check the path first.
-
-**As a local stdio server** — for development on the instruction set itself:
+The server speaks **stdio**. There is one transport, and it is the local one:
 
 ```json
 {
@@ -107,43 +100,48 @@ way, check the path first.
 }
 ```
 
+For npm consumers, `@lxagents-mcp/shared-instruction` exposes the `lxagents-agents-base`
+binary, so `command: "npx"`, `args: ["-y", "@lxagents-mcp/shared-instruction"]` works
+without a checkout. To develop on the instruction set itself, run it from a clone with
+`npm start`, or inspect it in the MCP Inspector with `npm run inspect`.
+
+**Registering a server does not reach a session that is already running.** A client
+loads its connector list at session start, so a server added mid-session reports healthy
+and is still absent from the tool surface until the session restarts. That is the common
+cause of "the connector is not resolving", and it looks like a broken server rather than
+a stale session.
+
 ## What the server exposes
 
-| Kind | Name / URI | Purpose |
-|---|---|---|
-| Prompt | `agents-setup` | The full setup procedure. Invoke it to scaffold or adopt the instruction system in a repository. |
-| Prompt | `agents-update` | Move a repository from the set version it adopted to the current one. **On request only.** |
-| Prompt | `check-duplicate-agents-instruction` | The duplicate audit. Runs **only when the user asks** — see `duplicate-instruction-audit.md`. |
-| Resource | `agents://manifest.json` | Every shared file with `name`, path, description and content hash. |
-| Resource | `agents://AGENTS.md` | The federation contract. |
-| Resource | `agents://{folder}/{file}.md` | Any shared instruction file. |
-| Tool | `task_workflow` | The task workflow. One of the four every repository declares. |
-| Tool | `branch_strategy` | The branching strategy. One of the four. |
-| Tool | `commit_strategy` | The commit conventions. One of the four. |
-| Tool | `discovery_protocol` | The propose-never-self-apply protocol. One of the four. |
-| Tool | `pull_request_strategy` | The pull request title and body rules. |
-| Tool | `agents_model_naming_convention` | The `{platform}/{model}` rule for stored model identifiers, whole. |
-| Tool | `agents_model_name_format` | Builds one compliant `model_name` from a platform and that platform's model id. |
-| Tool | `setup_shared_agents_instruction` | Same text as the `agents-setup` prompt. |
-| Tool | `update_shared_agents_instruction` | The version delta and the re-sync procedure. **On request only.** |
-| Tool | `check_duplicate_shared_agents_instruction` | Same text as the audit prompt, manifest inlined. **On request only.** |
-| Tool | `list_shared_agents_instruction` | The manifest, optionally filtered to one folder. |
-| Tool | `read_shared_agents_instruction` | One file, by `name`, path, or URI. The route to everything without a dedicated tool. |
-| Tool | `mcp_creator` | Scaffolds a new MCP repository. **Not part of reading this set** — listed so you know the capability is there. Plans by default; creates files only when asked. |
+**One tool per file, and nothing else.** The tool is named after its own filename — folder
+stripped, `.md` dropped, kebab to snake — with one exception: `AGENTS.md` is served as
+`agents_entry_point`, because `agents` says nothing about which document it is.
+
+| Tool | Serves |
+|---|---|
+| `task_workflow` | `planning/task-workflow.md` — one of the four every repository declares |
+| `branching_strategy` | `git/branching-strategy.md` — one of the four |
+| `commit_conventions` | `git/commit-conventions.md` — one of the four |
+| `discovery_protocol` | `rules/discovery-protocol.md` — one of the four |
+| `root_index` | `index/root-index.md` — start here; it routes to everything else |
+| `agents_entry_point` | `AGENTS.md` — the federation contract |
+| `agents_setup` | `prompts/agents-setup.md` |
+| `agents_update` | `prompts/agents-update.md` — **on request only** |
+| `duplicate_instruction_audit` | `rules/duplicate-instruction-audit.md` — **on request only** |
+| `mcp_list` | The registry of sibling instruction and security servers |
+
+…plus one tool for every other file in the set. The list your client enumerates is the
+complete list; there is no manifest to fetch and no second way in. Start at `root_index`
+rather than guessing which convention applies.
+
+**No tool takes an argument.** A tool names one file, so there is no path to pass and
+nothing for a caller to traverse with. This server is read-only as a matter of structure
+rather than of configuration: the tools that would write the set are not registered.
 
 **No tool is called at session start.** Each fires on the trigger its row in the
-repository's declaration block gives it. Calling them all to "have them ready" rebuilds the
-single oversized payload this surface replaced, one call at a time.
-
-**Prefer the prompts and resources.** They are the right primitives for standing
-orders, and the tools return identical text. The tools exist because some clients
-enumerate a connector by its tools alone and never surface prompts or resources — a
-server without them shows up there as unusable. Use whichever your client actually
-exposes; the instructions you receive are the same either way.
-
-Everything above except `mcp_creator` is read-only. `mcp_creator` writes files, and
-only when a call explicitly asks it to — so it is never something to invoke while
-merely resolving the set.
+repository's declaration block gives it. There are more than thirty; calling them all to
+"have them ready" rebuilds the single oversized payload this surface replaced, one call at
+a time.
 
 ## When the connector is unavailable
 

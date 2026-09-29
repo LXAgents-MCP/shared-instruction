@@ -80,6 +80,14 @@ require user approval per [`../rules/versioning.md`](agents://rules/versioning.m
 - A plan lives at `{repo}/.agents/plans/`, which the repository's `.gitignore`
   excludes as `/.agents/plans/`. Nothing in it is staged, committed, or pushed,
   ever.
+- **That exclusion is a precondition, not a wish.** The only thing keeping a
+  plan out of history is that one `.gitignore` line, and a repository without it
+  is one `git add -A` away from publishing its own working notes. Check for it
+  before writing anything — see the step in *Before writing*. If the rule is
+  missing, **ask the owner to add it, and wait.** Do not edit `.gitignore`
+  yourself: it is not this creator's file, it is the repository's, and a rule
+  added unasked is a change nobody approved. Carry on writing the plan without
+  it, and say plainly that the folder is not yet excluded.
 - **`tasks.md` is the center file.** Every other file in the plan appears in its
   routing table, and every route out of a plan file goes through it.
 - A file in `.agents/plans/` that `tasks.md` does not list is not part of the
@@ -98,6 +106,13 @@ require user approval per [`../rules/versioning.md`](agents://rules/versioning.m
    do not start a second one.
 4. **Refine before planning.** State what changes, what does not change, and
    what is being assumed where the request is silent.
+5. **Check `.gitignore` for `/.agents/plans/`.** Read the repository's
+   `.gitignore` before creating the folder. If the rule is there, the plan
+   cannot be published by accident. If it is not, ask the owner to add it —
+   name the line and the reason — and do not add it yourself. Carry on either
+   way; a missing rule is a finding to report, not a reason to withhold the
+   plan. Confirm with `git check-ignore -v .agents/plans/tasks.md`: it must
+   print the rule, or the plan is one commit away from being published.
 
 ## The gate comes before the plan
 
