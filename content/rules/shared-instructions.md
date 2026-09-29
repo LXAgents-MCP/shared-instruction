@@ -127,20 +127,20 @@ and that file remains the single authority for how it is carried out.
 
 | On every request you must… | Authority |
 |---|---|
-| Declare the four mandatory tools in `AGENTS.md`, and carry their gates inline | `task_workflow`, `branching_strategy`, `commit_conventions`, `discovery_protocol` — [`auto-activation.md`](agents://rules/auto-activation.md) |
-| Refine the requirements and put a plan in front of the user **before** running code or writing a file | [`../planning/task-workflow.md`](agents://planning/task-workflow.md) §A |
-| Wait for the user to **approve** that plan before writing a file, creating a branch, or changing state | [`../planning/task-workflow.md`](agents://planning/task-workflow.md) §B |
-| Break the work into tasks and present the list before starting — task 1 is the record, task `n` is the release, the work goes between | [`../planning/task-workflow.md`](agents://planning/task-workflow.md) §B |
-| Write the task record **before** the work, and append each task's own entry in the same commit as that task | [`../planning/task-workflow.md`](agents://planning/task-workflow.md) §B, §E |
-| Isolate each task on its own branch — one task, one branch, never two on one | [`../git/branching-strategy.md`](agents://git/branching-strategy.md), [`../planning/task-workflow.md`](agents://planning/task-workflow.md) §C |
-| Ask before opening a pull request, and ask again before merging one | [`../planning/task-workflow.md`](agents://planning/task-workflow.md) §F |
+| Declare the four mandatory tools in `AGENTS.md`, and carry their gates inline | `plan_creator`, `branching_strategy`, `commit_conventions`, `discovery_protocol` — [`auto-activation.md`](agents://rules/auto-activation.md) |
+| Refine the requirements and put a plan in front of the user **before** running code or writing a file | [`../creators/plan-creator.md`](agents://creators/plan-creator.md) §A |
+| Wait for the user to **approve** that plan before writing a file, creating a branch, or changing state | [`../creators/plan-creator.md`](agents://creators/plan-creator.md) §B |
+| Break the work into tasks and present the list before starting — task 1 is the record, task `n` is the release, the work goes between | [`../creators/plan-creator.md`](agents://creators/plan-creator.md) §B |
+| Write the task record **before** the work, and append each task's own entry in the same commit as that task | [`../creators/plan-creator.md`](agents://creators/plan-creator.md) §B, §E |
+| Isolate each task on its own branch — one task, one branch, never two on one | [`../git/branching-strategy.md`](agents://git/branching-strategy.md), [`../creators/plan-creator.md`](agents://creators/plan-creator.md) §C |
+| Ask before opening a pull request, and ask again before merging one | [`../creators/plan-creator.md`](agents://creators/plan-creator.md) §F |
 | Propose any instruction you think should exist — never write it into either set yourself | [`discovery-protocol.md`](agents://rules/discovery-protocol.md) |
 | Stop, ask, and write a diagnostic report the moment this workflow is bypassed despite activation having run | [`auto-activation.md`](agents://rules/auto-activation.md) |
 
 ### The gates are not trigger-gated; the procedures are
 
 [`auto-activation.md`](agents://rules/auto-activation.md) fires most conventions from a
-trigger, and the four below are no exception — `task_workflow` fires on a request of more
+trigger, and the four below are no exception — `plan_creator` fires on a request of more
 than one step, `branching_strategy` when a branch is about to exist, and so on. What is
 *not* trigger-gated is the part that has to be standing before the work starts: **the gates
 themselves live inline in the repository's `AGENTS.md`**, read from disk at session start,
@@ -179,4 +179,4 @@ again.
 finishing the work is not permission to open anything, and a green pipeline is not
 permission to merge it. The full terms of the plan gate — what counts as approval and
 what does not — are in
-[`../planning/task-workflow.md`](agents://planning/task-workflow.md) §B.
+[`../creators/plan-creator.md`](agents://creators/plan-creator.md) §B.

@@ -102,3 +102,58 @@ should know the number.
 Verified nothing was dropped by a line-by-line comparison of the old file against the
 new one: every non-trivial line of `task-workflow.md` is present, the only intentional
 loss being its own frontmatter `description`, which named the old file's job alone.
+
+### Task 3 — `docs/merge-task-workflow-links`
+
+Deleted `content/planning/task-workflow.md` and repointed every link to it. Seventeen
+files in `content/` changed. This is the commit that actually removes a tool from the
+published surface, so it is the one a consuming repository's `AGENTS.md` will break on.
+
+**`plan_creator` took `task_workflow`'s place in all four routing surfaces**, not just
+one. They are separate files that all had to move together or the set routes to a tool
+that is gone:
+
+| Surface | File |
+|---|---|
+| The declared-tools table and "the four that are not optional" | `rules/auto-activation.md` |
+| The §H gate table — seven rows, plus the four-tool declaration line and two prose mentions | `rules/shared-instructions.md` |
+| The connector bootstrap block and its tool table | `rules/mcp-connector.md` |
+| The federation contract's task-and-git-workflow section | `AGENTS.md` |
+
+`auto-activation.md` already had a `plan_creator` row carrying the narrower trigger
+"plan a task of more than one step, before any file is written". That row absorbed the
+old `task_workflow` row and its trigger widened to "take in any request of more than one
+step"; the table now has one row per tool rather than two rows for one job.
+
+**The six creators.** Five of them — `changelog`, `index`, `information`, `instruction`
+and `security` — carry a byte-identical "merging requires user approval per
+`../planning/task-workflow.md`" sentence, so one scripted edit moved all five to
+`plan-creator.md` §F. `memory-creator.md` took the same edit plus its two record-specific
+references (§B for task 1, §F for the release task). The remaining set-side links were
+`git/branching-strategy.md` §C, `git/pull-request-template.md` §F, and
+`prompts/branch-and-commit.md` §A.
+
+**`agents-setup.md` is the mirror that mattered most.** It dictates the declaration block
+every new consuming repository is given, so leaving its `task_workflow` template row
+would have written a dead tool name into every repository set up from the current
+prompt. Its template row, its record-shape link, and its "all four mandatory tools"
+checklist line were all repointed. `agents-update.md` got the same two edits, which is
+what carries a consumer across this release.
+
+**`content/planning/` is gone from the tree**, because git will not track an empty
+directory. Four files asserted the folder exists and were corrected: the tree diagram in
+`rules/directories.md`, the "nothing copied from this set" step in `AGENTS.md`, and three
+places in `agents-setup.md` that enumerate the shared-only folders. The
+`instructions-index.md` `planning/` section stays, reworded to match how `security/` is
+already described — empty, served, and the place a future file in that folder would be
+published from. Its `creators/` row for `plan-creator.md` now names both jobs.
+
+**One `planning/` reference was deliberately kept.** `rules/directories.md` has a table
+of candidate folders to create, alongside sixteen others that do not exist — `docs/`,
+`skills/`, `personas/`, `ethics/` and the rest. `planning/` belongs in that menu, because
+a universal planning rule that is not part of a creator would still land there.
+
+**The suite is red here, as planned, for two reasons only** — the hard-coded `32` in
+`test/http.test.js` and the index-routing assertion in `test/server.test.js` that still
+names the deleted path. Both are task 4. No other test regressed, and no boot invariant
+tripped: the set still builds, so the merge itself published a valid surface.

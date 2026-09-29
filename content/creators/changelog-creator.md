@@ -113,7 +113,7 @@ that scope, **in the same commit**. See
 Any pull request follows
 [`../git/pull-request-template.md`](agents://git/pull-request-template.md); merging requires
 user approval per
-[`../planning/task-workflow.md`](agents://planning/task-workflow.md). Version changes
+[`plan-creator.md`](agents://creators/plan-creator.md) §F. Version changes
 require user approval per [`../rules/versioning.md`](agents://rules/versioning.md).
 
 ## Discovery Protocol

@@ -60,7 +60,7 @@ its own.
 LXAgents-MCP/shared-instruction     <- THE PRODUCER: serves the shared set over MCP
   content/                          <- THE SHARED SET ITSELF, published as agents:// resources
     AGENTS.md                       <- the federation contract
-    rules/  git/  planning/  prompts/  creators/  index/
+    rules/  git/  prompts/  creators/  index/
   .agents/                          <- the producer's OWN local set, published to nobody
   wiki/logs/…                       <- the shared set's own release history
 
