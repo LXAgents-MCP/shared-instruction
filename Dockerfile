@@ -44,6 +44,20 @@ EXPOSE 3000
 #
 #   docker run --rm -p 3000:3000 … node src/http.js
 #
+# The whole default lives in CMD, and this file sets no ENTRYPOINT of its own, which is
+# what makes that command work. An ENTRYPOINT cannot be replaced by the command that
+# follows the image name, only appended to, so `ENTRYPOINT ["node", "src/index.js"]` turned
+# the documented form into `node src/index.js node src/http.js`: the stdio server started,
+# read a closed stdin, and exited 0 with the published port closed — a silent failure.
+# `ENTRYPOINT ["node"]` is no better, giving `node node src/http.js` and an exit 1. Both
+# were built and run before this line was chosen.
+#
+# What this file inherits from `node:22-alpine` is `ENTRYPOINT ["docker-entrypoint.sh"]`,
+# which ends in `exec "$@"`. That is what makes the override work: the documented command
+# replaces CMD, the inherited entrypoint execs it, and `node src/http.js` runs as written.
+# Setting an ENTRYPOINT here would replace that script with a fixed prefix, which is the
+# failure above. Do not add one back.
+#
 # Set MCP_ALLOWED_HOSTS when the container is reachable from anywhere but this machine;
 # the Host allow-list is off unless you set it. See wiki/environments/env.md.
-ENTRYPOINT ["node", "src/index.js"]
+CMD ["node", "src/index.js"]
