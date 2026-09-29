@@ -77,7 +77,7 @@ the file list. Start at `root_index` or `agents_entry_point` rather than calling
 
 | When you are about to… | Call | Which is |
 |---|---|---|
-| Take in any request of more than one step | `task_workflow` | [`content/planning/task-workflow.md`](content/planning/task-workflow.md) |
+| Take in any request of more than one step | `plan_creator` | [`content/creators/plan-creator.md`](content/creators/plan-creator.md) |
 | Create a branch | `branching_strategy` | [`content/git/branching-strategy.md`](content/git/branching-strategy.md) |
 | Write a commit message | `commit_conventions` | [`content/git/commit-conventions.md`](content/git/commit-conventions.md) |
 | Notice a rule that should exist | `discovery_protocol` | [`content/rules/discovery-protocol.md`](content/rules/discovery-protocol.md) |
@@ -105,7 +105,7 @@ branch. Everywhere else, read `agents://`.
 | Published | `command: npx`, `args: ["-y", "@lxagents-mcp/shared-instruction"]` |
 | HTTP | `type: sse`, `url: https://<host>/sse` — `npm run start:http` binds `PORT \|\| 3000` |
 
-Both transports serve the same 32 tools. stdio is the right default for a client that can
+Both transports serve the same 31 tools. stdio is the right default for a client that can
 spawn a process; HTTP is for running the server as a service at a fixed address.
 
 **Registering a server does not reach a session that is already running.** The client

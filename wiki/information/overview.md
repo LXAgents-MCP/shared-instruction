@@ -29,7 +29,7 @@ to vendor by mistake, and every repository reads the same bytes.
 
 ## What it serves
 
-**32 tools, and nothing else.** 31 are generated — one per markdown file in `content/` —
+**31 tools, and nothing else.** 30 are generated — one per markdown file in `content/` —
 and one is hand-written. No prompts, no resources. Reachable over stdio or HTTP/SSE; both
 serve the same tools, because both call the same `createServer()`.
 
@@ -37,7 +37,7 @@ serve the same tools, because both call the same `createServer()`.
 |---|---|
 | `agents_entry_point` | `AGENTS.md`, the federation contract. The one name that is not derived from its filename. |
 | `root_index` | `index/root-index.md` — start here; it routes to the rest. |
-| `task_workflow` | `planning/task-workflow.md` |
+| `plan_creator` | `creators/plan-creator.md` |
 | `branching_strategy` | `git/branching-strategy.md` |
 | `commit_conventions` | `git/commit-conventions.md` |
 | `discovery_protocol` | `rules/discovery-protocol.md` |

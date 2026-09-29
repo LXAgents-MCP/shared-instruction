@@ -28,7 +28,7 @@ export function createServer() {
     { name: SERVER_NAME, version: VERSION },
     {
       instructions:
-        "The LXAgents shared agent instruction set, read-only. Every file in the set is its own tool: call the one whose name says what you need, such as branching_strategy, commit_conventions, task_workflow, or plan_creator. Start at root_index or agents_entry_point to route rather than calling everything. Call nothing at session start — each convention fires on its own trigger. mcp_list returns the registry of sibling instruction and security servers.",
+        "The LXAgents shared agent instruction set, read-only. Every file in the set is its own tool: call the one whose name says what you need, such as plan_creator, branching_strategy, commit_conventions, or discovery_protocol. Start at root_index or agents_entry_point to route rather than calling everything. Call nothing at session start — each convention fires on its own trigger. mcp_list returns the registry of sibling instruction and security servers.",
     },
   );
 

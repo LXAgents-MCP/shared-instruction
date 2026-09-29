@@ -242,7 +242,6 @@ test("the instructions index routes every convention it should", async () => {
     "creators/security-creator.md",
     "rules/versioning.md",
     "rules/no-session-links.md",
-    "planning/task-workflow.md",
   ]) {
     assert.ok(text.includes(path), `the index must route ${path}`);
   }

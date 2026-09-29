@@ -2,7 +2,7 @@
 
 Everything `lxagents-shared-instruction` exposes.
 
-**It exposes tools, and nothing else.** 32 of them: 31 generated — one per markdown file
+**It exposes tools, and nothing else.** 31 of them: 30 generated — one per markdown file
 in `content/` — plus `mcp_list`, which is hand-written. There are no prompts and no
 resources. It is reachable over two transports, and they expose the same tools. See
 [What this server does not expose](#what-this-server-does-not-expose).
@@ -24,7 +24,7 @@ that nothing is to be called at session start.
 
 ## The generated tools
 
-31 tools, one per `.md` file under `content/`. Nothing registers them by hand.
+30 tools, one per `.md` file under `content/`. Nothing registers them by hand.
 
 ### Naming
 
@@ -126,7 +126,7 @@ documented all of the following as if it were shipped. None of it is.
 | **Health and readiness endpoints** | No `/healthz`, no `/readyz`. The HTTP transport answers `/sse` and `/message`, and a 404 for anything else. A probe endpoint on a server that serves only public markdown is a route that exists to be scanned. |
 | **Authentication** | Neither transport has any, and adding it would not make the content less public — it is on npm. See the [security model](../security/security-model.md). |
 
-**What the HTTP transport does expose** is the same 32 tools, at `GET /sse` (open a
+**What the HTTP transport does expose** is the same 31 tools, at `GET /sse` (open a
 session) and `POST /message` (send to it). An unknown session id is a 404 rather than a new
 session, and a session lives only as long as its stream.
 
