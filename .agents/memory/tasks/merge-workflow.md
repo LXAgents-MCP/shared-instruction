@@ -31,11 +31,11 @@ at all in a fresh checkout, and `git check-ignore -v .agents/plans/tasks.md` con
 
 | # | Branch | Scope | PR |
 |---|---|---|---|
-| 1 | `chore/merge-workflow-plan` | This file, and its `memory-index.md` row. | — |
-| 2 | `docs/merge-task-workflow-body` | `content/creators/plan-creator.md` — absorb §A–§F, widen `description`. | — |
-| 3 | `docs/merge-task-workflow-links` | Delete `content/planning/task-workflow.md`; repoint every link inside `content/`. | — |
-| 4 | `docs/merge-task-workflow-mirrors` | `src/`, `test/`, root `AGENTS.md`, `README.md`, `wiki/`, `repository-state.md`. | — |
-| 5 | `docs/merge-task-workflow-release` | `3.0.0`: `package.json`, `wiki/logs/3/0/0/`, both logs indexes, docker tags. | — |
+| 1 | `chore/merge-workflow-plan` | This file, and its `memory-index.md` row. | [#70](https://github.com/LXAgents-MCP/shared-instruction/pull/70) |
+| 2 | `docs/merge-task-workflow-body` | `content/creators/plan-creator.md` — absorb §A–§F, widen `description`. | [#71](https://github.com/LXAgents-MCP/shared-instruction/pull/71) |
+| 3 | `docs/merge-task-workflow-links` | Delete `content/planning/task-workflow.md`; repoint every link inside `content/`. | [#72](https://github.com/LXAgents-MCP/shared-instruction/pull/72) |
+| 4 | `docs/merge-task-workflow-mirrors` | `src/`, `test/`, root `AGENTS.md`, `README.md`, `wiki/`, `repository-state.md`. | [#73](https://github.com/LXAgents-MCP/shared-instruction/pull/73) |
+| 5 | `docs/merge-task-workflow-release` | `3.0.0`: `package.json`, `wiki/logs/3/0/0/`, both logs indexes, docker tags. | [#74](https://github.com/LXAgents-MCP/shared-instruction/pull/74) |
 
 Branches stack: task `k` branches from task `k-1`. The order is forced. Task 2 rewrites
 the file task 3 links to, so it lands first; task 3 deletes the path that
@@ -91,13 +91,14 @@ in its own comment as the file that shipped without it once already. So the sect
 restored byte-for-byte, and the workflow-specific rules moved under §C beside it. The
 suite is 31/31.
 
-The merged file is **20,877 bytes**, against 11,503 for `task-workflow.md` and roughly
-6,500 for `plan-creator.md` alone. The plan estimated ~16 KB; the real figure is higher
-because both files' text is retained in full, with only the two genuine duplications
-removed. That makes it the largest file in the set, and it is served by the tool every
-repository must declare. The cost is accepted and unchanged in kind — one call at
-intake rather than two overlapping calls — but it is larger than planned and consumers
-should know the number.
+The merged file is **21,321 bytes**, against 11,573 for `task-workflow.md` and 8,419 for
+`plan-creator.md` alone. The plan estimated ~16 KB; the real figure is higher because both
+files' text is retained in full, with only the two genuine duplications removed. That makes
+it the largest file in the set, and it is served by the tool every repository must declare.
+The cost is accepted and unchanged in kind — one call at intake rather than two overlapping
+calls — but it is larger than planned and consumers should know the number. What a session
+reads at intake is the fairer measure: two calls totalling 19,992 bytes before, one call of
+21,321 after, so the merge costs 1,329 bytes on that call.
 
 Verified nothing was dropped by a line-by-line comparison of the old file against the
 new one: every non-trivial line of `task-workflow.md` is present, the only intentional
@@ -202,3 +203,75 @@ each change happened.
 
 Verified against a fresh process rather than assumed: `TOOL_FILES` holds 30 entries,
 `task_workflow` is absent, and `plan_creator` resolves to `creators/plan-creator.md`.
+
+### Task 5 — `docs/merge-task-workflow-release`
+
+Cut `3.0.0`. `package.json` reads `3.0.0`, `package-lock.json` was resynced rather than
+hand-edited, `wiki/logs/3/0/0/CHANGELOG.md` is new, and both logs indexes carry the row
+at the top. Suite **31/31**.
+
+**The image tag was in more places than the plan found.** `versioning.md` counts a
+container image tag as a version carrier, so every one of them is in scope — and the
+plan named only `README.md` and `.agents/rules/repository.md`. The grep turned up two
+more wiki pages carrying `lxagents-shared-instruction:2.0.0`: `wiki/environments/docker.md`
+in six places and `wiki/security/security-model.md` in two. Both now read `3.0.0`. Had
+the release shipped against the plan's list, this repository's own documentation would
+have been telling a reader to pull an image the current release does not tag.
+
+**The Consumers must line carries a second instruction, not just the rename.** The
+obvious one is `task_workflow` → `plan_creator` in the declaration block. The one that
+matters more is **dropping any override registered against the `task-workflow` name**.
+An override matches a shared file by `name`, and `task-workflow` is gone, so the match
+fails silently — the repository keeps its local copy and nothing anywhere says the shared
+rule behind it no longer exists. That is the exact failure `agents-update.md` is written
+around, and it is why the line is in both the changelog and both index rows.
+
+The line also says the trigger **widens**, so a consumer who treats this as a pure rename
+and edits only the name ends up with a row that fires too narrowly. The `3/0/0` changelog
+states the three gates are unchanged and that their terms moved files rather than wording,
+so nobody re-derives them.
+
+**Two findings were recorded and not applied**, as the discovery gate requires: `F1`, the
+`plan-creator.md` body claiming it carries the set's version while every file in the set
+sits at `1.0.0`; and `F2`, six creators restating the merge gate that `plan-creator.md`
+now owns. Both are in the working plan at `.agents/plans/discovery-findings.md` and are
+repeated in the changelog's "Not fixed here", so a consumer reading the release learns
+they were seen rather than missed. `F3`, that the set never states the three gates as a
+list, is the one worth the owner's attention: this session asked for the plan gate four
+separate times, and it is only in the set as a sentence inside a paragraph.
+
+**State at close.** Five commits on five stacked branches, all merged to `master` through
+`#70`–`#74` in order.
+
+| # | Branch | Commit | PR |
+|---|---|---|---|
+| 1 | `chore/merge-workflow-plan` | `dc2ae8f` | [#70](https://github.com/LXAgents-MCP/shared-instruction/pull/70) |
+| 2 | `docs/merge-task-workflow-body` | `cb12bea` | [#71](https://github.com/LXAgents-MCP/shared-instruction/pull/71) |
+| 3 | `docs/merge-task-workflow-links` | `e9519ce` | [#72](https://github.com/LXAgents-MCP/shared-instruction/pull/72) |
+| 4 | `docs/merge-task-workflow-mirrors` | `febbddf` | [#73](https://github.com/LXAgents-MCP/shared-instruction/pull/73) |
+| 5 | `docs/merge-task-workflow-release` | `102be28` | [#74](https://github.com/LXAgents-MCP/shared-instruction/pull/74) |
+
+**A sixth commit corrected this record and the changelog's cost figures.** Every measured
+number in `3/0/0`'s "One cost, named" was wrong — `plan-creator.md` was published as
+20,877 bytes when it is 21,321, `task-workflow.md` as 11,503 when it is 11,573, and
+`plan-creator.md` alone as "about 6,500" when it is 8,419. The section also misquoted
+`1/0/0`, which recorded "all **six** together are 28,965" and was cited as four, and it
+credited the merge with collapsing about 1,200 bytes of duplication when the merged file
+is 1,329 bytes **larger** than the two originals combined. The figures had been taken from
+a draft before the last edit landed. Both texts now carry byte counts measured on the
+committed blobs, and the section states the intake-call figure — 19,992 bytes across two
+calls before, 21,321 in one after — because that is the number a consumer actually pays.
+Caught while verifying the merged tree, before `#74` went in.
+
+**The stack did not merge the way it was planned to.** `--delete-branch` on `#70` did not
+auto-retarget `#71`; deleting the base branch **closed** it, unmerged, and GitHub then
+refused to reopen or re-base a pull request whose base no longer existed. The branch was
+restored from `dc2ae8f`, `#71` reopened and retargeted to `master` by hand, and `#72`–`#74`
+had their bases set explicitly and were merged without branch deletion. Worth knowing for
+the next stack: GitHub's "retarget to the default branch on base deletion" is not reliable
+here, and a closed PR cannot be recovered by API alone.
+
+**Not done:** no consuming repository's `AGENTS.md` updated — this repository does not hold
+those repositories. The `3/0/0` changelog names what each of them must do. `F1`–`F3` remain
+recorded-not-applied, and `F4`, the broken documented Docker HTTP command, is still open
+against the `Dockerfile`'s `ENTRYPOINT` rather than against this change.

@@ -52,9 +52,9 @@ do not introduce TypeScript, a bundler, or a transpiler without agreement.
 | Run (stdio) | `npm start` |
 | Run (HTTP) | `npm run start:http` |
 | Inspect the MCP surface | `npm run inspect` |
-| Build the image | `docker build -t lxagents-shared-instruction:2.0.0 .` |
-| Run the image (stdio) | `docker run --rm -i lxagents-shared-instruction:2.0.0` |
-| Run the image (HTTP) | `docker run --rm -p 3000:3000 lxagents-shared-instruction:2.0.0 node src/http.js` |
+| Build the image | `docker build -t lxagents-shared-instruction:3.0.0 .` |
+| Run the image (stdio) | `docker run --rm -i lxagents-shared-instruction:3.0.0` |
+| Run the image (HTTP) | `docker run --rm -p 3000:3000 lxagents-shared-instruction:3.0.0 node src/http.js` |
 
 There is no `npm run cli`. There is still no `compose.yaml`, and the reason is no longer
 that there is no transport to compose — a compose file encodes a deployment, and this
