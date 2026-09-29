@@ -18,6 +18,12 @@ the same commit that creates it.
 |---|---|
 | [`../memory/state/repository-state.md`](../memory/state/repository-state.md) | Current known state: what exists, what is deployed, what is not built yet. |
 
+## decisions/
+
+| File | Purpose |
+|---|---|
+| [`../memory/decisions/express-for-http-transport.md`](../memory/decisions/express-for-http-transport.md) | Why `express` became the third runtime dependency, for the HTTP transport. |
+
 ## tasks/
 
 | File | Purpose |
