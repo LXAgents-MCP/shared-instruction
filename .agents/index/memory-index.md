@@ -40,3 +40,4 @@ the same commit that creates it.
 | [`../memory/tasks/security-creator.md`](../memory/tasks/security-creator.md) | Publishing `security/` as a real instruction folder, and the `security-creator` that fixes the shape of every security file. |
 | [`../memory/tasks/declared-tool-surface.md`](../memory/tasks/declared-tool-surface.md) | Replacing the one-call activation tool with per-convention tools each repository declares in its own `AGENTS.md`; the `1.0.0` release. |
 | [`../memory/tasks/per-file-tools.md`](../memory/tasks/per-file-tools.md) | Replacing the single path-taking instruction tool with one generated tool per content file, across all four instruction MCP servers; the `2.0.0` release. |
+| [`../memory/tasks/feat-http-transport.md`](../memory/tasks/feat-http-transport.md) | Adding an HTTP/SSE transport alongside stdio so the server can run as a Web Service, and correcting every page that claimed there was no listener. |
