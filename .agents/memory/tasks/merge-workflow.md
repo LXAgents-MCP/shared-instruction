@@ -55,3 +55,50 @@ touched, so nothing is published by this task and no version claim is made yet �
 The working plan for this work is untracked and lives in `.agents/plans/`, centered on
 `tasks.md`. It is scratch and is deleted or abandoned when the work merges; this
 record is the one that outlives it.
+
+### Task 2 — `docs/merge-task-workflow-body`
+
+Absorbed `planning/task-workflow.md` §A–§F into `creators/plan-creator.md` and widened
+the frontmatter `description` so the tool routes on both jobs rather than only the plan
+folder. The set still holds both files, so the surface is still 32 tools and nothing is
+published as removed by this task.
+
+**The shape the merge settled on.** The file now has two parts: *The workflow* (§A–§F,
+lettered and unchanged from the original so every existing `§B` / `§E` / `§F`
+cross-reference in the set keeps resolving to the same letter) and *The working plan*
+(what the creator actually writes). The old "It writes nothing else — not the task
+record" line survived as a scope note at the top rather than as a claim about the file:
+the **creator** is still only the untracked plan, while the file teaches the workflow
+the plan is tracked toward. The record's *shape* is delegated to `memory-creator.md`,
+which already owned it, so one subject per file survives the merge.
+
+**Two duplications were collapsed rather than concatenated.** `task-workflow.md` §C
+and the old `## Branch & Commit Convention` section said overlapping things about
+branches and commits, and the plan gate appeared in both §B and in *The gate comes
+before the plan*. §C now carries only what is specific to running a task list — task 1's
+`chore/{slug}-plan` name, the stacking rule, no two tasks per branch — and points at the
+shared convention section for naming and message format. The plan section's gate says
+outright that it is §B's gate, and that the plan files are the first thing it
+authorises.
+
+**A regression the test caught, and what it was.** The first draft folded the whole
+branch-and-commit convention into §C and dropped the `## Branch & Commit Convention`
+heading. `test/server.test.js` failed — `every creator carries the shared procedure` —
+because that section is pinned **verbatim and byte-identical** against
+`memory-creator.md` across the whole folder. The test exists because the procedure is
+duplicated by design and can drift with nothing to catch it; `plan-creator.md` is named
+in its own comment as the file that shipped without it once already. So the section was
+restored byte-for-byte, and the workflow-specific rules moved under §C beside it. The
+suite is 31/31.
+
+The merged file is **20,877 bytes**, against 11,503 for `task-workflow.md` and roughly
+6,500 for `plan-creator.md` alone. The plan estimated ~16 KB; the real figure is higher
+because both files' text is retained in full, with only the two genuine duplications
+removed. That makes it the largest file in the set, and it is served by the tool every
+repository must declare. The cost is accepted and unchanged in kind — one call at
+intake rather than two overlapping calls — but it is larger than planned and consumers
+should know the number.
+
+Verified nothing was dropped by a line-by-line comparison of the old file against the
+new one: every non-trivial line of `task-workflow.md` is present, the only intentional
+loss being its own frontmatter `description`, which named the old file's job alone.
