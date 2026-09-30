@@ -67,6 +67,13 @@ what a caller who clones the repository and runs it locally gets. There is no pr
 operation to reach, no credential to present, and no state to corrupt. The listener widens
 who can ask, not what they can do once they have.
 
+**And the worker pool does not widen it either.** `src/http.js` forks one process per CPU by
+default, but every worker binds the same port and serves the same 31 read-only tools, so the
+pool multiplies capacity rather than surface. Two things follow that are worth stating:
+there is still nothing shared between workers to corrupt — each builds its own `McpServer`
+per request — and the `Host` allow-list is evaluated by every worker independently, so
+there is no way to reach a worker that skipped it.
+
 **Authentication, and why there is none.** The content is an instruction set meant to be
 read by every repository in the organization, and it is also on npm. Requiring a key would
 not make it less public; it would only make it harder to read, and the people who need it
@@ -149,7 +156,7 @@ different delivery mechanism rather than a key on this one.
 
 ## Secrets
 
-There are none, and that is a property worth keeping. This server reads only four
+There are none, and that is a property worth keeping. This server reads only five
 environment variables, and none of them is a credential:
 
 | Variable | Default | What it is |
@@ -158,6 +165,7 @@ environment variables, and none of them is a credential:
 | `HOST` | `0.0.0.0` | The interface to bind. An address. |
 | `MCP_ALLOWED_HOSTS` | unset | Hostnames permitted in the `Host` header. **Off when unset.** |
 | `MCP_TRANSPORT` | `stdio` | Which transport `src/index.js` speaks. A word. |
+| `MCP_CLUSTER_WORKERS` | CPU count | How many HTTP worker processes to fork. A number. |
 
 There is no configuration that could become a credential, which is why the absence of
 authentication above is survivable. A future variable that takes a secret changes that, and

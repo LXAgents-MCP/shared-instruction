@@ -155,15 +155,17 @@ ways, name derivation, uniqueness and descriptions, the zero-argument claim, byt
 fidelity, total-served equality, reachability, index routing, `mcp_list` in isolation, and
 the read-only claim.
 
-`test/http.test.js` is 23 more, over a real client against a real listening process rather
-than an in-memory transport, because the things that can go wrong on the HTTP path are
-about sockets and do not reproduce in memory. It asserts the two transports expose the same
-tools and return byte-identical payloads, that concurrent requests do not cross-talk, that
-`/healthz` answers, that any other method on `/mcp` is a 405 and any other path a 404, that
-the routes the SSE transport used are **gone** rather than assumed to be, that the drain
-reports in-flight requests and not sessions, that nothing is written to stdout, and that a
-`Host` header outside `MCP_ALLOWED_HOSTS` is actually rejected — over `node:http`, because
-`fetch` cannot set the header and would test nothing.
+`test/http.test.js` is 31 more, over a real client against a real listening process and a
+real cluster rather than an in-memory transport, because the things that can go wrong on the
+HTTP path are about sockets and process boundaries and do not reproduce in memory. It
+asserts the two transports expose the same tools and return byte-identical payloads, that
+concurrent requests do not cross-talk — in one process or across two — that `/healthz`
+answers, that any other method on `/mcp` is a 405 and any other path a 404, that the routes
+the SSE transport used are **gone** rather than assumed to be, that the drain reports
+in-flight requests and not sessions, that nothing is written to stdout, that a dead worker
+is replaced and no worker outlives a killed primary, and that a `Host` header outside
+`MCP_ALLOWED_HOSTS` is actually rejected — over `node:http`, because `fetch` cannot set the
+header and would test nothing.
 
 There is no `test/tools.test.js` and no `test/logs.test.js`. Those covered the six-tool
 convention surface and the changelog delta parser, both of which were removed.

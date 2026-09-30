@@ -28,9 +28,9 @@ It is both the **producer** of the shared set and a **consumer** of it. See
 | `src/content.js` | The set root, the frontmatter reader, and `readSetFile` with its path check. | Changing how content is located or read. |
 | `src/version.js` | `ROOT`, `CONTENT_DIR`, `VERSION`, `SERVER_NAME`. | Renaming the server or moving the set. |
 | `src/app.js` | The HTTP transport as an application — `POST /mcp`, `GET /healthz`, the 405, the 404, the body limit, the `Host` allow-list. Builds and returns; does not listen. | The HTTP surface. |
-| `src/http.js` | The HTTP entry point — the port, the interface, the startup lines, the in-flight set, and the drain. | Anything about a listening server, the port, or shutdown. |
+| `src/http.js` | The HTTP entry point — the cluster primary and workers, the port, the interface, the startup lines, the in-flight set, and the drain. | Anything about a listening server, a worker count, the port, or shutdown. |
 | `Dockerfile` | A pinned, non-root image for hosts that cannot run Node 20. Serves both transports; `EXPOSE 3000`, stdio entrypoint. | The toolchain the image pins, or the install command it runs. |
-| `test/` | `server.test.js` (19, in-memory) and `http.test.js` (23, against a real listener). | Always. Every behavioural change ships with one. |
+| `test/` | `server.test.js` (19, in-memory) and `http.test.js` (31, against a real listener and a real cluster). | Always. Every behavioural change ships with one. |
 
 There is no `src/server/`, no `src/cli/`, no `src/transport/`, and no `src/content/`
 directory. If a file you are about to edit is under one of those paths, it does not exist
@@ -43,10 +43,13 @@ There are **two**, and they differ only in transport:
 * `src/index.js` — what an MCP client spawns. Connects a stdio transport by default, and
   hands over to `src/http.js` when `MCP_TRANSPORT=http` is set. Handles `SIGINT`, and
   writes nothing to stdout.
-* `src/http.js` — `npm run start:http`, and the command the `Dockerfile` documents. Binds
-  `HOST`/`PORT` and serves `POST /mcp` and `GET /healthz` from the app in `src/app.js`. It
-  logs to **stderr**, because it is one dynamic import away from a process whose stdout is
-  the JSON-RPC channel.
+* `src/http.js` — `npm run start:http`, and the command the `Dockerfile` documents. A
+  `node:cluster` primary forks `os.availableParallelism()` workers (`MCP_CLUSTER_WORKERS`
+  overrides, `1` disables), each binding the same `HOST`/`PORT` and serving `POST /mcp` and
+  `GET /healthz` from the app in `src/app.js`. **The primary binds nothing and logs no
+  startup line**, so the log carries one `serving over http` line per worker. It logs to
+  **stderr**, because it is one dynamic import away from a process whose stdout is the
+  JSON-RPC channel.
 
 **`src/http.js` is the HTTP entry point here and `src/index.js` is it in the other four
 servers in the organization.** That is not a preference: `package.json`'s `start:http` and
@@ -70,9 +73,9 @@ Behind both:
 
 ```bash
 npm install
-npm test                 # node:test — two files, 42 tests
+npm test                 # node:test — two files, 50 tests
 npm start                # stdio
-npm run start:http       # HTTP on 0.0.0.0:3000, or $PORT/$HOST
+npm run start:http       # HTTP on 0.0.0.0:3000, or $PORT/$HOST; one worker per CPU
 npm run inspect          # MCP Inspector against the stdio server
 ```
 
@@ -103,7 +106,11 @@ entrypoint to `src/http.js` for the HTTP form.
   do not "simplify" it back to `fetch`.
 * **Never share an `McpServer` between connections.** It holds per-connection state;
   reusing one delivers responses to the wrong connection. `createServer()` builds a fresh
-  one every time.
+  one every time — which is now also per worker, since each forked process has its own.
+* **A worker must die with its primary.** `process.on("disconnect", …)` in `src/http.js` is
+  not defensive tidiness: without it a worker whose primary was `SIGKILL`ed keeps the port,
+  keeps answering, and makes the *next* test run fail on `EADDRINUSE` against a process
+  nobody remembers starting.
 * **No tool declares an input schema, and none should.** An object schema that rejects
   `undefined` breaks clients that omit `arguments` — which is why these tools declare
   none. Do not "tidy" a schema in; if a tool needs an argument, that is a design decision

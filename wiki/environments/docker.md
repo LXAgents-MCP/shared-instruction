@@ -53,6 +53,12 @@ docker run --rm -p 3000:3000 lxagents-shared-instruction:3.0.1 node src/http.js
 running, healthy, and connectable from nowhere. `EXPOSE 3000` documents the port; it does
 not publish it, which is the part that surprises people.
 
+**That form forks one worker per CPU the container was given.** `src/http.js` is a
+`node:cluster` primary, so the container log carries one `serving over http` line per
+worker rather than one line describing a port the primary never bound. Set
+`MCP_CLUSTER_WORKERS=1` for a single process, which is what you want behind a proxy that
+already does its own load balancing, or when you are debugging the port:
+
 Set `MCP_ALLOWED_HOSTS` when it is reachable from anywhere but this machine — the
 allow-list is off unless you set it:
 
@@ -135,6 +141,7 @@ response and a quicker check than a handshake.
 
 - [Local setup](setup.md) — running the server without a container.
 - [Architecture](../information/architecture.md) — the two transports it has.
-- [Environment variables](env.md) — `PORT`, `HOST`, `MCP_ALLOWED_HOSTS`, `MCP_TRANSPORT`.
+- [Environment variables](env.md) — `PORT`, `HOST`, `MCP_ALLOWED_HOSTS`, `MCP_TRANSPORT`,
+  `MCP_CLUSTER_WORKERS`.
 - [Security model](../security/security-model.md) — what a container does and does
   not change about exposure.

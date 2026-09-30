@@ -16,15 +16,16 @@ npm install
 npm test
 ```
 
-The suite is two files and 42 tests. `test/server.test.js` drives a real MCP client over an
+The suite is two files and 50 tests. `test/server.test.js` drives a real MCP client over an
 in-memory transport and covers the frontmatter contract, the shared creator procedure, the
 file-to-tool bijection in both directions, name derivation, uniqueness and descriptions, the
 zero-argument claim, byte-for-byte payload fidelity, total-served equality, reachability,
 index routing, `mcp_list` in isolation, and the read-only claim. `test/http.test.js` drives
 a real client against a real listening process and covers the HTTP transport: the two
 transports agreeing, `/healthz`, the 405 and the 404, the SSE routes being **gone**, the
-4 MB body limit, concurrent requests, shutdown ordering, the `Host` allow-list, and the
-startup warning when no allow-list is set.
+4 MB body limit, concurrent requests, shutdown ordering, the `Host` allow-list, the startup
+warning when no allow-list is set, and the worker pool — two workers on one port, a dead
+worker replaced, no orphan surviving a killed primary, and stdio forking nothing.
 
 ---
 
@@ -76,6 +77,10 @@ The two entry points differ only in transport. Same 31 tools, same content, same
 read-only surface. `MCP_TRANSPORT=http node src/index.js` is the same server reached the
 other way round, which is how the other servers in the organization select a transport.
 
+`start:http` forks one worker per CPU. `MCP_CLUSTER_WORKERS=1` makes it a single process,
+which is what you want when debugging the port or behind a single-connection ingress. See
+[Environment variables](env.md).
+
 ### Inspect it
 
 ```bash
@@ -122,5 +127,5 @@ than a runtime surprise. The fix is usually one line in `NAME_OVERRIDES` in
 ## Related pages
 
 - [MCP surface](../reference/mcp-surface.md) — the tool surface, and what is not exposed.
-- [Environment variables](env.md) — the four the HTTP transport reads.
+- [Environment variables](env.md) — the five the HTTP transport reads.
 - [Architecture](../information/architecture.md) — how the surface is generated.

@@ -123,9 +123,9 @@ transports agree tool for tool.
 * Filesystem or network I/O on the read path. Reads are map lookups, and keeping them that
   way is why a slow client cannot block others.
 * A new listener, route, or environment variable without a say-so. The server has two
-  transports and four variables, and each of those was a deliberate decision someone
-  approved. `wiki/environments/env.md` says what the current four do; a fifth is a change
-  to a public surface, not an implementation detail.
+  transports and five variables, and each of those was a deliberate decision someone
+  approved. `wiki/environments/env.md` says what the current five do; a sixth is a change to
+  a public surface, not an implementation detail.
 * A third documentation tree. `wiki/` and `.agents/wiki/` are the only two.
 * Anything under `content/` that is not part of the published set.
 

@@ -96,6 +96,7 @@ the owner has to make.
 |---|---|---|---|
 | Baseline, before any change | 31 | 31 | 0 |
 | After task 2 | 42 | 42 | 0 |
+| After task 3 | 50 | 50 | 0 |
 
 ---
 
@@ -180,3 +181,77 @@ marked superseded**, not deleted.
 `MCP_ALLOWED_HOSTS` keeps its exact semantics, `PORT` still defaults to 3000, `HOST` to
 `0.0.0.0`, the 31-tool surface is untouched, and the four `content/` bijection and
 byte-identity checks pass: a change in `src/` moved no served byte.
+
+---
+
+### Task 3 — `feat/cluster-workers`
+
+`src/http.js` is now a `node:cluster` primary. One process handling every request leaves
+the other CPUs idle, so it forks `os.availableParallelism()` workers — the CPUs the process
+was actually given, not a constant — and every worker binds the same `PORT` through the
+cluster's shared handle. The kernel's round-robin scheduler does the distribution, so no
+`SO_REUSEPORT` is set by hand and no sticky-session affinity is written; the scheduler
+already knows which connection is next, which is exactly what a sticky scheme would have to
+reconstruct.
+
+**The fork is on `src/http.js`, not `src/index.js`.** That is this repository's one
+structural difference from the other four, and it is forced by a `Dockerfile` that may not
+change: `package.json`'s `start:http` and the image's documented command both name
+`src/http.js`, so that is where the HTTP path — and therefore the cluster — lives.
+
+**The primary binds nothing and writes no `serving over http` line.** One line per worker,
+from the processes that genuinely hold the port. A primary that logged a listening line
+would be claiming a port it does not have, and a health check counting those lines would
+count a process that answers nothing. It respawns a worker that dies unexpectedly, bounded
+by a restart counter, so a server that cannot start its workers says so and stops instead
+of crash-looping.
+
+**`MCP_CLUSTER_WORKERS=1` forks nothing at all** — the worker path *is* the server, and the
+process the operator started is the process that answers. That is what makes the cluster
+bisectable against task 2: the same code answers with and without workers, so a difference
+between them is a difference in the fork rather than in the transport. A value below `1` is
+ignored rather than clamped, because `0` means "I did not mean to set this" and running
+zero workers would bind no port at all.
+
+**Three details that are not tidiness.**
+
+*The drain line is logged by the worker, and still says `draining {n} in-flight request(s)`.
+* A worker killed mid-request would drop a response the client is still reading, so the
+primary relays the signal rather than handling it alone, and exits once the last worker is
+gone — the port is closed before the process that started it is. A second signal during the
+drain exits at once.
+
+*Workers exit on `disconnect`.* Without it, a worker whose primary was `SIGKILL`ed keeps the
+port and keeps answering: the suite passes, and the *next* run fails on `EADDRINUSE` against
+a process nobody remembers starting.
+
+*stdio never forks.* `src/index.js` reaches `src/http.js` only on `MCP_TRANSPORT=http`, and
+a worker's copy of stdout would corrupt the JSON-RPC stream.
+
+**Eight new tests, 42 → 50.** The `/proc` worker-pid test was marked optional in the plan
+and **works here** — `/proc/<pid>/task/<pid>/children` is readable in this container — so it
+ships, with the same Linux-only skip the reference carries, rather than being downgraded to
+a weaker proxy. The memory test is the one thing this repository's verification asked for
+that the reference did not have: it measures a worker's RSS across 400 requests after a
+warm-up, because "the in-flight set is emptied on close" is an argument and a leak shows up
+as bytes. It is pinned to `MCP_CLUSTER_WORKERS=1`, where the spawned process *is* the
+answering process.
+
+**One test deliberately not written.** Occupying the port to force a worker to fail does not
+work in this environment: a child process binds a port its parent already holds,
+successfully, while the parent keeps serving. A test asserting on that failure would pass
+for the wrong reason, so the gap is recorded here rather than papered over.
+
+**Documentation corrected in this commit**: `wiki/environments/env.md` (the new variable),
+`wiki/environments/setup.md`, `wiki/environments/docker.md`, `wiki/information/architecture.md`
+(which said there was no clustering), `wiki/reference/mcp-surface.md`,
+`wiki/security/security-model.md` (the variable count, and a note that the pool multiplies
+capacity rather than surface), `.agents/wiki/context/repository-map.md` (the cluster row and
+a gotcha), `.agents/memory/state/repository-state.md`, and `.agents/rules/repository.md`.
+The last three are past the plan's own list of three files; `change-propagation` requires
+them, because each stated a variable count or a "no clustering" that this commit makes
+false.
+
+`npm test` passes on the default worker count, not only with `MCP_CLUSTER_WORKERS=1`, and
+the four `content/` bijection and byte-identity checks still pass: the cluster moved no
+served byte. The `Dockerfile` is still untouched.
