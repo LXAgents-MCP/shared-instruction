@@ -213,16 +213,22 @@ only what is specific to running a task list, which that section does not say:
   terms as the pull request gate above. Never merge on your own initiative, and never
   enable auto-merge without being asked.
 * Once approved, merge in order `1…n`. Wait for each merge to finish before starting the
-  next, and re-target the next pull request's base branch if the platform does not do it
-  automatically.
-* **Re-target before merging, not after.** A forge only re-targets a stacked pull request
-  when its base branch is deleted on merge; where that setting is off, pull request `k`
-  merges into branch `k-1` and the default branch silently stays behind. The merge
-  succeeds and the pull request page says merged, so nothing signals the gap.
-* **After the last merge, verify rather than assume.** Diff the default branch against
-  the final branch in the chain and confirm the trees are identical. Report that check as
-  part of the final state below — "merged" is a claim about a pull request, not about the
-  default branch.
+  next.
+* **Delete each branch as it merges.** A forge re-targets a stacked pull request only when
+  the branch it targets is deleted on merge. Deleting is the signal, and it is the
+  platform's own — so make it the default for every merge in a chain. Where a branch has
+  to be kept, re-target the next pull request by hand **before** merging the current one,
+  and check its `baseRefName` rather than assuming.
+* **A stack can be fully merged and the default branch untouched.** Where the re-target
+  does not happen, pull request `k` merges into branch `k-1`, the work sits on a branch
+  nothing resolves, and the default branch stays behind. Every merge succeeds and every
+  page says merged, so nothing signals it. This is not a hypothetical: a three-task chain
+  once reported three merges with none of the work on the default branch.
+* **After the last merge, verify the default branch rather than the pull requests.** "All
+  merged" is a claim about pull requests; what matters is the default branch. Check that
+  the final branch is an ancestor of it — `git merge-base --is-ancestor <final-branch>
+  origin/master` — or diff the two trees. Report that check as part of the final state
+  below.
 * If a merge conflict appears, resolve it when the correct resolution is unambiguous; when
   resolving it would mean choosing between two behaviors, stop and ask, naming the
   conflicting files.
