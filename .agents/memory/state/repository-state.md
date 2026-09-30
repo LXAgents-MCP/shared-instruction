@@ -28,11 +28,11 @@ restate it — three mirrors, listed in `.agents/rules/set-mirrors.md`.
 and `.agents/wiki/security/security-boundaries.md` (the SOP), loaded by a **local** trigger
 row. Its first rule is that a security context never crosses repositories.
 
-**Structure.** `content/` holds 32 published instruction files. `.agents/rules/` holds
+**Structure.** `content/` holds 33 published instruction files. `.agents/rules/` holds
 three local rules: `repository.md`, `content-publishing.md`, and `set-mirrors.md`. `wiki/`
 holds human documentation. `src/` is eight files and `test/` is two.
 
-**Surface — one tool per file.** 33 tools: 32 generated from `content/`, one per file,
+**Surface — one tool per file.** 34 tools: 33 generated from `content/`, one per file,
 plus `mcp_list`. The name is derived from the path (folder stripped, `.md` dropped, kebab →
 snake), with one override: `AGENTS.md` → `agents_entry_point`. The description is the
 file's own frontmatter `description`, verbatim. **No tool takes an argument.**
@@ -40,8 +40,13 @@ file's own frontmatter `description`, verbatim. **No tool takes an argument.**
 That is a change from `1.0.0`, where six hand-named convention tools replaced the
 single 31,000-character `agents_auto_activation` call. The four mandatory ones are still
 `plan_creator`, `branching_strategy`, `commit_conventions`, and `discovery_protocol`, but
-they are no longer a fixed set: there are 32 files, and a repository declares in its own
+they are no longer a fixed set: there are 33 files, and a repository declares in its own
 `AGENTS.md` which of them it uses.
+
+**Four tool counts are hardcoded in `test/http.test.js`**, and adding a file to `content/`
+fails the suite until all four move. They are not derived from the tool list, so there is
+no single place to update — this is the friction cost of the count being pinned rather
+than computed.
 
 `mcp_list` is the one hand-written tool, and the only one that reaches `readSetFile` in
 `src/content.js` — with a constant path. Because no tool takes a `path`, there is nothing
@@ -88,6 +93,18 @@ listener is a capability *and* a running service, and treating them as the same 
 what hid it. Consuming repositories reach this package through `npx`, a local clone,
 `docker run -i`, or that endpoint.
 
+**A deployment is promoted by merging to `master`.** The service tracks the default branch
+and rebuilt on its own: `master` reached `3.2.0` and the live endpoint followed within
+about two minutes of polling, with no manual step and no in-repo deploy configuration —
+there is no `render.yaml` and no CI. **Nothing in this repository records that, and
+recording it is the only reason it is written down here.**
+
+**`GET /healthz` cannot tell you which version is serving.** It reports liveness and the
+version string, so an instance answers `200` while still serving an older set. The check
+that distinguishes them is a `tools/list` against `POST /mcp`, or the `version` field in
+`initialize`. Polling `/healthz`'s version is enough to *notice* a rollout; confirm the
+content with a tool call before reporting a deploy as done.
+
 **A `Dockerfile` exists, and is not a deployment.** Single stage, `node:22-alpine`,
 `npm ci --ignore-scripts --omit=dev`, `USER node`, entrypoint `node src/index.js`, now with
 `EXPOSE 3000`. There is still no compose file: a compose file encodes a deployment, and
@@ -97,20 +114,23 @@ been verified by a build. `.dockerignore` excludes `node_modules`, `test`, `wiki
 `.agents` and the markdown at the root, which means the image cannot run its own test
 suite.
 
-**Version.** `3.1.0`. Releases: `0.0.0` (initial set) through `0.14.0` (the security
+**Version.** `3.2.0`. Releases: `0.0.0` (initial set) through `0.14.0` (the security
 creator, and `security/` made servable) are in `wiki/logs/`; `1.0.0` replaced the MCP
 server with a read-only instruction set (#63), then restored the `version` and `author`
 frontmatter fields on every served file (#64, #65). `2.0.0` made every file its own tool;
 `3.0.0` folded the task workflow into `plan-creator`; `3.0.2` corrected the connector
 documentation; `3.1.0` adds `github_token_access_guide` and completes the
-`auto_activation` routing table.
+`auto_activation` routing table; `3.2.0` gates `mcp_list`'s clone behind an explicit user
+decision and names the three publishing organisations.
 
-**`master` is at `2cf1e5f`** as of 2026-09-30. **Re-verify with `git fetch` rather than
+**`master` is at `4437a9a`** as of 2026-09-30. **Re-verify with `git fetch` rather than
 trusting this SHA** — an earlier version of this file carried a SHA that went stale within
 the hour, and a state file that is confidently wrong is worse than one that says nothing,
 because the next session plans a branch point from it. This file also carried the version
 as `1.0.0` and denied any deployment, both of which were wrong; the pattern is the same one
-the SHA warning describes, and it is why all three are corrected together.
+the SHA warning describes, and it is why all three are corrected together. **The deployed
+tool count went stale for the same reason** — a version asserted in a state file decays
+silently, so re-derive it rather than reading it forward.
 
 **Local install has a fixed layout.** A clone that runs this server locally belongs at
 `./mcps/{org or owner}/{repo}/`, gitignored. It is a runtime, not a vendored set: the
@@ -143,11 +163,13 @@ first, per `.agents/rules/repository.md`.
   wrote it, and the HTTP work has since added an `EXPOSE` and an entrypoint override that
   are equally unverified. It should be built once, both run forms checked, before anyone
   relies on it.
-* The deployed instance is **behind this branch**, checked rather than assumed: a
-  `tools/list` against the live endpoint on 2026-09-30 returned **32** tools, and
-  `github_token_access_guide` is not among them. So it predates `3.1.0`. `GET /healthz`
-  reports liveness only and would not have shown this — an instance can answer `200` and
-  still be serving an older set. Nothing here records how a deployment gets promoted.
+* The deployed instance is **current with `master`**, checked rather than assumed: on
+  2026-09-30 a `tools/list` against the live endpoint returned **34** tools and the served
+  `mcp_list` text carried the new gate and all six organisation URLs, at server version
+  `3.2.0`. **This entry previously said 32 tools and that the instance predated `3.1.0`;
+  that was stale, not wrong at the time** — the same failure mode as the SHA warning below,
+  where a state file asserts a version and nobody re-checks it. Re-verify with a
+  `tools/list`; `GET /healthz` reports liveness only.
 
 **Next obvious step.** Build the image once and check both run forms, and delete the dead
 `instruction.js`.

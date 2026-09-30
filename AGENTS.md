@@ -151,6 +151,7 @@ conventions declared in the block above are not repeated here.
 | Write **any** commit, tag, PR, comment, or file that will be committed or posted | [`content/rules/no-session-links.md`](content/rules/no-session-links.md) |
 | Run **any** `gh` or `git` command that reaches GitHub | [`content/rules/github-token-access-guide.md`](content/rules/github-token-access-guide.md) |
 | Wonder whether something is local or shared | [`content/rules/shared-instructions.md`](content/rules/shared-instructions.md) |
+| Document a permission gate, or judge whether one is mechanical or text-borne | [`content/rules/gate-enforcement.md`](content/rules/gate-enforcement.md) |
 | Decide where a new file goes | [`content/rules/directories.md`](content/rules/directories.md) |
 | Change how a repository resolves this set | [`content/rules/mcp-connector.md`](content/rules/mcp-connector.md) |
 | Add, move, rename, or delete any file in `content/` or `wiki/` | [`content/creators/index-creator.md`](content/creators/index-creator.md) |
