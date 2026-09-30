@@ -49,3 +49,13 @@ nothing is lost — a branch is a pointer, not a record. `git log master` is the
 branches are under review as a set — then the forge will not re-target, and the chain needs
 a final promotion pull request into `master`. That is a real option; it is just not the
 default, because it is one more step that has to be remembered.
+
+## Promoted to the shared set
+
+This was a local decision first, then raised as a finding and **accepted into the shared
+set at `3.4.0`**: `content/creators/plan-creator.md` §F now makes branch deletion the
+stated default for a stacked merge and gives the `git merge-base --is-ancestor` check.
+
+**The rule now lives in §F, not here.** This file keeps the incident — what went wrong in
+this repository and why — because §F states the convention without the history that
+produced it. Read §F for what to do; read this for why it is worded that way.
