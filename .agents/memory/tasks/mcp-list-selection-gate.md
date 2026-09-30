@@ -87,3 +87,17 @@ Minor, approved by the owner: a rule is added and no file is renamed or removed.
 `package.json`, the changelog, and both logs-index rows. Consumers must: nothing in their
 `AGENTS.md`; re-read `server_registry` if they add servers, because the returned text now
 carries the gate.
+
+### Task 3 — release 3.2.0
+
+Landed. `package.json` → `3.2.0`, `wiki/logs/3/2/0/CHANGELOG.md`, and the new row in both
+`content/index/logs-index.md` and `.agents/index/logs-index.md`, newest first. The surface
+is 33 tools before and after.
+
+**Three pull requests, stacked, in order 1 → 2 → 3**, each targeting the previous:
+`#chore/mcp-list-selection-gate-plan` → `#feat/mcp-list-selection-gate` →
+`#chore/release-3.2.0`. Merge in that order, re-targeting each base if the platform does
+not do it on merge — a forge only re-targets a stacked pull request when the previous base
+branch is deleted, and where that setting is off the pull request merges into the wrong
+base while the default branch silently stays behind. The merge succeeds and the page says
+merged, so nothing signals the gap. **Verify the tree afterwards** rather than assuming.
