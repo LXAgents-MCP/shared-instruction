@@ -7,7 +7,7 @@ author: LXAgents
 
 # Shared Instructions Index
 
-**Scope:** `rules/`, `git/`, `prompts/`, `creators/`, `security/`
+**Scope:** `rules/`, `git/`, `planning/`, `prompts/`, `creators/`, `security/`
 **Parent:** [`root-index.md`](agents://index/root-index.md)
 
 Any file added to or removed from these folders is reflected here in the same commit. This
@@ -41,9 +41,14 @@ index lists shared files only; a consuming repository's files are routed from it
 
 ## planning/
 
-Empty. The folder is served — a file added here is published on the next boot — but
-`task-workflow.md` moved into [`../creators/plan-creator.md`](../creators/plan-creator.md)
-at `3.0.0`, so nothing universal about planning lives here yet. Shape and placement:
+| File | Purpose |
+|---|---|
+| [`task-workflow.md`](agents://planning/task-workflow.md) | The shape a request becomes — plan, record, branch, release — which are tracked and which outlive which. |
+
+The **procedure** that produces those artifacts is
+[`../creators/plan-creator.md`](../creators/plan-creator.md), which absorbed this folder's
+only file at `3.0.0`. The two are deliberately not the same subject: this folder says what
+the artifacts *are*, that one says what to do. Shape and placement:
 [`../creators/instruction-creator.md`](agents://creators/instruction-creator.md).
 
 ## security/

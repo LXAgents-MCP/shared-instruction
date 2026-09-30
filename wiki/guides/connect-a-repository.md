@@ -36,7 +36,7 @@ spawned per client. Start it with `npm run start:http` — it binds `0.0.0.0:300
 }
 ```
 
-Same 31 tools either way; the transport changes how you reach them, not what they are.
+Same 32 tools either way; the transport changes how you reach them, not what they are.
 **Prefer stdio for a repository that can spawn a process** — it needs no port to expose and
 no process to keep alive. Choose HTTP when the server's lifecycle should not be tied to one
 client. If you expose it beyond loopback, set `MCP_ALLOWED_HOSTS` — see

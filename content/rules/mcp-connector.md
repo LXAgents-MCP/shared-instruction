@@ -102,18 +102,27 @@ The server speaks **two transports**. The local one is stdio, and it is the defa
 
 The second is HTTP, for when the server runs somewhere other than your machine — as a
 Web Service, in a container, or beside the repositories that read it. It serves the same
-tools at `/sse`:
+tools at `/mcp`, statelessly — every request stands alone and carries its own JSON-RPC
+envelope, so there is no session to open first and none to close:
 
 ```json
 {
   "mcpServers": {
     "lxagents-shared-instruction": {
-      "type": "sse",
-      "url": "https://shared-instruction.example.com/sse"
+      "type": "http",
+      "url": "https://shared-instruction.example.com/mcp"
     }
   }
 }
 ```
+
+**`"type": "http"` replaces `"type": "sse"`, and the URL changes with it.** The SSE
+transport and its `GET /sse` + `POST /message` pair are gone; a client still registered
+that way gets a `404` and reads no tools, which looks like an unreachable server rather
+than a stale registration. There is no compatibility route — the two are not the same
+protocol, so serving the old path would mean carrying the state SSE depended on.
+`GET /healthz` answers `200` and tells a deployment apart from a server that is up and
+wrong, which is the first question to ask when a connector resolves nothing.
 
 **stdio remains the right choice for a consuming repository** unless you specifically need
 one server serving many clients from a fixed address. It needs no process to keep alive, no

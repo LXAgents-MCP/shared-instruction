@@ -8,8 +8,8 @@ instead of cloning or vendoring a copy of them.
 - **Server id:** `lxagents-shared-instruction`
 - **Package:** `@lxagents-mcp/shared-instruction`
 - **Transport:** stdio, or stateless HTTP at `POST /mcp` for running it as a service at a
-  fixed address. Both serve the same 31 tools.
-- **Surface:** 31 tools. 30 are generated — one per markdown file in `content/` — and one
+  fixed address. Both serve the same 32 tools.
+- **Surface:** 32 tools. 31 are generated — one per markdown file in `content/` — and one
   is hand-written. Every one is read-only and every one takes no arguments.
 - **Requirements:** Node >= 20. ESM, no build step.
 
@@ -34,7 +34,7 @@ instead of cloning or vendoring a copy of them.
   publish as a tool a client cannot route on.
 - **Nothing is called at session start.** A repository declares which tools it uses in its
   own `AGENTS.md`, and each fires on its own trigger. A session that only branches and
-  commits pays for two files, not thirty-one.
+  commits pays for two files, not thirty-two.
 - **Per-repository control.** The declaration block is the routing table. A repository that
   stores no model identifier does not carry a row about one, and the narrowing is visible
   in a diff rather than buried in a payload.
@@ -118,9 +118,9 @@ still absent from the tool surface until the session restarts.
 ## Docker
 
 ```bash
-docker build -t lxagents-shared-instruction:3.0.1 .
-docker run --rm -i lxagents-shared-instruction:3.0.1                            # stdio
-docker run --rm -p 3000:3000 lxagents-shared-instruction:3.0.1 node src/http.js  # HTTP
+docker build -t lxagents-shared-instruction:3.0.2 .
+docker run --rm -i lxagents-shared-instruction:3.0.2                            # stdio
+docker run --rm -p 3000:3000 lxagents-shared-instruction:3.0.2 node src/http.js  # HTTP
 ```
 
 A pinned, non-root image for hosts that cannot run Node 20. The default entrypoint is

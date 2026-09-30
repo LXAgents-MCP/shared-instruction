@@ -119,7 +119,7 @@ npm run start:http    # binds 0.0.0.0:3000, or $PORT
 }
 ```
 
-Same 31 tools either way. Set `MCP_ALLOWED_HOSTS` to a comma-separated list of hostnames
+Same 32 tools either way. Set `MCP_ALLOWED_HOSTS` to a comma-separated list of hostnames
 if you expose it beyond loopback — see [Security model](../security/security-model.md).
 
 ## 5. Paste this into your `AGENTS.md`

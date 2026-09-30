@@ -73,7 +73,7 @@ npm run start:stdio   # the same thing, named for what it is
 npm run start:http    # HTTP on 0.0.0.0:3000, or $PORT
 ```
 
-The two entry points differ only in transport. Same 31 tools, same content, same
+The two entry points differ only in transport. Same 32 tools, same content, same
 read-only surface. `MCP_TRANSPORT=http node src/index.js` is the same server reached the
 other way round, which is how the other servers in the organization select a transport.
 
@@ -88,7 +88,7 @@ npm run inspect
 ```
 
 This runs the MCP Inspector against the stdio server, listing every tool and letting you
-call it. With 31 tools and no prompts or resources, the tool list is the whole surface.
+call it. With 32 tools and no prompts or resources, the tool list is the whole surface.
 
 ### stdout belongs to the protocol — on stdio
 
