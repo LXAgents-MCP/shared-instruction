@@ -43,10 +43,11 @@ single 31,000-character `agents_auto_activation` call. The four mandatory ones a
 they are no longer a fixed set: there are 33 files, and a repository declares in its own
 `AGENTS.md` which of them it uses.
 
-**Four tool counts are hardcoded in `test/http.test.js`**, and adding a file to `content/`
-fails the suite until all four move. They are not derived from the tool list, so there is
-no single place to update — this is the friction cost of the count being pinned rather
-than computed.
+**Tool counts in `test/http.test.js` are derived, not hardcoded.** They come from
+`TOOL_MODULES.length` — the same array `createServer()` registers from — so adding a file
+to `content/` no longer means editing four numbers. That change also removed the friction
+this note used to record: previously the counts were pinned, and a new file failed the
+suite in four places at once.
 
 `mcp_list` is the one hand-written tool, and the only one that reaches `readSetFile` in
 `src/content.js` — with a constant path. Because no tool takes a `path`, there is nothing
