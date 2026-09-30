@@ -1,16 +1,17 @@
 # Environment Variables
 
-**Three, and none of them is a secret.** They configure the HTTP transport; the stdio
-transport reads none of them, which is why a client that spawns the process has nothing to
-set.
+**Four, and none of them is a secret.** Three configure the HTTP transport; the fourth
+picks which transport runs. A client that spawns the server over stdio sets none of them,
+which is why that path has nothing to configure.
 
 | Variable | Default | What it does |
 |---|---|---|
 | `PORT` | `3000` | The port the HTTP transport binds. |
 | `HOST` | `0.0.0.0` | The interface it binds. Loopback-only hosts need no allow-list. |
 | `MCP_ALLOWED_HOSTS` | unset | Comma-separated hostnames permitted in the `Host` header. **Off when unset.** |
+| `MCP_TRANSPORT` | `stdio` | Which transport `src/index.js` speaks: `stdio`, or `http` (`streamable-http` is accepted too). `http` reaches `src/http.js`, which serves `POST /mcp`. |
 
-`src/index.js` reads none of them. `src/http.js` reads all three.
+`src/index.js` reads `MCP_TRANSPORT` and nothing else. `src/http.js` reads the other three.
 
 **Why `MCP_ALLOWED_HOSTS` is off by default, and why that is worth knowing.** It is a
 DNS-rebinding guard: it stops a browser on someone's machine resolving an attacker's domain
@@ -33,7 +34,7 @@ MCP_ALLOWED_HOSTS=shared-instruction.example.com,localhost npm run start:http
 | Which file to serve | The path to `src/index.js` in the client's server config. |
 | The instruction set | `content/` beside the package. Resolved from the module's own location, not from the working directory, so it does not matter where the client was started from. |
 | The version reported at `initialize` | `package.json`, read at import. |
-| Transport | Which entry point is run: `src/index.js` for stdio, `src/http.js` for HTTP. Not an environment variable — a different process. |
+| Transport | Which entry point is run: `src/index.js` for stdio, `src/http.js` for HTTP — or `MCP_TRANSPORT=http` on `src/index.js`, which reaches the second one for you. |
 
 ## What this page deliberately does not document
 

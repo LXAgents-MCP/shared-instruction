@@ -27,9 +27,10 @@ It is both the **producer** of the shared set and a **consumer** of it. See
 | `src/server.js` | Builds one `McpServer` and registers every tool; carries the `instructions` text. | Changing the MCP surface. |
 | `src/content.js` | The set root, the frontmatter reader, and `readSetFile` with its path check. | Changing how content is located or read. |
 | `src/version.js` | `ROOT`, `CONTENT_DIR`, `VERSION`, `SERVER_NAME`. | Renaming the server or moving the set. |
-| `src/http.js` | The HTTP entry point — session store, `/sse`, `/message`, `MCP_ALLOWED_HOSTS` validation, drain-then-close shutdown. | The HTTP surface, or anything about a listening server. |
+| `src/app.js` | The HTTP transport as an application — `POST /mcp`, `GET /healthz`, the 405, the 404, the body limit, the `Host` allow-list. Builds and returns; does not listen. | The HTTP surface. |
+| `src/http.js` | The HTTP entry point — the port, the interface, the startup lines, the in-flight set, and the drain. | Anything about a listening server, the port, or shutdown. |
 | `Dockerfile` | A pinned, non-root image for hosts that cannot run Node 20. Serves both transports; `EXPOSE 3000`, stdio entrypoint. | The toolchain the image pins, or the install command it runs. |
-| `test/` | `server.test.js` (19, in-memory) and `http.test.js` (11, against a real listener). | Always. Every behavioural change ships with one. |
+| `test/` | `server.test.js` (19, in-memory) and `http.test.js` (23, against a real listener). | Always. Every behavioural change ships with one. |
 
 There is no `src/server/`, no `src/cli/`, no `src/transport/`, and no `src/content/`
 directory. If a file you are about to edit is under one of those paths, it does not exist
@@ -39,33 +40,44 @@ here.
 
 There are **two**, and they differ only in transport:
 
-* `src/index.js` — what an MCP client spawns. Connects a stdio transport, handles
-  `SIGINT`, and writes nothing to stdout.
-* `src/http.js` — `npm run start:http`. Binds `HOST`/`PORT`, serves `GET /sse` and
-  `POST /message`, and **does** log to stdout, which is correct there because the protocol
-  is on a socket rather than a pipe.
+* `src/index.js` — what an MCP client spawns. Connects a stdio transport by default, and
+  hands over to `src/http.js` when `MCP_TRANSPORT=http` is set. Handles `SIGINT`, and
+  writes nothing to stdout.
+* `src/http.js` — `npm run start:http`, and the command the `Dockerfile` documents. Binds
+  `HOST`/`PORT` and serves `POST /mcp` and `GET /healthz` from the app in `src/app.js`. It
+  logs to **stderr**, because it is one dynamic import away from a process whose stdout is
+  the JSON-RPC channel.
+
+**`src/http.js` is the HTTP entry point here and `src/index.js` is it in the other four
+servers in the organization.** That is not a preference: `package.json`'s `start:http` and
+the `Dockerfile` comment both name `src/http.js`, and neither may change. The transport
+selection therefore lives in `src/index.js` and reaches `src/http.js` by **dynamic** import,
+so express is not loaded into a stdio process whose stdout is the protocol.
 
 Behind both:
 
+* `src/app.js` — the whole HTTP surface as a factory. It does not listen, which is why
+  `src/http.js` can be tested and reasoned about without a port.
 * `src/tools/from-content.js` — walks `content/` at import, derives a tool name and
   description per file, and reads each file once into a frozen `Map`. This is the boot-time
   validation gate, and the only module that touches every file in the set.
 * `src/server.js` — `TOOL_MODULES`, the array every registered tool comes from. Add a
-  module here and its tools appear; nothing else registers anything. Both entry points
-  call `createServer()`, so a change to the surface cannot reach one and miss the other.
+  module here and its tools appear; nothing else registers anything. Every entry point
+  calls `createServer()`, so a change to the surface cannot reach one and miss the other.
 * `src/content.js` — `readSetFile`, reached by exactly one caller with a constant path.
 
 ## Commands
 
 ```bash
 npm install
-npm test                 # node:test — two files, 30 tests
+npm test                 # node:test — two files, 42 tests
 npm start                # stdio
 npm run start:http       # HTTP on 0.0.0.0:3000, or $PORT/$HOST
 npm run inspect          # MCP Inspector against the stdio server
 ```
 
-`npm start` and `npm run start:stdio` are the same thing. There is no watch mode and no
+`npm start` and `npm run start:stdio` are the same thing, and `MCP_TRANSPORT=http npm start`
+is `npm run start:http` by another route. There is no watch mode and no
 CLI. `docker build -t lxagents-shared-instruction:$(node -p "require('./package.json').version") .`
 builds the image, which runs the stdio entrypoint with a pinned toolchain; override the
 entrypoint to `src/http.js` for the HTTP form.
@@ -81,11 +93,10 @@ entrypoint to `src/http.js` for the HTTP form.
   `content/prompts/agents-setup.md`, and the `instructions` string in `src/server.js` all
   reproduce set text and go stale silently. Grep for a sentence you changed before
   committing — see [`../../rules/set-mirrors.md`](../../rules/set-mirrors.md).
-* **Never write to stdout from the stdio path.** stdout is the JSON-RPC channel. There is
-  no logger module, and a `console.log` in `src/index.js` or anything it imports is a bug
-  that corrupts the protocol stream. `src/http.js` is the one exception and the reason the
-  rule is per-file rather than per-repository: there the protocol is on a socket and stdout
-  is an ordinary log channel.
+* **Nothing writes to stdout.** stdout is the JSON-RPC channel on stdio, and `src/index.js`
+  reaches `src/http.js` by dynamic import, so the HTTP process is one hop away from the
+  same constraint. There is no logger module; `src/http.js` logs to stderr, and so should
+  anything else that needs to say something.
 * **`fetch` cannot set `Host`,** so a Host allow-list cannot be tested through it — it
   drops the header and every request arrives as `127.0.0.1`, which passes or fails for the
   wrong reason. `test/http.test.js` uses `node:http` for those assertions. If you add one,

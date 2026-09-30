@@ -29,8 +29,8 @@ spawned per client. Start it with `npm run start:http` — it binds `0.0.0.0:300
 {
   "mcpServers": {
     "lxagents-shared-instruction": {
-      "type": "sse",
-      "url": "https://shared-instruction.example.com/sse"
+      "type": "http",
+      "url": "https://shared-instruction.example.com/mcp"
     }
   }
 }

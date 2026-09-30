@@ -13,9 +13,9 @@ resources. It is reachable over two transports, and they expose the same tools. 
 |---|---|
 | `name` | `lxagents-shared-instruction` |
 | `version` | from `package.json`, read at import by `src/version.js` |
-| transport | stdio (`src/index.js`) or HTTP/SSE (`src/http.js`, `/sse`) |
+| transport | stdio (`src/index.js`) or stateless HTTP (`src/http.js`, `POST /mcp`) |
 
-Both entry points call the same `createServer()`, so the surface is identical by
+Every entry point calls the same `createServer()`, so the surface is identical by
 construction. A test asserts the two agree, tool for tool and byte for byte on a call.
 
 `initialize` also returns `instructions`, which names real tools, points a first-time
@@ -123,12 +123,18 @@ documented all of the following as if it were shipped. None of it is.
 | **A CLI** | `package.json` declares one bin, `lxagents-shared-instruction`, which is the server. There is no `lxagents-agents`, no `list`/`read`/`setup`/`audit` subcommands, and no `npm run cli`. |
 | **A writer** | Every tool is read-only. The tools that would write the set are not registered rather than disabled, so pointing a repository at this server cannot mutate it. A test asserts that no tool accepts a write verb or a credential. |
 | **A registry of tools** | `src/constants.js`, `src/server/` and `src/cli.js` were removed. The surface is built by `src/tools/from-content.js` and the array in `src/server.js`. |
-| **Health and readiness endpoints** | No `/healthz`, no `/readyz`. The HTTP transport answers `/sse` and `/message`, and a 404 for anything else. A probe endpoint on a server that serves only public markdown is a route that exists to be scanned. |
+| **Health and readiness endpoints** | `GET /healthz`, and nothing else. **This row previously read the opposite** — "No `/healthz`, no `/readyz`… a probe endpoint on a server that serves only public markdown is a route that exists to be scanned" — and the objection was met with consistency rather than refuted. The four sibling servers already serve `/healthz`, and a deployment that has to treat one of five identically shaped servers differently is one this repository declined to pay for. What answers is `{ status, server, version }` and nothing derived from the set, before any body is read, so the route is not a window onto the content. |
 | **Authentication** | Neither transport has any, and adding it would not make the content less public — it is on npm. See the [security model](../security/security-model.md). |
 
-**What the HTTP transport does expose** is the same 31 tools, at `GET /sse` (open a
-session) and `POST /message` (send to it). An unknown session id is a 404 rather than a new
-session, and a session lives only as long as its stream.
+**What the HTTP transport does expose** is the same 31 tools, at `POST /mcp`, plus
+`GET /healthz`. It is **stateless**: every request carries everything it needs, no session
+id is minted, and there is no session store to bound. Any other method on `/mcp` is a 405
+that says so, and any other path is a JSON-RPC 404.
+
+The previous transport was a deprecated SSE one that held a session per open stream, and
+it is gone. `SSEServerTransport` is deprecated in the SDK in favour of
+`StreamableHTTPServerTransport`, and moving off it is breaking for every deployed client —
+see the task record under [`.agents/memory/tasks/`](../../.agents/memory/tasks/).
 
 The full tool list is whatever the client enumerates from `tools/list`; it is never written
 down here, because a hand-maintained copy of a generated list is a copy that goes stale.
@@ -149,13 +155,15 @@ ways, name derivation, uniqueness and descriptions, the zero-argument claim, byt
 fidelity, total-served equality, reachability, index routing, `mcp_list` in isolation, and
 the read-only claim.
 
-`test/http.test.js` is 11 more, over a real client against a real listening process rather
+`test/http.test.js` is 23 more, over a real client against a real listening process rather
 than an in-memory transport, because the things that can go wrong on the HTTP path are
-about sockets and sessions and do not reproduce in memory. It asserts the two transports
-expose the same tools and return byte-identical payloads, that concurrent sessions do not
-cross-talk, that an unknown session id is a 404, that a session dies with its stream, that
-shutdown drains before it closes, and that a `Host` header outside `MCP_ALLOWED_HOSTS` is
-actually rejected.
+about sockets and do not reproduce in memory. It asserts the two transports expose the same
+tools and return byte-identical payloads, that concurrent requests do not cross-talk, that
+`/healthz` answers, that any other method on `/mcp` is a 405 and any other path a 404, that
+the routes the SSE transport used are **gone** rather than assumed to be, that the drain
+reports in-flight requests and not sessions, that nothing is written to stdout, and that a
+`Host` header outside `MCP_ALLOWED_HOSTS` is actually rejected — over `node:http`, because
+`fetch` cannot set the header and would test nothing.
 
 There is no `test/tools.test.js` and no `test/logs.test.js`. Those covered the six-tool
 convention surface and the changelog delta parser, both of which were removed.

@@ -124,8 +124,8 @@ resolves and Node starts — not that the set is correct. To check the set, run
 `npm test` in a checkout.
 
 For the HTTP form, `docker run --rm -p 3000:3000 … node src/http.js` and then
-`curl -N http://localhost:3000/sse` — the stream stays open, which is the correct
-response, not a hang.
+`curl http://localhost:3000/healthz` — a `200` and three fields, which is the correct
+response and a quicker check than a handshake.
 
 > **This image has never been built.** Docker is not available in the environment these
 > changes were written in, so neither the `EXPOSE` nor the entrypoint override has been
@@ -135,6 +135,6 @@ response, not a hang.
 
 - [Local setup](setup.md) — running the server without a container.
 - [Architecture](../information/architecture.md) — the two transports it has.
-- [Environment variables](env.md) — `PORT`, `HOST`, `MCP_ALLOWED_HOSTS`.
+- [Environment variables](env.md) — `PORT`, `HOST`, `MCP_ALLOWED_HOSTS`, `MCP_TRANSPORT`.
 - [Security model](../security/security-model.md) — what a container does and does
   not change about exposure.

@@ -7,8 +7,8 @@ instead of cloning or vendoring a copy of them.
 
 - **Server id:** `lxagents-shared-instruction`
 - **Package:** `@lxagents-mcp/shared-instruction`
-- **Transport:** stdio, or HTTP/SSE at `/sse` for running it as a service at a fixed
-  address. Both serve the same 31 tools.
+- **Transport:** stdio, or stateless HTTP at `POST /mcp` for running it as a service at a
+  fixed address. Both serve the same 31 tools.
 - **Surface:** 31 tools. 30 are generated — one per markdown file in `content/` — and one
   is hand-written. Every one is read-only and every one takes no arguments.
 - **Requirements:** Node >= 20. ESM, no build step.
@@ -98,8 +98,8 @@ A server running at a fixed address is reached over HTTP instead:
 {
   "mcpServers": {
     "lxagents-shared-instruction": {
-      "type": "sse",
-      "url": "http://shared-instruction.example.com:3000/sse"
+      "type": "http",
+      "url": "http://shared-instruction.example.com:3000/mcp"
     }
   }
 }
