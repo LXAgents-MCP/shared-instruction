@@ -8,9 +8,10 @@ instead of cloning or vendoring a copy of them.
 - **Server id:** `lxagents-shared-instruction`
 - **Package:** `@lxagents-mcp/shared-instruction`
 - **Transport:** stdio, or stateless HTTP at `POST /mcp` for running it as a service at a
-  fixed address. Both serve the same 33 tools.
-- **Surface:** 33 tools. 32 are generated — one per markdown file in `content/` — and one
-  is hand-written. Every one is read-only and every one takes no arguments.
+  fixed address. Both serve the same tool surface.
+- **Surface:** one tool per markdown file in `content/`, plus one hand-written `mcp_list`.
+  Every one is read-only and every one takes no arguments. For the current count,
+  enumerate the connector's tools.
 - **Requirements:** Node >= 20. ESM, no build step.
 
 ## Key features
