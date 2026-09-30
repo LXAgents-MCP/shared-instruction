@@ -4,7 +4,7 @@ Plain JavaScript (Node ESM), no build step. Two dependencies: the MCP SDK, and `
 for the HTTP transport. The whole server is eight files.
 
 ```
-content/                      the instruction set — 31 markdown files
+content/                      the instruction set — 32 markdown files
 src/
   index.js                    entry — picks the transport; stdio by default
   app.js                      the HTTP transport as an application — /mcp, /healthz. Does not listen.

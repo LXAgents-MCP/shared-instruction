@@ -68,7 +68,7 @@ operation to reach, no credential to present, and no state to corrupt. The liste
 who can ask, not what they can do once they have.
 
 **And the worker pool does not widen it either.** `src/http.js` forks one process per CPU by
-default, but every worker binds the same port and serves the same 32 read-only tools, so the
+default, but every worker binds the same port and serves the same 33 read-only tools, so the
 pool multiplies capacity rather than surface. Two things follow that are worth stating:
 there is still nothing shared between workers to corrupt — each builds its own `McpServer`
 per request — and the `Host` allow-list is evaluated by every worker independently, so
@@ -193,8 +193,8 @@ the lockfile with `--ignore-scripts`, and ends as `USER node`. It declares `EXPO
 and its default entrypoint is still the stdio server; the HTTP one is a command away:
 
 ```bash
-docker run --rm -i lxagents-shared-instruction:3.0.2                     # stdio
-docker run --rm -p 3000:3000 lxagents-shared-instruction:3.0.2 \
+docker run --rm -i lxagents-shared-instruction:3.1.0                     # stdio
+docker run --rm -p 3000:3000 lxagents-shared-instruction:3.1.0 \
   node src/http.js                                                        # HTTP
 ```
 

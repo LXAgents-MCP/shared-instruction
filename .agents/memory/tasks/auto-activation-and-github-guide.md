@@ -1,7 +1,7 @@
 ---
 name: memory-tasks-auto-activation-and-github-guide
 description: Task record for completing the auto_activation routing table to every published tool, and publishing the github_token_access_guide as a new tool.
-status: active
+status: done
 ---
 
 # Task: Complete the `auto_activation` routing table, and add `github_token_access_guide`
@@ -16,6 +16,10 @@ Four branches, stacked. The plan was approved before task 1 was written.
 | 2 | The new tool | `feat/github-token-access-guide` | `content/rules/github-token-access-guide.md`, sanitized; the index; four test counts. |
 | 3 | Complete routing | `feat/auto-activation-complete-table` | The 9 tools `auto-activation.md` never named, plus the one task 2 adds. |
 | 4 | Release `3.1.0` | `chore/release-3.1.0` | Version carriers, changelog, logs index, image tags, and the state-file correction. |
+
+**Status: all four committed. Not pushed, no pull request opened** — the owner holds the
+PR gate, and the branches are stacked, so `3.1.0` is the only one that is mergeable on its
+own.
 
 Tasks 2 and 3 are sequential because they touch one file: task 3's table must name the
 tool task 2 creates. Two tasks touching the same file are never independent.
@@ -145,3 +149,37 @@ entry points, neither of which this change touched.
 **Verified:** `npm test` — 51 tests, 51 pass, 0 fail. The `content/` bijection and
 byte-identity checks pass, so the routing file is still served whole.
 
+### Task 4 — `chore/release-3.1.0`
+
+**Landed.** `3.1.0`, minor, as the owner approved: `versioning.md` classes an added file
+as minor, and a file was added.
+
+The counts were **not** confined to where the plan predicted. The plan named
+`wiki/environments/{docker,setup,env}.md`; the real image-tag carriers are
+`README.md`, `wiki/environments/docker.md`, `wiki/security/security-model.md` and
+`.agents/rules/repository.md`, and `env.md` and `setup.md` carry none. The count carriers
+were found by grep rather than from the plan, and the two lists overlap without matching.
+
+`.agents/memory/state/repository-state.md` was corrected on three counts, as approved, and
+a **fourth** turned up while doing it: a bullet under "Not built yet" still said the HTTP
+transport had never run outside its tests because nothing was deployed, which the
+correction above it directly contradicted. Correcting three claims and leaving the file
+self-contradicting would have been worse than not starting.
+
+**Two of the three corrections were checked rather than assumed.** `GET /healthz` answered
+`200`, so the deployment claim is verified, not inferred. A `tools/list` against the live
+endpoint returned **32** tools with no `github_token_access_guide`, so the deployed
+instance is behind this release — recorded in the changelog's "Not done", because
+`/healthz` would never have shown it. **A `200` is evidence that something is up, not that
+it runs this branch**, and that is now written into the state file.
+
+The state file also carried the version as `1.0.0` and a `master` SHA of `cf68380` against
+the real `2cf1e5f`, and its own stale-SHA warning is the same failure mode as both. All
+three are corrected together for that reason.
+
+**Verified:** `npm test` — 51 tests, 51 pass, 0 fail. No stale `32` or `3.0.2` tag remains
+outside historical `wiki/logs/` rows and prior task records, both of which are correct as
+history.
+
+**Not done, and deliberately:** nothing was pushed and no pull request was opened. The
+owner holds that gate.

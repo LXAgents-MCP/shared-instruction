@@ -8,8 +8,8 @@ instead of cloning or vendoring a copy of them.
 - **Server id:** `lxagents-shared-instruction`
 - **Package:** `@lxagents-mcp/shared-instruction`
 - **Transport:** stdio, or stateless HTTP at `POST /mcp` for running it as a service at a
-  fixed address. Both serve the same 32 tools.
-- **Surface:** 32 tools. 31 are generated — one per markdown file in `content/` — and one
+  fixed address. Both serve the same 33 tools.
+- **Surface:** 33 tools. 32 are generated — one per markdown file in `content/` — and one
   is hand-written. Every one is read-only and every one takes no arguments.
 - **Requirements:** Node >= 20. ESM, no build step.
 
@@ -118,9 +118,9 @@ still absent from the tool surface until the session restarts.
 ## Docker
 
 ```bash
-docker build -t lxagents-shared-instruction:3.0.2 .
-docker run --rm -i lxagents-shared-instruction:3.0.2                            # stdio
-docker run --rm -p 3000:3000 lxagents-shared-instruction:3.0.2 node src/http.js  # HTTP
+docker build -t lxagents-shared-instruction:3.1.0 .
+docker run --rm -i lxagents-shared-instruction:3.1.0                            # stdio
+docker run --rm -p 3000:3000 lxagents-shared-instruction:3.1.0 node src/http.js  # HTTP
 ```
 
 A pinned, non-root image for hosts that cannot run Node 20. The default entrypoint is
