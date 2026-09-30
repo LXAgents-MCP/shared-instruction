@@ -62,9 +62,42 @@ text cannot be softened silently.
 Surface stays 33 tools — no file is added to `content/`, so `auto_activation` needs no new
 row and the HTTP tool-count tests need no edit.
 
+### Task 2 — the work
+
+Landed. `server-registry.md` gains the *Where these servers are published* table (three
+orgs, GitHub and GitLab) and the *Before you add anything* gate, which folds in the old
+*Suggested, not installed* section — it argued the same point without gating it.
+`mcp-list.js` changes description only; the handler was already a correct file read.
+Three tests are added or extended: the org URLs are asserted at organisation level, and two
+new tests pin the gate so the text cannot be softened silently.
+
+**One test assertion was rewritten rather than worked around.** The gate assertions
+matched the raw served text, and the file is hard-wrapped, so the clone-gate phrase
+straddled a line break and failed. Loosening the regex would have made the test pass on a
+rewording and fail on a rewrap — backwards. Whitespace is collapsed before matching, so
+only wording is load-bearing. Suite: 54 pass, 0 fail.
+
+Verified over stdio as a caller receives it, not only through the suite: six org URLs
+present, the self-repository still absent from the served text, `already connected`
+intact, all five gate phrases present, surface still 33 tools.
+
 ### Task 3 — release 3.2.0
 
 Minor, approved by the owner: a rule is added and no file is renamed or removed.
 `package.json`, the changelog, and both logs-index rows. Consumers must: nothing in their
 `AGENTS.md`; re-read `server_registry` if they add servers, because the returned text now
 carries the gate.
+
+### Task 3 — release 3.2.0
+
+Landed. `package.json` → `3.2.0`, `wiki/logs/3/2/0/CHANGELOG.md`, and the new row in both
+`content/index/logs-index.md` and `.agents/index/logs-index.md`, newest first. The surface
+is 33 tools before and after.
+
+**Three pull requests, stacked, in order 1 → 2 → 3**, each targeting the previous:
+`#chore/mcp-list-selection-gate-plan` → `#feat/mcp-list-selection-gate` →
+`#chore/release-3.2.0`. Merge in that order, re-targeting each base if the platform does
+not do it on merge — a forge only re-targets a stacked pull request when the previous base
+branch is deleted, and where that setting is off the pull request merges into the wrong
+base while the default branch silently stays behind. The merge succeeds and the page says
+merged, so nothing signals the gap. **Verify the tree afterwards** rather than assuming.

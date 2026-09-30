@@ -310,6 +310,88 @@ test("mcp_list returns the registry with every sibling", async () => {
   }
 });
 
+// The org pages are how a reader finds a server this file has not heard about. They are
+// asserted at the organisation level and never at the repository level: MCAgents-MCP has
+// no known repository list, so naming a repo there would put an invented claim in the one
+// column a caller trusts. Adding a real server later does not touch this test.
+
+test("mcp_list names every publishing organisation on both forges", async () => {
+  const { client } = await connect();
+  const text = textOf(
+    await client.callTool({ name: "mcp_list", arguments: {} }),
+  );
+
+  for (const org of ["LXAgents-MCP", "RBAgents-MCP", "MCAgents-MCP"]) {
+    for (const forge of ["github", "gitlab"]) {
+      const url = `https://${forge}.com/${org}`;
+      assert.ok(text.includes(url), `registry must name ${url}`);
+    }
+  }
+});
+
+// The gate is instruction text, because the server is read-only and cannot prompt: a tool
+// call returns this file and the calling agent is the only thing that can honour it. That
+// makes the text the whole mechanism, and a softened "you may wish to ask" would fail
+// nothing. These assertions are the enforcement.
+
+test("mcp_list gates the clone behind an explicit user decision", async () => {
+  const { client } = await connect();
+  const text = textOf(
+    await client.callTool({ name: "mcp_list", arguments: {} }),
+  );
+
+  // The published file is hard-wrapped, so a phrase can straddle a line break without
+  // anything being wrong with it. Matching the raw text would make the assertion fail on
+  // a rewrap and pass on a rewording, which is exactly backwards: these pin meaning, not
+  // layout. Whitespace is collapsed first, so only the wording is load-bearing.
+  const flat = text.replace(/\s+/g, " ");
+
+  assert.match(
+    flat,
+    /Report the whole list to the user first/,
+    "the caller must be told to show the user everything, not a shortlist",
+  );
+  assert.match(
+    flat,
+    /Ask the user which they want/,
+    "selecting is the user's decision, and the caller must ask",
+  );
+  assert.match(
+    flat,
+    /Do not clone, write a config file, or register a connector without an explicit yes/,
+    "the clone itself is the gated act, and it needs an explicit yes",
+  );
+  assert.match(
+    flat,
+    /Silence is not permission/,
+    "an unanswered request is not consent to write to someone's disk",
+  );
+  assert.match(
+    flat,
+    /it has not told you to clone/,
+    "naming a server is not permission to clone it; the two gates are separate",
+  );
+});
+
+test("mcp_list does not let the organisation list displace its own warning", async () => {
+  const { client } = await connect();
+  const text = textOf(
+    await client.callTool({ name: "mcp_list", arguments: {} }),
+  );
+
+  // The org table includes the repository this server is served from, so the guard
+  // above is what stops a reader cloning a set they already resolve. "already
+  // connected" is the sentence that tells them so, and the table must not bury it.
+  assert.ok(
+    text.includes("already connected"),
+    "the registry must still say why its own server is absent from the list",
+  );
+  assert.ok(
+    /does not claim to be a complete index/.test(text),
+    "the org pages and the server table are different lists; say so",
+  );
+});
+
 test("mcp_list does not tell a caller to install the server it is on", async () => {
   const { client } = await connect();
   const text = textOf(
