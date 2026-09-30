@@ -105,8 +105,10 @@ branch. Everywhere else, read `agents://`.
 | Published | `command: npx`, `args: ["-y", "@lxagents-mcp/shared-instruction"]` |
 | HTTP | `type: http`, `url: https://<host>/mcp` — `npm run start:http` binds `PORT \|\| 3000` |
 
-Both transports serve the same 33 tools. stdio is the right default for a client that can
-spawn a process; HTTP is for running the server as a service at a fixed address.
+Both transports serve the same tool surface — one tool per file in `content/`, plus
+`mcp_list`. Do not state a count here: it goes stale at the next file added. To get the
+current count, enumerate the connector's tools. stdio is the right default for a client
+that can spawn a process; HTTP is for running the server as a service at a fixed address.
 
 **Registering a server does not reach a session that is already running.** The client
 loads connectors at session start, so `claude mcp add` mid-session leaves a server that
