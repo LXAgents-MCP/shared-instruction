@@ -115,3 +115,33 @@ byte-identity checks pass, so the new file is served whole and no served byte mo
 
 **Task 3 now depends on this:** its table has a 33rd tool to name.
 
+### Task 3 — `feat/auto-activation-complete-table`
+
+**Landed.** The table in `content/rules/auto-activation.md` now names **all 33** published
+tools. It named 23 of 32 before, and 9 were absent.
+
+Two rows were written wrong on the first pass and corrected before commit. Both named an
+act the mandatory table above them already owns — "create a branch, or write a commit
+message" pointed at `branch_and_commit` when `branching_strategy` and
+`commit_conventions` already hold those triggers, and `task_workflow` was described as
+doing the planning when it documents what the artifacts **are**. A routing table whose
+rows contradict the table above it is worse than a missing row: it gives two answers to
+one question. `branch_and_commit` is now routed as the standing loop, and `task_workflow`
+as the shape.
+
+**The invariant test shipped here, not in task 2.** It was added before the table was
+touched and failed with exactly the 10 expected names, which is what made the gap
+demonstrable rather than asserted from a count. It checks the served text for every
+published tool name, so a file added to `content/` without a row now fails the suite.
+
+`AGENTS.md` was corrected **in this commit**, as
+[`.agents/rules/set-mirrors.md`](../../rules/set-mirrors.md) requires: a change to
+`auto-activation.md` updates the mirrors that reproduce it in the same commit. Eight rows
+were added to its trigger table. The other two named mirrors needed nothing —
+`content/prompts/agents-setup.md` holds a *selected* example block rather than a copy of
+the table, and the `instructions` string in `src/server.js` names four tools and two
+entry points, neither of which this change touched.
+
+**Verified:** `npm test` — 51 tests, 51 pass, 0 fail. The `content/` bijection and
+byte-identity checks pass, so the routing file is still served whole.
+

@@ -247,6 +247,29 @@ test("the instructions index routes every convention it should", async () => {
   }
 });
 
+// auto_activation is the source of truth for when each convention fires. A tool
+// can be published, servable, and unrouted, and nothing else in the suite would
+// notice — which is how the table reached 23 of 32. This pins the invariant.
+
+test("auto_activation routes every published tool", async () => {
+  const { client } = await connect();
+  const { tools } = await client.listTools();
+  const text = textOf(
+    await client.callTool({ name: "auto_activation", arguments: {} }),
+  );
+
+  const unrouted = tools
+    .map((tool) => tool.name)
+    .filter((name) => !text.includes(`\`${name}\``));
+
+  assert.deepEqual(
+    unrouted,
+    [],
+    `auto_activation.md must name every published tool, or a convention can ` +
+      `fire with nothing to route on. Unrouted: ${unrouted.join(", ")}`,
+  );
+});
+
 // mcp_list is the one hand-written tool. It is not generated, so it is pinned
 // here rather than covered by the bijection.
 
