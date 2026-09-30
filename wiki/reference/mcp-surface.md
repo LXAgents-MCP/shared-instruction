@@ -24,7 +24,8 @@ that nothing is to be called at session start.
 
 ## The generated tools
 
-30 tools, one per `.md` file under `content/`. Nothing registers them by hand.
+One per `.md` file under `content/`. Nothing registers them by hand. For the current
+count, enumerate the connector's tools.
 
 ### Naming
 
@@ -126,7 +127,7 @@ documented all of the following as if it were shipped. None of it is.
 | **Health and readiness endpoints** | `GET /healthz`, and nothing else. **This row previously read the opposite** — "No `/healthz`, no `/readyz`… a probe endpoint on a server that serves only public markdown is a route that exists to be scanned" — and the objection was met with consistency rather than refuted. The four sibling servers already serve `/healthz`, and a deployment that has to treat one of five identically shaped servers differently is one this repository declined to pay for. What answers is `{ status, server, version }` and nothing derived from the set, before any body is read, so the route is not a window onto the content. |
 | **Authentication** | Neither transport has any, and adding it would not make the content less public — it is on npm. See the [security model](../security/security-model.md). |
 
-**What the HTTP transport does expose** is the same 33 tools, at `POST /mcp`, plus
+**What the HTTP transport does expose** is the same tool surface, at `POST /mcp`, plus
 `GET /healthz`. It is **stateless**: every request carries everything it needs, no session
 id is minted, and there is no session store to bound. Any other method on `/mcp` is a 405
 that says so, and any other path is a JSON-RPC 404.

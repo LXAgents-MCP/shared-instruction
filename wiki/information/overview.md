@@ -29,9 +29,9 @@ to vendor by mistake, and every repository reads the same bytes.
 
 ## What it serves
 
-**33 tools, and nothing else.** 32 are generated — one per markdown file in `content/` —
-and one is hand-written. No prompts, no resources. Reachable over stdio or stateless HTTP
-at `POST /mcp`; both serve the same tools, because both call the same `createServer()`.
+**Tools, and nothing else.** One per markdown file in `content/`, plus one hand-written
+`mcp_list`. No prompts, no resources. Reachable over stdio or stateless HTTP at
+`POST /mcp`; both serve the same tools, because both call the same `createServer()`.
 
 | Tool | Serves |
 |---|---|
