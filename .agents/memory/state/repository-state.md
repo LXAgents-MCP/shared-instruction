@@ -5,7 +5,7 @@ description: Current known state of LXAgents-MCP/shared-instruction — what exi
 
 # Repository State
 
-## 2026-09-29
+## 2026-09-30
 
 **What this is.** A read-only MCP server that serves the LXAgents shared agent instruction
 set. Plain JavaScript, Node ESM, no build step. Published as
@@ -28,11 +28,11 @@ restate it — three mirrors, listed in `.agents/rules/set-mirrors.md`.
 and `.agents/wiki/security/security-boundaries.md` (the SOP), loaded by a **local** trigger
 row. Its first rule is that a security context never crosses repositories.
 
-**Structure.** `content/` holds 30 published instruction files. `.agents/rules/` holds
+**Structure.** `content/` holds 32 published instruction files. `.agents/rules/` holds
 three local rules: `repository.md`, `content-publishing.md`, and `set-mirrors.md`. `wiki/`
 holds human documentation. `src/` is eight files and `test/` is two.
 
-**Surface — one tool per file.** 32 tools: 31 generated from `content/`, one per file,
+**Surface — one tool per file.** 33 tools: 32 generated from `content/`, one per file,
 plus `mcp_list`. The name is derived from the path (folder stripped, `.md` dropped, kebab →
 snake), with one override: `AGENTS.md` → `agents_entry_point`. The description is the
 file's own frontmatter `description`, verbatim. **No tool takes an argument.**
@@ -40,7 +40,7 @@ file's own frontmatter `description`, verbatim. **No tool takes an argument.**
 That is a change from `1.0.0`, where six hand-named convention tools replaced the
 single 31,000-character `agents_auto_activation` call. The four mandatory ones are still
 `plan_creator`, `branching_strategy`, `commit_conventions`, and `discovery_protocol`, but
-they are no longer a fixed set: there are 30 files, and a repository declares in its own
+they are no longer a fixed set: there are 32 files, and a repository declares in its own
 `AGENTS.md` which of them it uses.
 
 `mcp_list` is the one hand-written tool, and the only one that reaches `readSetFile` in
@@ -80,10 +80,13 @@ agree again. The owner approved `3.0.2` and the addition of
 an added file as minor. The changelog says so in its own header, because a patch number
 otherwise promises there is nothing to do and there is.
 
-**Not deployed anywhere.** There is no Render service and nothing is routed. The
-`src/http.js` listener is a capability, not a deployment — who runs it, on what address,
-behind what, is the operator's decision. Consuming repositories reach this package through
-`npx`, a local clone, `docker run -i`, or the HTTP endpoint of an instance someone deployed.
+**Deployed, and reachable.** A Render service serves the HTTP transport at
+`https://lxagents-mcp-shared-instruction.onrender.com` — `POST /mcp` for the protocol and
+`GET /healthz` for liveness, which answered `200` when checked on 2026-09-30. **This file
+previously said "Not deployed anywhere", and that was wrong rather than stale**: the
+listener is a capability *and* a running service, and treating them as the same thing is
+what hid it. Consuming repositories reach this package through `npx`, a local clone,
+`docker run -i`, or that endpoint.
 
 **A `Dockerfile` exists, and is not a deployment.** Single stage, `node:22-alpine`,
 `npm ci --ignore-scripts --omit=dev`, `USER node`, entrypoint `node src/index.js`, now with
@@ -94,15 +97,20 @@ been verified by a build. `.dockerignore` excludes `node_modules`, `test`, `wiki
 `.agents` and the markdown at the root, which means the image cannot run its own test
 suite.
 
-**Version.** `1.0.0`. Releases: `0.0.0` (initial set) through `0.14.0` (the security
+**Version.** `3.1.0`. Releases: `0.0.0` (initial set) through `0.14.0` (the security
 creator, and `security/` made servable) are in `wiki/logs/`; `1.0.0` replaced the MCP
 server with a read-only instruction set (#63), then restored the `version` and `author`
-frontmatter fields on every served file (#64, #65).
+frontmatter fields on every served file (#64, #65). `2.0.0` made every file its own tool;
+`3.0.0` folded the task workflow into `plan-creator`; `3.0.2` corrected the connector
+documentation; `3.1.0` adds `github_token_access_guide` and completes the
+`auto_activation` routing table.
 
-**`master` is at `cf68380`** as of 2026-09-29. **Re-verify with `git fetch` rather than
+**`master` is at `2cf1e5f`** as of 2026-09-30. **Re-verify with `git fetch` rather than
 trusting this SHA** — an earlier version of this file carried a SHA that went stale within
 the hour, and a state file that is confidently wrong is worse than one that says nothing,
-because the next session plans a branch point from it.
+because the next session plans a branch point from it. This file also carried the version
+as `1.0.0` and denied any deployment, both of which were wrong; the pattern is the same one
+the SHA warning describes, and it is why all three are corrected together.
 
 **Local install has a fixed layout.** A clone that runs this server locally belongs at
 `./mcps/{org or owner}/{repo}/`, gitignored. It is a runtime, not a vendored set: the
@@ -114,7 +122,7 @@ always the release, and the work goes between them. Each task appends its own
 `### Task k — {branch}` entry to `.agents/memory/tasks/{slug}.md` in the same commit as
 its work, so `git log -p` on that file replays the request task by task.
 
-**Tests.** 50, all passing, in two files. `server.test.js` (19) drives a real MCP client on
+**Tests.** 51, all passing, in two files. `server.test.js` (20) drives a real MCP client on
 an in-memory transport; `http.test.js` (31) drives a real client against a real listening
 process and a real cluster, because sockets and process boundaries do not reproduce in
 memory. A fresh checkout has no
@@ -135,8 +143,11 @@ first, per `.agents/rules/repository.md`.
   wrote it, and the HTTP work has since added an `EXPOSE` and an entrypoint override that
   are equally unverified. It should be built once, both run forms checked, before anyone
   relies on it.
-* The HTTP transport has never been run outside its own tests. Nothing is deployed, so
-  there is no address, no ingress, and no evidence about how it behaves behind a proxy.
+* The deployed instance is **behind this branch**, checked rather than assumed: a
+  `tools/list` against the live endpoint on 2026-09-30 returned **32** tools, and
+  `github_token_access_guide` is not among them. So it predates `3.1.0`. `GET /healthz`
+  reports liveness only and would not have shown this — an instance can answer `200` and
+  still be serving an older set. Nothing here records how a deployment gets promoted.
 
 **Next obvious step.** Build the image once and check both run forms, and delete the dead
 `instruction.js`.

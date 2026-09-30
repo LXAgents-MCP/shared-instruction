@@ -105,7 +105,7 @@ branch. Everywhere else, read `agents://`.
 | Published | `command: npx`, `args: ["-y", "@lxagents-mcp/shared-instruction"]` |
 | HTTP | `type: http`, `url: https://<host>/mcp` — `npm run start:http` binds `PORT \|\| 3000` |
 
-Both transports serve the same 32 tools. stdio is the right default for a client that can
+Both transports serve the same 33 tools. stdio is the right default for a client that can
 spawn a process; HTTP is for running the server as a service at a fixed address.
 
 **Registering a server does not reach a session that is already running.** The client

@@ -20,7 +20,7 @@ It is both the **producer** of the shared set and a **consumer** of it. See
 
 | Path | Contents | Touch it when |
 |---|---|---|
-| `content/` | The published instruction set — 31 markdown files, each served as its own tool. | You are changing a convention every repository follows. **This is a release.** |
+| `content/` | The published instruction set — 32 markdown files, each served as its own tool. | You are changing a convention every repository follows. **This is a release.** |
 | `.agents/` | This repository's own rules, indexes, agent wiki, memory. | You are changing something true only here. |
 | `wiki/` | Human documentation, plus `wiki/logs/` release history. | A person needs to read it. |
 | `src/tools/` | `from-content.js` builds the generated surface; `mcp-list.js` is the one hand-written tool. | Adding or changing a tool. |
@@ -30,7 +30,7 @@ It is both the **producer** of the shared set and a **consumer** of it. See
 | `src/app.js` | The HTTP transport as an application — `POST /mcp`, `GET /healthz`, the 405, the 404, the body limit, the `Host` allow-list. Builds and returns; does not listen. | The HTTP surface. |
 | `src/http.js` | The HTTP entry point — the cluster primary and workers, the port, the interface, the startup lines, the in-flight set, and the drain. | Anything about a listening server, a worker count, the port, or shutdown. |
 | `Dockerfile` | A pinned, non-root image for hosts that cannot run Node 20. Serves both transports; `EXPOSE 3000`, stdio entrypoint. | The toolchain the image pins, or the install command it runs. |
-| `test/` | `server.test.js` (19, in-memory) and `http.test.js` (31, against a real listener and a real cluster). | Always. Every behavioural change ships with one. |
+| `test/` | `server.test.js` (20, in-memory) and `http.test.js` (31, against a real listener and a real cluster). | Always. Every behavioural change ships with one. |
 
 There is no `src/server/`, no `src/cli/`, no `src/transport/`, and no `src/content/`
 directory. If a file you are about to edit is under one of those paths, it does not exist
