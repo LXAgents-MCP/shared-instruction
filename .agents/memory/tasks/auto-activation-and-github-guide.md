@@ -87,3 +87,31 @@ helper resolution order, the environment-variable fix, and both verification com
 
 This file, and its row in `memory-index.md`. The plan was approved before it was
 written, so the record states intent before any diff exists.
+
+### Task 2 — `feat/github-token-access-guide`
+
+**Landed.** `content/rules/github-token-access-guide.md` is new, and the published tool
+count is **33**.
+
+Sanitized as approved: the owner's account name became `<your-account>` and the four
+repository names became `OWNER/REPO`. The diagnosis is intact — two credentials, the
+helper resolution order and why the system helper wins, the early-exit check that makes
+`env -u GITHUB_TOKEN` sufficient, the `gh auth status` and `git credential fill`
+verifications, the `~/.gitconfig` empty-reset approach that does **not** work, and the
+re-authentication path. Verified by grep: no account name, no repository name, and no
+token material survives in the published file.
+
+Registered in `content/index/instructions-index.md` in this commit, per
+`index-creator.md` — a file added updates its owning index in the same commit.
+
+The four hardcoded `32`s in `test/http.test.js` became `33`, and the two count messages
+were corrected to "32 generated from content/ plus mcp_list".
+`test/server.test.js` needed no edit — it derives its count from `TOOL_FILES.size`, which
+is why one suite caught the addition automatically and the other needed four manual
+edits. That asymmetry is worth remembering before the next file is added.
+
+**Verified:** `npm test` — 50 tests, 50 pass, 0 fail. The `content/` bijection and
+byte-identity checks pass, so the new file is served whole and no served byte moved.
+
+**Task 3 now depends on this:** its table has a 33rd tool to name.
+

@@ -30,6 +30,7 @@ index lists shared files only; a consuming repository's files are routed from it
 | [`work-summary.md`](agents://rules/work-summary.md) | Report finished work back — what changed, what was verified, what was not done. |
 | [`versioning.md`](agents://rules/versioning.md) | Never bump a version without asking. |
 | [`model-naming-convention.md`](agents://rules/model-naming-convention.md) | Every stored model identifier is `{platform}/{model}`, lowercase, built the same way on every route. |
+| [`github-token-access-guide.md`](agents://rules/github-token-access-guide.md) | Why `gh` and `git` fail with `403` in a Codespace, and the `env -u GITHUB_TOKEN` fix that makes the credential you already have get used. |
 
 ## git/
 
