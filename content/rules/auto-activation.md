@@ -89,9 +89,14 @@ the start of the request and the tool exists only to supply the rest of the proc
 
 ## Trigger table for the rest of the set
 
-This file is the source of truth for these rows. A repository declares the ones it needs.
-Each `{shared}` row is a tool call, named after the file; the `{repo}` rows are files in
-the consuming repository and are read from disk.
+This file is the source of truth for these rows, and it is **total**: every tool the
+server publishes appears below, so a convention can never fire with nothing to route on.
+A repository declares the subset it needs. Each `{shared}` row is a tool call, named
+after the file; the `{repo}` rows are files in the consuming repository and are read from
+disk.
+
+**The table is enforced.** A test asserts that every published tool is named here, so a
+file added to the set without a row fails the suite rather than waiting to be noticed.
 
 | When you are about to… | Call or read |
 |---|---|
@@ -99,18 +104,28 @@ the consuming repository and are read from disk.
 | Wonder whether something is local or shared, or need to override a shared rule | `shared_instructions` |
 | Decide where a new file goes | `directories` |
 | Resolve, connect, or fail to reach the shared set | `mcp_connector` |
+| Run **any** `gh` or `git` command that reaches GitHub | `github_token_access_guide` |
+| Run the standing branch-then-commit loop as one standing procedure | `branch_and_commit` |
+| Need to know what a multi-step request *becomes* — plan, record, branch, release | `task_workflow` |
 | Add, move, rename, or delete any file in a set or in `wiki/` | `index_creator` |
 | Write a rule or instruction | `instruction_creator` |
 | Write documentation, an SOP, or a domain guideline | `information_creator` |
 | Write or change a security file — a policy, a threat model, or a security SOP | `security_creator` |
 | Change code or structure that a document describes | `change_propagation` |
 | Record progress, a decision, or session state | `memory_creator` |
+| Decide what may be written to memory, or what must never be | `memory_policy` |
 | Touch anything that carries a version number | `versioning` |
 | Record a release | `changelog_creator` |
 | Report finished work back to the user | `work_summary` |
 | Find a probable duplicate of a shared file — **on request only** | `duplicate_instruction_audit` |
 | Update a repository against a newer set version — **on request only** | `agents_update` |
 | Find out which other instruction servers exist | `mcp_list` |
+| Need the sibling-server catalogue and their clone URLs | `server_registry` |
+| Build this repository's instruction, knowledge, or memory system | `agents_setup` |
+| Need the router — which index to read next | `root_index` |
+| Need the full list of rules, conventions, and creators | `instructions_index` |
+| Need release history, and what consumers must do about it | `logs_index` |
+| Activation ran but the workflow still did not happen | `auto_activation` |
 | Need project facts, commands, or orientation | `{repo}/.agents/wiki/context/repository-map.md` |
 | Do anything at all in this project | `{repo}/.agents/rules/repository.md` |
 

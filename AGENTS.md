@@ -149,6 +149,7 @@ conventions declared in the block above are not repeated here.
 | When you are about to… | Load and obey |
 |---|---|
 | Write **any** commit, tag, PR, comment, or file that will be committed or posted | [`content/rules/no-session-links.md`](content/rules/no-session-links.md) |
+| Run **any** `gh` or `git` command that reaches GitHub | [`content/rules/github-token-access-guide.md`](content/rules/github-token-access-guide.md) |
 | Wonder whether something is local or shared | [`content/rules/shared-instructions.md`](content/rules/shared-instructions.md) |
 | Decide where a new file goes | [`content/rules/directories.md`](content/rules/directories.md) |
 | Change how a repository resolves this set | [`content/rules/mcp-connector.md`](content/rules/mcp-connector.md) |
@@ -164,6 +165,13 @@ conventions declared in the block above are not repeated here.
 | Edit anything under `content/` | [`.agents/rules/content-publishing.md`](.agents/rules/content-publishing.md) |
 | Change text that `content/` publishes and this repository also reproduces | [`.agents/rules/set-mirrors.md`](.agents/rules/set-mirrors.md) |
 | Record progress, a decision, or session state | [`content/creators/memory-creator.md`](content/creators/memory-creator.md) |
+| Decide what may be written to memory, or what must never be | [`content/rules/memory-policy.md`](content/rules/memory-policy.md) |
+| Build a repository's instruction, knowledge, or memory system from scratch | [`content/prompts/agents-setup.md`](content/prompts/agents-setup.md) |
+| Need the router — which index to read next | [`content/index/root-index.md`](content/index/root-index.md) |
+| Need the full list of rules, conventions, and creators | [`content/index/instructions-index.md`](content/index/instructions-index.md) |
+| Need release history, and what consumers must do about it | [`content/index/logs-index.md`](content/index/logs-index.md) |
+| Need the sibling-server catalogue and their clone URLs | [`content/index/server-registry.md`](content/index/server-registry.md) |
+| Activation ran but the workflow still did not happen | [`content/rules/auto-activation.md`](content/rules/auto-activation.md) |
 | Need project facts, commands, or orientation | [`.agents/wiki/context/repository-map.md`](.agents/wiki/context/repository-map.md) |
 | Work on security, authentication, secrets, or deployment | [`.agents/wiki/security/security-boundaries.md`](.agents/wiki/security/security-boundaries.md) |
 | Do anything at all in this repository | [`.agents/rules/repository.md`](.agents/rules/repository.md) |
