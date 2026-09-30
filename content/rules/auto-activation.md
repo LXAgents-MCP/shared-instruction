@@ -102,6 +102,7 @@ file added to the set without a row fails the suite rather than waiting to be no
 |---|---|
 | Write **any** commit, tag, PR, comment, or file that will be committed or posted | `no_session_links` |
 | Wonder whether something is local or shared, or need to override a shared rule | `shared_instructions` |
+| Document a permission gate, or decide whether a gate is mechanical or text-borne | `gate_enforcement` |
 | Decide where a new file goes | `directories` |
 | Resolve, connect, or fail to reach the shared set | `mcp_connector` |
 | Run **any** `gh` or `git` command that reaches GitHub | `github_token_access_guide` |
