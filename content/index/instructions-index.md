@@ -22,6 +22,7 @@ index lists shared files only; a consuming repository's files are routed from it
 | [`shared-instructions.md`](agents://rules/shared-instructions.md) | How shared and local combine — precedence, override, promotion, adoption. |
 | [`auto-activation.md`](agents://rules/auto-activation.md) | When each instruction fires without being asked, what outranks what, and the recovery when activation does not take. |
 | [`mcp-connector.md`](agents://rules/mcp-connector.md) | Resolving this set through the connector instead of cloning it. |
+| [`mcp-tool-availability.md`](agents://rules/mcp-tool-availability.md) | The connector is healthy but this session has none of its tools — why there is no fallback reading path, and what to do instead. |
 | [`no-session-links.md`](agents://rules/no-session-links.md) | Never record an assistant or tool session link. |
 | [`change-propagation.md`](agents://rules/change-propagation.md) | A change updates the documentation describing it, in the same commit. |
 | [`discovery-protocol.md`](agents://rules/discovery-protocol.md) | Propose new rules; never self-apply them. Loads on every request, not on a trigger. |
