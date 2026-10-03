@@ -66,8 +66,17 @@ lookup to guess at, and nothing for a caller to traverse with. The full list of 
 whatever the client enumerates; `mcp_list` answers "what exists?" for the *other* servers,
 not for this one.
 
-Where a client exposes no tools, the model is unchanged — the declaration block names the
-same conventions, and each is read as its `agents://` resource instead.
+Where a client exposes no tools, the declaration block still names the same conventions —
+and there is nothing to read them from. `agents://` is **prose notation, not a fetchable
+URI**: the server publishes tools, not a resource endpoint
+([`mcp-connector.md`](agents://rules/mcp-connector.md)), so a session whose tools are
+absent cannot reach this set by another route. See
+[`mcp-tool-availability.md`](agents://rules/mcp-tool-availability.md).
+
+An earlier version of this line told a session with no tools to read each convention as its
+`agents://` resource instead. That promised a fallback the server does not serve, and it
+sent a session looking for a reading path rather than reporting the one it had. The
+declaration block survives a client with no tools; the set does not.
 
 ### The four that are not optional
 
@@ -105,6 +114,7 @@ file added to the set without a row fails the suite rather than waiting to be no
 | Document a permission gate, or decide whether a gate is mechanical or text-borne | `gate_enforcement` |
 | Decide where a new file goes | `directories` |
 | Resolve, connect, or fail to reach the shared set | `mcp_connector` |
+| The connector reports connected but this session has **none** of its tools | `mcp_tool_availability` |
 | Run **any** `gh` or `git` command that reaches GitHub | `github_token_access_guide` |
 | Run the standing branch-then-commit loop as one standing procedure | `branch_and_commit` |
 | Need to know what a multi-step request *becomes* — plan, record, branch, release | `task_workflow` |
