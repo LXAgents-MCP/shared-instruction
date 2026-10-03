@@ -255,8 +255,14 @@ work while it runs.
 ## The folder and the center
 
 - A plan lives at `{repo}/.agents/plans/`, which the repository's `.gitignore`
-  excludes as `/.agents/plans/`. Nothing in it is staged, committed, or pushed,
-  ever.
+  excludes. Nothing in it is staged, committed, or pushed, ever.
+- **Verify the exclusion with `git check-ignore`, never by matching the line.**
+  Both `.agents/plans/` and `/.agents/plans/` cover the same path — the first
+  matches at any depth, the second is anchored to the repository root — so
+  which one a repository writes is its own choice, and a string check for
+  either form reports a correctly configured repository as unprotected. Ask
+  git what it actually ignores; it answers for the pattern rather than for
+  your guess about it.
 - **That exclusion is a precondition, not a wish.** The only thing keeping a
   plan out of history is that one `.gitignore` line, and a repository without it
   is one `git add -A` away from publishing its own working notes. Check for it
@@ -286,13 +292,18 @@ work while it runs.
    what is being assumed where the request is silent. This is §A's refinement,
    restated at plan granularity — do it once, in the refinement, rather than
    asking for it twice.
-5. **Check `.gitignore` for `/.agents/plans/`.** Read the repository's
-   `.gitignore` before creating the folder. If the rule is there, the plan
-   cannot be published by accident. If it is not, ask the owner to add it —
-   name the line and the reason — and do not add it yourself. Carry on either
-   way; a missing rule is a finding to report, not a reason to withhold the
-   plan. Confirm with `git check-ignore -v .agents/plans/tasks.md`: it must
-   print the rule, or the plan is one commit away from being published.
+5. **Confirm git ignores the folder.** Run
+   `git check-ignore -v .agents/plans/tasks.md`. It must print the matching
+   rule, or the plan is one commit away from being published. Do **not**
+   substitute a string search for the pattern: `.agents/plans/` and
+   `/.agents/plans/` both ignore this path and neither contains the other, so
+   reading `.gitignore` for a specific form reports a correctly configured
+   repository as unprotected, and the next paragraph then has you ask the owner
+   to add a rule that is already there.
+
+   If `check-ignore` prints nothing, ask the owner to add it — name the line
+   and the reason — and do not add it yourself. Carry on either way; a missing
+   rule is a finding to report, not a reason to withhold the plan.
 
 ## The gate comes before the plan
 
