@@ -19,5 +19,6 @@ npm-debug.log*
 coverage/
 *.pid
 
-# Untracked working plan - never staged, never committed
+# Agents
 /.agents/plans/
+.mcp.json
