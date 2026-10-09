@@ -30,6 +30,9 @@ states it in a sentence.
 no `version`, no `author`. The release task's branch is `release/{version}` with no `v`; the
 git tag carries the `v`.
 
+**Version.** `4.0.0` — a major, because tools were removed. The log is
+`wiki/logs/4/0/0/CHANGELOG.md`. No git tag has been created.
+
 **A known tension, left for the owner.** The new contents were written for a plain-files
 workspace and some say no MCP server serves them. The list is in the task record.
 
