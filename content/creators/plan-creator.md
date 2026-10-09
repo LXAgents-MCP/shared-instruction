@@ -102,7 +102,7 @@ goes between them.
 |---|---|---|
 | `1` | **The task record** | Creates `{repo}/.agents/memory/tasks/{slug}.md` — the confirmed task list, written *before* any of it is built. **In a project**; a root has no memory, so the plan file is the record there. |
 | `2…n-1` | **The work** | One task per unit of work. |
-| `n` | **The release** | Version, changelog, index rows, and the closing entry on the record. |
+| `n` | **The release** | Version, changelog, index rows, and the closing entry on the record. Its branch is `release/{version}`. |
 
 Splitting applies to the middle only.
 
@@ -191,6 +191,15 @@ only what is specific to running a task list, which that section does not say:
   `.agents/wiki/` are the documentation trees and memory is neither — so `chore` is its
   type, and the `-plan` suffix keeps it apart from the work branches in a branch listing.
   Work tasks are named for their own primary noun as usual.
+* **The release task's branch is `release/{version}`** — the full `Major.Minor.Patch` it
+  ships, with no `v`: `release/1.0.0`, `release/1.2.1`, `release/1.3.0`. It is the only
+  branch name that carries dots, and `release` is an allowed branch type for this form
+  alone; a release *commit* is still `chore(release): …`. The `v` belongs to the git tag
+  (`v1.0.0`), so the branch and the tag never share a name. The name is the version, and a
+  version needs the user's approval (§F), so the task list shows `release/{version}` until
+  that approval and the real name is written only after it — never guessed. Like any other
+  branch it stacks from task `n-1`. Across repositories, each repository's release branch
+  carries that repository's own version.
 * **Task 1 branches from the default branch. Task `k` branches from task `k-1`'s
   branch**, not from the default branch. Stacking this way is what keeps the merges
   conflict-free — each branch already contains everything before it.
@@ -291,7 +300,8 @@ subagent is not an exception to the ordering above.
 **Versions and the release task.** Any pull request follows the template above; merging
 requires user approval per §F. A version change requires user approval per
 [`../rules/versioning.md`](../rules/versioning.md) — including a new
-`wiki/logs/{Major}/{Minor}/{Patch}/` directory, which is a version claim.
+`wiki/logs/{Major}/{Minor}/{Patch}/` directory, which is a version claim. The release
+branch is named for the approved version, so it is not created before that approval.
 
 ---
 

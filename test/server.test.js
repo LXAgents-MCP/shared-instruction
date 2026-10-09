@@ -234,6 +234,46 @@ test("every tool is generated from a file", async () => {
   assert.deepEqual(names, [...TOOL_FILES.keys()].sort());
 });
 
+// The release branch form. A typo guard, not a control: it proves each tool that names
+// branches states the form, not that an agent obeys it.
+
+test("every tool that names branches states the release branch form", async () => {
+  const { client } = await connect();
+
+  for (const name of ["plan_creator", "branching_strategy", "branch_and_commit"]) {
+    const text = textOf(await client.callTool({ name, arguments: {} }));
+
+    assert.ok(
+      text.includes("release/{version}"),
+      `${name} names branches and must state release/{version}`,
+    );
+    // The bad-examples table in branching_strategy names `release/v1.0.0` on purpose.
+    const prose = text
+      .split("\n")
+      .filter((line) => !line.startsWith("| `release/v"))
+      .join("\n");
+
+    assert.doesNotMatch(
+      prose,
+      /release\/v\d|release\/v\{version\}/,
+      `${name} must not put a v in the release branch; the git tag carries it`,
+    );
+  }
+});
+
+test("no tool shows the retired chore/release branch form", async () => {
+  const { client } = await connect();
+
+  for (const [name] of TOOL_FILES) {
+    const text = textOf(await client.callTool({ name, arguments: {} }));
+
+    // branching_strategy lists it once, as a bad example, so it is allowed to name it.
+    if (name === "branching_strategy") continue;
+
+    assert.doesNotMatch(text, /chore\/release/, `${name} still shows chore/release`);
+  }
+});
+
 // The read-only claim, now over a surface with no arguments at all.
 
 test("the surface is read-only: no tool takes a verb", async () => {
