@@ -10,7 +10,7 @@ description: Index of this repository's own instruction set — rules that are t
 
 Any file added to or removed from this scope is reflected here in the same commit. This
 index lists local files only; the shared set is routed from
-[`../../content/index/root-index.md`](../../content/index/root-index.md).
+[`../../content/automation.md`](../../content/automation.md).
 
 ## rules/
 

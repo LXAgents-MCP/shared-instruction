@@ -13,13 +13,12 @@ The published npm package is the normal case — see
 
 **The clone is a runtime, not a copy of the instruction set.**
 
-That distinction is the whole reason this is allowed. `content/rules/mcp-connector.md` and
-`content/rules/shared-instructions.md` both forbid vendoring the shared set into a
-repository, and they still mean it. What you are cloning here is the **server that serves**
+That distinction is the whole reason this is allowed. The rule against vendoring the shared
+set into a repository still holds, and means it. What you are cloning here is the **server that serves**
 the set. Three conditions keep the two apart, and all three are required:
 
 1. **`mcps/` is gitignored.** It never enters your repository's history. A committed
-   `./mcps/` *is* a vendored copy, and `duplicate_instruction_audit` should flag it as one.
+   `./mcps/` *is* a vendored copy, and should be treated as one.
 2. **Instructions are still read through the connector.** Never open
    `./mcps/LXAgents-MCP/shared-instruction/content/…` by file path — that is reading a
    snapshot, which is exactly the drift the connector exists to remove.
@@ -148,9 +147,9 @@ Then register it as a stdio MCP server named `lxagents-shared-instruction`, with
 **`mcps/` must be in this repository's `.gitignore`.** The clone is a runtime, not
 content. It is never committed.
 
-Once it resolves, start at `root_index` and route from there. Every file in the set is
-its own tool, named after its filename, so the tool list is the index — call the one whose
-trigger fired. Never copy a shared file into this repository: if you can read it from the
+Once it resolves, read `automation` and route from there. Every file in the set is its own
+tool, named after its filename, so the tool list is the index — call the one whose
+condition is true. Never copy a shared file into this repository: if you can read it from the
 connector, it must not exist here as a file.
 ```
 

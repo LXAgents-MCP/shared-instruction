@@ -44,7 +44,7 @@ distribution path is a review either.
 | Surface | Exposure | What guards it |
 |---|---|---|
 | Tool calls | Any caller | **Nothing, and that is the design.** Every tool is read-only and takes no argument. There is no path, no verb, and no target a caller can supply. |
-| The one path-taking read | `mcp_list` only | `isSafeRelativePath` in `src/content.js`, before any filesystem call. The single caller passes a constant. Detailed below. |
+| Path reads | None | No tool takes a path and nothing opens a file a caller named. The set is read once at boot from a fixed directory. Detailed below. |
 | **The HTTP listener** | **Anyone who can reach the port** | **No authentication.** The content is public, so auth would not make it less so. Optional `Host` allow-list via `MCP_ALLOWED_HOSTS`, **off unless set**. Detailed below. |
 | In-flight requests | Anyone who can reach the port | One `McpServer` per request, never shared, closed when its response closes. **The set of them is per-request closers, not a map of live sessions** — a stateless transport has no id to key on and keeps nothing between requests, so there is no store to fill. |
 | Process startup | Anyone who can spawn it | Reads `package.json` and walks `content/`. Malformed content throws and the process exits rather than serving something wrong. |
@@ -122,25 +122,18 @@ closes — so the memory-growth primitive this paragraph used to have a mitigati
 gone rather than bounded, and the only thing a shutdown counts is what is running right
 now. See *Attack surface* above, and the per-request row in it.
 
-## The one path-taking read
+## No path is read from a caller
 
-`src/content.js` exports `readSetFile(relativePath)` — the only function in the server that
-takes caller-influenced input. It is reached by exactly one caller, `mcp_list`, with the
-constant `index/server-registry.md`.
+The server holds no function that takes caller-influenced input. The set is read once at boot
+from a fixed directory, a tool call is a map lookup, and nothing opens a file a caller named.
 
-It is worth being precise about what does and does not protect it:
+- **The guard is structural.** No tool takes a `path`, so a caller has nothing to traverse
+  with. There used to be one path-taking read, reached by one tool with a constant path, and
+  a check that ran before any filesystem call; both are gone.
+- **A test pins it.** Every tool's schema has no properties and no required fields, so a tool
+  that grows an argument has to be added deliberately, against that test.
 
-- **The primary guard is structural.** No tool takes a `path`, so a caller has nothing to
-  traverse with. That is the reason the old path-taking tool needed a traversal check, and
-  the reason this one no longer does.
-- **`isSafeRelativePath` remains**, and is correct on its own terms: it rejects absolute
-  paths, null bytes, mixed separators, and any `..` segment — **before** any filesystem
-  call, not after. A path that reaches `fs` with a `..` in it has already been resolved
-  against the process working directory, so a check running afterwards is a check against
-  a value the caller already influenced.
-- **Containment is re-confirmed** by comparing the resolved path against the set root.
-
-If a future change adds a second caller, this is the function to look at first.
+If a future change adds any read keyed on caller input, that is the change to look at first.
 
 ## No authentication, on purpose
 

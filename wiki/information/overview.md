@@ -29,20 +29,18 @@ to vendor by mistake, and every repository reads the same bytes.
 
 ## What it serves
 
-**Tools, and nothing else.** One per markdown file in `content/`, plus one hand-written
-`mcp_list`. No prompts, no resources. Reachable over stdio or stateless HTTP at
+**Tools, and nothing else.** One per markdown file in `content/`, all generated. No
+prompts, no resources. Reachable over stdio or stateless HTTP at
 `POST /mcp`; both serve the same tools, because both call the same `createServer()`.
 
 | Tool | Serves |
 |---|---|
-| `agents_entry_point` | `AGENTS.md`, the federation contract. The one name that is not derived from its filename. |
-| `root_index` | `index/root-index.md` — start here; it routes to the rest. |
+| `automation` | `automation.md` — read it first, every session; it lists every other tool and the condition that activates each. |
 | `plan_creator` | `creators/plan-creator.md` |
 | `branching_strategy` | `git/branching-strategy.md` |
 | `commit_conventions` | `git/commit-conventions.md` |
 | `discovery_protocol` | `rules/discovery-protocol.md` |
-| `mcp_list` | The registry of sibling instruction and security servers. Hand-written. |
-| …and one tool for each of the other 24 files | Named after its own filename. |
+| …and one tool for every other file | Named after its own filename; the GitHub and GitLab pages are named for their forge. |
 
 The complete list is whatever the client enumerates from `tools/list`. It is deliberately
 not written out here: a hand-maintained copy of a generated list is a copy that goes stale.
@@ -56,23 +54,11 @@ A tool makes an instruction set something the model *may decide* to call, and a 
 sees the full list — name and description — before deciding anything. That is what lets a
 repository route on a description without reading a body.
 
-The set's own rules are explicit that **nothing is called at session start**. Each
-convention fires on its own trigger, declared in the consuming repository's `AGENTS.md`.
-A session that only branches and commits pays for two files rather than thirty-two — which
-is the entire point of the current design, and the reason this page does not describe a
-single bulk call.
-
-## The duplicate audit
-
-Some repositories already carry a copy of these rules — set up before the connector
-existed, or scaffolded by copying another repository. Those copies override the shared
-originals by `name` and then go stale silently.
-
-`duplicate_instruction_audit` finds them, classifies each as an exact duplicate, a stale
-copy, a declared override, or local-only, and proposes deletions.
-
-It runs **only when the user asks for it**. Every other rule in the set fires
-automatically; this one does the opposite, because it proposes deletions.
+A session reads **one** tool at the start, `automation`, which lists every other tool and the
+condition that activates it. Each of the others fires only when its condition is true, and
+each is complete on its own — none points to another. A session that only branches and
+commits pays for the hub and two files rather than the whole set — which is the entire point
+of the current design, and the reason this page does not describe a single bulk call.
 
 ## Related pages
 

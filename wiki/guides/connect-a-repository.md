@@ -47,14 +47,13 @@ session start, so a server added mid-session reports healthy and is still absent
 tool surface until the session restarts. That is the most common cause of "the connector
 is not resolving", and it looks like a broken server rather than a stale session.
 
-## 2. Run the setup procedure
+## 2. Declare the tools
 
-Call the **`agents_setup`** tool in the repository you are adopting. It delivers the whole
-procedure as one message: discovery, the batched question round, the instruction-set
-selection, then the files.
-
-It asks before writing anything — license, initial version, project intent — and never
-invents an answer.
+Add a **Shared instruction tools** block to the repository's `AGENTS.md`: a first row for
+`automation`, which the agent reads at the start of every session, and a row for each
+convention the repository uses. `automation` lists every tool and the condition that
+activates it, so the block can stay short. Ask the owner before writing anything — license,
+initial version, project intent — and never invent an answer.
 
 ## 3. What you end up with
 
@@ -73,31 +72,26 @@ wiki/
   logs/{Major}/{Minor}/{Patch}/CHANGELOG.md
 ```
 
-What you do **not** end up with: any copy of `git/`, `planning/`, `prompts/`, or
-`creators/`. Those are served. A copy would override the shared original by `name` and
-then go stale.
+What you do **not** end up with: any copy of the served set. A copy would override the
+shared original by `name` and then go stale.
 
 ## 4. If the repository already has an `.agents/` tree
 
-Do not merge it by hand. Call **`duplicate_instruction_audit`**, which:
+Do not merge it by hand. Audit it, and only when the owner asks:
 
-1. Compares every local instruction file against the set — by `name` first, since that is
-   the override key, then by content.
-2. Classifies each as an exact duplicate, a stale copy, a declared override, or local-only.
-3. Reports each with a verdict and waits.
-4. Deletes only what you approve, removing the index rows in the same commit.
+1. Compare every local instruction file against the served tool of the same `name`.
+2. Classify each as an exact duplicate, a stale copy, a declared override, or local-only.
+3. Report each with a verdict and wait.
+4. Delete only what the owner approves, removing the index rows in the same commit.
 
-It runs only when you call it. It never deletes memory, wiki pages, indexes, or
-`repository.md`.
+Never delete memory, wiki pages, indexes, or `repository.md`.
 
 ## 5. Verify
 
 Ask the agent to confirm:
 
-- `AGENTS.md` carries the connector bootstrap block from
-  `content/rules/mcp-connector.md` verbatim. That block is what every consuming
-  repository pastes, so it is worth diffing against the current set rather than trusting an
-  older copy.
+- `AGENTS.md` tells the agent to read `automation` at the start of every session, and to
+  say plainly in its first message if the connector is unavailable.
 - `AGENTS.md` declares the **four mandatory tools** in its Shared instruction tools block —
   `plan_creator`, `branching_strategy`, `commit_conventions`, `discovery_protocol` — and
   carries the three permission gates **inline**, not deferred to a tool.

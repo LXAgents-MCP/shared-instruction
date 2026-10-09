@@ -9,8 +9,8 @@ instead of cloning or vendoring a copy of them.
 - **Package:** `@lxagents-mcp/shared-instruction`
 - **Transport:** stdio, or stateless HTTP at `POST /mcp` for running it as a service at a
   fixed address. Both serve the same tool surface.
-- **Surface:** one tool per markdown file in `content/`, plus one hand-written `mcp_list`.
-  Every one is read-only and every one takes no arguments. For the current count,
+- **Surface:** one tool per markdown file in `content/`, and nothing else. Every one is
+  read-only and every one takes no arguments. For the current count,
   enumerate the connector's tools.
 - **Requirements:** Node >= 20. ESM, no build step.
 
@@ -18,9 +18,9 @@ instead of cloning or vendoring a copy of them.
 
 - **One file, one tool.** Every `.md` under `content/` becomes a tool named after its own
   filename, so `git/commit-conventions.md` is `commit_conventions`. **Adding a file to the
-  set adds its tool** — there is no registry to edit and no hand-written tool module to
-  write. The one documented exception is `AGENTS.md`, served as `agents_entry_point`,
-  because `agents` says nothing about which document it is.
+  set adds its tool** — there is no registry to edit and no tool module to write, only one
+  row in `automation`. The documented exceptions are the GitHub and GitLab pages, named for
+  their forge (`github_api`, `gitlab_ci`, …), because four filenames exist on both forges.
 - **No tool takes an argument.** A tool names one file, so there is no path to pass, no
   lookup to guess at, and **nothing for a caller to traverse with**. This is the structural
   replacement for a path argument, not a weaker check on one: `test/server.test.js`
@@ -33,18 +33,15 @@ instead of cloning or vendoring a copy of them.
 - **The description is the routing key.** A tool's description is that file's own
   frontmatter `description`, verbatim. A file without one **fails at boot**: it would
   publish as a tool a client cannot route on.
-- **Nothing is called at session start.** A repository declares which tools it uses in its
-  own `AGENTS.md`, and each fires on its own trigger. A session that only branches and
-  commits pays for two files, not thirty-two.
+- **One tool is read at session start: `automation`.** It lists every other tool and the
+  condition that activates each, and a session calls the others only when their condition is
+  true. A session that only branches and commits pays for the hub and two files, not the
+  whole set.
 - **Per-repository control.** The declaration block is the routing table. A repository that
   stores no model identifier does not carry a row about one, and the narrowing is visible
   in a diff rather than buried in a payload.
-- **`mcp_list`** — the registry of sibling instruction and security servers, with each one's
-  scope and clone URL. Use it before cloning one. It deliberately does not list this server;
-  you are already connected to it.
-- **`agents_setup`**, **`agents_update`** and **`duplicate_instruction_audit`** — the
-  procedures for adopting, re-syncing and auditing a repository's use of the set. The last
-  two run **on request only**.
+- **Each tool ends in itself.** No tool links to, names, or sends the reader to another;
+  only `automation` names them all. `test/server.test.js` fails if one does.
 
 ## Quick start
 

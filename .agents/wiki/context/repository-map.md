@@ -20,12 +20,11 @@ It is both the **producer** of the shared set and a **consumer** of it. See
 
 | Path | Contents | Touch it when |
 |---|---|---|
-| `content/` | The published instruction set — 32 markdown files, each served as its own tool. | You are changing a convention every repository follows. **This is a release.** |
+| `content/` | The published instruction set — every markdown file is served as its own tool, and `automation.md` routes them. | You are changing a convention every repository follows. **This is a release.** |
 | `.agents/` | This repository's own rules, indexes, agent wiki, memory. | You are changing something true only here. |
 | `wiki/` | Human documentation, plus `wiki/logs/` release history. | A person needs to read it. |
-| `src/tools/` | `from-content.js` builds the generated surface; `mcp-list.js` is the one hand-written tool. | Adding or changing a tool. |
+| `src/tools/` | `from-content.js` builds the whole surface, one tool per file; there is no hand-written tool. | Adding or changing a tool. |
 | `src/server.js` | Builds one `McpServer` and registers every tool; carries the `instructions` text. | Changing the MCP surface. |
-| `src/content.js` | The set root, the frontmatter reader, and `readSetFile` with its path check. | Changing how content is located or read. |
 | `src/version.js` | `ROOT`, `CONTENT_DIR`, `VERSION`, `SERVER_NAME`. | Renaming the server or moving the set. |
 | `src/app.js` | The HTTP transport as an application — `POST /mcp`, `GET /healthz`, the 405, the 404, the body limit, the `Host` allow-list. Builds and returns; does not listen. | The HTTP surface. |
 | `src/http.js` | The HTTP entry point — the cluster primary and workers, the port, the interface, the startup lines, the in-flight set, and the drain. | Anything about a listening server, a worker count, the port, or shutdown. |
@@ -67,7 +66,6 @@ Behind both:
 * `src/server.js` — `TOOL_MODULES`, the array every registered tool comes from. Add a
   module here and its tools appear; nothing else registers anything. Every entry point
   calls `createServer()`, so a change to the surface cannot reach one and miss the other.
-* `src/content.js` — `readSetFile`, reached by exactly one caller with a constant path.
 
 ## Commands
 
@@ -92,9 +90,8 @@ entrypoint to `src/http.js` for the HTTP form.
   [`../../rules/content-publishing.md`](../../rules/content-publishing.md).
 * **Content changes need a restart.** The map is frozen at boot; editing markdown does
   nothing to a running process.
-* **Three files outside `content/` copy its text.** The root `AGENTS.md`,
-  `content/prompts/agents-setup.md`, and the `instructions` string in `src/server.js` all
-  reproduce set text and go stale silently. Grep for a sentence you changed before
+* **Two files outside `content/` copy its text.** The root `AGENTS.md` and the
+  `instructions` string in `src/server.js` both reproduce set text and go stale silently. Grep for a sentence you changed before
   committing — see [`../../rules/set-mirrors.md`](../../rules/set-mirrors.md).
 * **Nothing writes to stdout.** stdout is the JSON-RPC channel on stdio, and `src/index.js`
   reaches `src/http.js` by dynamic import, so the HTTP process is one hop away from the
@@ -120,8 +117,6 @@ entrypoint to `src/http.js` for the HTTP form.
 * **Two files with the same basename collide.** The folder is stripped from the name, so
   the boot throws rather than letting one shadow the other. Resolve it with an entry in
   `NAME_OVERRIDES`, not by renaming a file.
-* **`src/tools/instruction.js` is dead.** Nothing imports it. It is the old
-  path-taking tool, left on disk after #63; see the note in the repository's state.
 
 ## Generated and vendored paths
 

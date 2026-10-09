@@ -47,7 +47,7 @@ that would violate it, not after.
 |---|---|
 | Anything under `content/` | It cannot direct another repository's agent to run a command, weaken a convention, or skip a permission gate. This is the highest-reach change in the repository — see the trust boundary in the human page. |
 | A tool's shape in `src/tools/from-content.js` | It still takes **no argument**. A path parameter is the single change that would reopen traversal, and it is the one to argue against hardest. |
-| `src/content.js` or the read path | No filesystem or network I/O was introduced. Reads are in-memory lookups, and that is what stops a read being steered at the disk. |
+| The read path | No filesystem or network I/O was introduced. Reads are in-memory lookups, and that is what stops a read being steered at the disk. |
 | `Dockerfile` | `--ignore-scripts` survives, the runtime stage still ends as `USER node`, and any `EXPOSE` still matches the port the entrypoint actually binds. Either of the first two dropped turns a pinned, non-root image into one that runs install hooks as root. |
 | `src/http.js`, or anything touching a transport | `MCP_ALLOWED_HOSTS` still defaults to unset rather than to a permissive list, sessions are still deleted when their stream closes, and no `McpServer` is shared between them. |
 | A new dependency | It is genuinely needed — [`../../rules/repository.md`](../../rules/repository.md) names the three in the runtime tree and requires a recorded decision for a fourth. Each one is transitive attack surface. |
@@ -74,7 +74,7 @@ Ask the user; do not resolve these on your own initiative.
   defaulted to off — see `activation-security.md`. Turning it on is the decision; taking
   it on is a posture change affecting every deployment.
 * **Loosening a guard to make something work** — adding a `path` argument to a tool,
-  widening `isSafeRelativePath`, or relaxing a boot-time throw to get past a failing
+  or relaxing a boot-time throw to get past a failing
   checkout. The guard is the feature; a test that needs it off is a test to rewrite.
 * **A finding in content already published.** It reaches every consumer on their next
   read, so the fix is a release with an explicit *Consumers must* line, and
