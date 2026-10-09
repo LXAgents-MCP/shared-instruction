@@ -19,7 +19,7 @@ condition that activates each. The server boots and `npm test` is green.
 the owner will delete it, so nothing here may depend on it afterwards: files are copied, never
 linked.
 
-**Status:** open. Tasks 1–5 of 7 landed.
+**Status:** open. Tasks 1–6 of 7 landed.
 
 ## Tasks
 
@@ -201,4 +201,38 @@ not that anyone obeys them.
 
 **Left for later tasks.** `AGENTS.md`, `README.md`, the wiki and the local indexes still say "call
 nothing at session start" and name removed tools (task 6).
+
+### Task 6 — docs/tool-surface
+
+Landed. Every current document that named a removed tool, path or claim now describes the new
+surface. History was left as written: `wiki/logs/0..3/`, the older task records, decisions and
+findings, and the release rows in `.agents/index/logs-index.md`.
+
+- **`AGENTS.md`.** Session start now reads `automation` as step 2 — "beyond `automation`, call no
+  shared tool at session start". The declaration block gains an `automation` row. The shared
+  trigger table is **gone**: `content/automation.md` is the one authority for when each shared
+  tool fires, so the table is not copied (a second table is a second place to forget). The five
+  rows that are this repository's own stay. The §H citation became §D, the one the new
+  `shared_instructions` actually has. `agents://`, `mcp_list`, `root_index`,
+  `agents_entry_point` and the "Authority: mcp-connector" line are removed.
+- **Local set.** `root-index` and `agents-index` route the shared set to `content/automation.md`.
+  `set-mirrors` drops the `agents-setup` row (the file is deleted), stops mirroring a trigger
+  table, and no longer cites a clause the new `shared_instructions` does not contain.
+  `content-publishing` pins the new properties, gains *Each tool ends in itself* and *The hub is
+  part of the surface*, and drops the `content/index/logs-index.md` step. `repository.md` Docker
+  tags are `<version>` instead of a stale `3.1.0`. `repository-map` loses the deleted
+  `src/content.js` and `instruction.js`.
+- **State.** `repository-state` has a new 2026-10-09 section, and the 2026-09-30 section is marked
+  superseded where it differs rather than rewritten.
+- **Human docs.** `README`, `mcp-surface`, `overview`, `architecture`, `security-model`,
+  `setup`, `connect-a-repository` and `install-as-local-mcp`. The adoption guide no longer
+  tells a reader to call `agents_setup` or `duplicate_instruction_audit`; it describes the same
+  steps as things the owner asks for. Test counts were dropped rather than updated, since a
+  hand-kept count goes stale at the next test.
+- **Link check.** All relative links in the current documents resolve except three that were
+  already broken on `master` and are not made false by this change: two in
+  `.agents/rules/repository.md` (`../wiki/…` should be `../../wiki/…`) and one in
+  `.agents/index/memory-index.md` (`sse-to-mcp-transport.md`). Left alone.
+
+**Left for task 7.** The version, the changelog, the logs-index row, and filling the `PR` column.
 

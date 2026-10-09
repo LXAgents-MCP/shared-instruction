@@ -39,22 +39,24 @@ standing orders, not as optional reference material.
 work:
 
 1. Read `AGENTS.md` (this file), including the Shared instruction tools block below.
-2. Resolve the shared set — see [Using the connector](#using-the-connector). Here that
-   is `content/` in the working tree, and the step is still not skippable: it is where
-   you find out whether the connector is reachable, which you have to say either way.
+2. Read the shared `automation` tool — here that is
+   [`content/automation.md`](content/automation.md) in the working tree. It lists every
+   shared tool and the condition that activates it, and it is where you find out whether
+   the connector is reachable, which you have to say either way (see
+   [Using the connector](#using-the-connector)). The step is not skippable.
 3. Read [`.agents/index/root-index.md`](.agents/index/root-index.md).
 4. Read [`.agents/index/memory-index.md`](.agents/index/memory-index.md) and load only
    the rows matching the request, so you continue prior work instead of restarting it.
 
-That is the whole sequence, and every step reads a file on disk. **Call no shared tool at
-session start** — each fires on the trigger its row gives it, and calling them up front pays
-for procedures the request may never need.
+That is the whole sequence, and every step reads a file on disk. **Beyond `automation`, call
+no shared tool at session start** — each fires on the condition `automation` gives it, and
+calling them up front pays for procedures the request may never need.
 
 **These gates stand from the first message, before any tool is called:** approve the plan
 before any file is written, ask before opening a pull request, ask before merging, and
 propose a discovered rule rather than writing it. A gate first read at the moment it should
 have applied has already failed, which is why they are here and not behind a call. See
-[`content/rules/shared-instructions.md`](content/rules/shared-instructions.md) §H.
+[`content/rules/shared-instructions.md`](content/rules/shared-instructions.md) §D.
 
 If a rule conflicts with a habit, a default, or a template you would otherwise follow,
 the rule wins — including a harness that names a branch, a commit trailer, or a pull
@@ -73,10 +75,11 @@ Adopted shared-set version: `content/` in the working tree — the producer trac
 not a release.
 
 **Every file in `content/` is its own tool**, named after its filename, so the tool list is
-the file list. Start at `root_index` or `agents_entry_point` rather than calling everything.
+the file list. Start at `automation` rather than calling everything.
 
 | When you are about to… | Call | Which is |
 |---|---|---|
+| Start any session | `automation` | [`content/automation.md`](content/automation.md) |
 | Take in any request of more than one step | `plan_creator` | [`content/creators/plan-creator.md`](content/creators/plan-creator.md) |
 | Create a branch | `branching_strategy` | [`content/git/branching-strategy.md`](content/git/branching-strategy.md) |
 | Write a commit message | `commit_conventions` | [`content/git/commit-conventions.md`](content/git/commit-conventions.md) |
@@ -84,18 +87,18 @@ the file list. Start at `root_index` or `agents_entry_point` rather than calling
 | Open or update a pull request | `pull_request_template` | [`content/git/pull-request-template.md`](content/git/pull-request-template.md) |
 | Write to any `model_name` column | `model_naming_convention` | [`content/rules/model-naming-convention.md`](content/rules/model-naming-convention.md) |
 
-The first four are mandatory in every repository, this one included. **No tool takes an
-argument** — a tool names one file, so there is no path to pass.
+`automation` is read at the start of every session. `plan_creator`, `branching_strategy`,
+`commit_conventions` and `discovery_protocol` are mandatory in every repository, this one
+included. **No tool takes an argument** — a tool names one file, so there is no path to pass.
 
 ## Using the connector
 
-Authority: [`content/rules/mcp-connector.md`](content/rules/mcp-connector.md). Setup, in
-full: [`wiki/guides/install-as-local-mcp.md`](wiki/guides/install-as-local-mcp.md).
+Setup, in full: [`wiki/guides/install-as-local-mcp.md`](wiki/guides/install-as-local-mcp.md).
 
 This repository **is** the server. It publishes `content/` as `lxagents-shared-instruction`, so
 here the connector is the thing being edited, not the thing being consulted — read
 `content/` in the working tree and treat a deployed snapshot as possibly older than your
-branch. Everywhere else, read `agents://`.
+branch. Everywhere else, read the connector's tools.
 
 ### Register it
 
@@ -105,8 +108,8 @@ branch. Everywhere else, read `agents://`.
 | Published | `command: npx`, `args: ["-y", "@lxagents-mcp/shared-instruction"]` |
 | HTTP | `type: http`, `url: https://<host>/mcp` — `npm run start:http` binds `PORT \|\| 3000` |
 
-Both transports serve the same tool surface — one tool per file in `content/`, plus
-`mcp_list`. Do not state a count here: it goes stale at the next file added. To get the
+Both transports serve the same tool surface — one tool per file in `content/`, and
+nothing else. Do not state a count here: it goes stale at the next file added. To get the
 current count, enumerate the connector's tools. stdio is the right default for a client
 that can spawn a process; HTTP is for running the server as a service at a fixed address.
 
@@ -117,16 +120,16 @@ That is the common case, and it looks like a broken server rather than a stale s
 
 ### Read from it
 
-1. Enumerate the tools. Every file in `content/` is one, named after its filename, with
-   its `description` attached — that list is the manifest, and it costs nothing to read.
-2. `root_index`, then route. Never bulk-call the set.
-3. Call the one tool whose trigger fired. None takes an argument.
+1. Enumerate the tools. Every file in `content/` is one, named after its filename (the
+   GitHub and GitLab pages are named for their forge), with its `description` attached — that
+   list is the manifest, and it costs nothing to read.
+2. Call `automation` once. It lists every tool and the condition that activates each. Never
+   bulk-call the set.
+3. Call the one tool whose condition is true. None takes an argument.
 
-**Nothing is called at session start.** Each of the convention tools above returns one file
-when its trigger fires. Calling every tool up front rebuilds the one oversized payload this
-surface replaced, one call at a time — and there are more than thirty of them.
-
-`duplicate_instruction_audit` and `agents_update` run only when the user asks.
+**`automation` is the only tool called at session start.** Every other tool returns one file
+when its condition fires. Calling every tool up front rebuilds the one oversized payload this
+surface replaced, one call at a time — and there are dozens of them.
 
 ### When it will not resolve
 
@@ -141,40 +144,16 @@ copy is permanent drift.
 To inspect the surface by hand while developing on the set itself, run `npm run inspect`
 and drive it with the MCP Inspector.
 
-## Trigger table — the rest of the set
+## Trigger table — this repository's own rows
 
-Mirrors [`content/rules/auto-activation.md`](content/rules/auto-activation.md), which
-is the authority. Because this repository *is* the shared set, every `{shared}/…` path
-resolves to `content/…`, and every row below is also a tool named after its file. The
-conventions declared in the block above are not repeated here.
+The authority for when each **shared** tool fires is [`content/automation.md`](content/automation.md),
+which the session-start sequence reads. It is not copied here: a second table is a second place
+to forget to update. The rows below are this repository's own.
 
 | When you are about to… | Load and obey |
 |---|---|
-| Write **any** commit, tag, PR, comment, or file that will be committed or posted | [`content/rules/no-session-links.md`](content/rules/no-session-links.md) |
-| Run **any** `gh` or `git` command that reaches GitHub | [`content/rules/github-token-access-guide.md`](content/rules/github-token-access-guide.md) |
-| Wonder whether something is local or shared | [`content/rules/shared-instructions.md`](content/rules/shared-instructions.md) |
-| Document a permission gate, or judge whether one is mechanical or text-borne | [`content/rules/gate-enforcement.md`](content/rules/gate-enforcement.md) |
-| Decide where a new file goes | [`content/rules/directories.md`](content/rules/directories.md) |
-| Change how a repository resolves this set | [`content/rules/mcp-connector.md`](content/rules/mcp-connector.md) |
-| Add, move, rename, or delete any file in `content/` or `wiki/` | [`content/creators/index-creator.md`](content/creators/index-creator.md) |
-| Write a rule or instruction | [`content/creators/instruction-creator.md`](content/creators/instruction-creator.md) |
-| Write documentation | [`content/creators/information-creator.md`](content/creators/information-creator.md) |
-| Write or change a security file — a policy, a threat model, or a security SOP | [`content/creators/security-creator.md`](content/creators/security-creator.md) |
-| Change code or structure that a document describes | [`content/rules/change-propagation.md`](content/rules/change-propagation.md) |
-| Touch anything that carries a version number | [`content/rules/versioning.md`](content/rules/versioning.md) |
-| Record a release | [`content/creators/changelog-creator.md`](content/creators/changelog-creator.md) |
-| Report finished work back to the user | [`content/rules/work-summary.md`](content/rules/work-summary.md) |
-| Update a repository against a newer set version | [`content/prompts/agents-update.md`](content/prompts/agents-update.md) — on request only |
 | Edit anything under `content/` | [`.agents/rules/content-publishing.md`](.agents/rules/content-publishing.md) |
 | Change text that `content/` publishes and this repository also reproduces | [`.agents/rules/set-mirrors.md`](.agents/rules/set-mirrors.md) |
-| Record progress, a decision, or session state | [`content/creators/memory-creator.md`](content/creators/memory-creator.md) |
-| Decide what may be written to memory, or what must never be | [`content/rules/memory-policy.md`](content/rules/memory-policy.md) |
-| Build a repository's instruction, knowledge, or memory system from scratch | [`content/prompts/agents-setup.md`](content/prompts/agents-setup.md) |
-| Need the router — which index to read next | [`content/index/root-index.md`](content/index/root-index.md) |
-| Need the full list of rules, conventions, and creators | [`content/index/instructions-index.md`](content/index/instructions-index.md) |
-| Need release history, and what consumers must do about it | [`content/index/logs-index.md`](content/index/logs-index.md) |
-| Need the sibling-server catalogue and their clone URLs | [`content/index/server-registry.md`](content/index/server-registry.md) |
-| Activation ran but the workflow still did not happen | [`content/rules/auto-activation.md`](content/rules/auto-activation.md) |
 | Need project facts, commands, or orientation | [`.agents/wiki/context/repository-map.md`](.agents/wiki/context/repository-map.md) |
 | Work on security, authentication, secrets, or deployment | [`.agents/wiki/security/security-boundaries.md`](.agents/wiki/security/security-boundaries.md) |
 | Do anything at all in this repository | [`.agents/rules/repository.md`](.agents/rules/repository.md) |
@@ -199,11 +178,13 @@ that instruction has been selected.
 
 * `AGENTS.md` and `README.md` are overviews and must never carry detailed rules or
   documentation.
-* `.agents/index/root-index.md` and `content/index/root-index.md` are **routers only**.
+* `.agents/index/root-index.md` and `content/automation.md` are **routers only** — the
+  second also carries the few rules for using it.
 * An index never teaches. The moment it explains something, that content belongs in a
   real file.
-* **One subject per file.** A cross-cutting rule gets its own file and is linked, not
-  pasted into a file about something else.
+* **One subject per file.** A cross-cutting rule gets its own file. Outside `content/` it is
+  linked, not pasted into a file about something else; inside `content/` no tool links to
+  another, so a tool that needs one fact states it in a sentence of its own.
 * `wiki/` is for humans and holds this repository's own documentation. It is not part
   of the served instruction set.
 * No `INDEX.md`, anywhere, ever.
@@ -213,7 +194,8 @@ that instruction has been selected.
 * Universal instruction content → `content/{folder}/{file}.md`, with frontmatter.
   **Published.**
 * This repository's own rules → `.agents/rules/{file}.md`.
-* Routing → `.agents/index/{scope}-index.md` for local, `content/index/` for shared.
+* Routing → `.agents/index/{scope}-index.md` for local; for the shared set,
+  `content/automation.md`.
 * Agent knowledge → `.agents/wiki/{type}/{file-name}.md`.
 * Memory → `.agents/memory/{type}/{file-name}.md`.
 * Human documentation → `wiki/{folder}/{file-name}.md`, no frontmatter.
@@ -223,7 +205,7 @@ that instruction has been selected.
 A file added to `content/` is published as a tool on the next boot, so it is not a
 draft space — see
 [`.agents/rules/content-publishing.md`](.agents/rules/content-publishing.md).
-Registration in the owning index rides in the same commit.
+Its row in `content/automation.md` rides in the same commit; a test fails without it.
 
 ## Discovery protocol
 

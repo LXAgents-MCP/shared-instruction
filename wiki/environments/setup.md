@@ -16,11 +16,11 @@ npm install
 npm test
 ```
 
-The suite is two files and 50 tests. `test/server.test.js` drives a real MCP client over an
-in-memory transport and covers the frontmatter contract, the shared creator procedure, the
-file-to-tool bijection in both directions, name derivation, uniqueness and descriptions, the
-zero-argument claim, byte-for-byte payload fidelity, total-served equality, reachability,
-index routing, `mcp_list` in isolation, and the read-only claim. `test/http.test.js` drives
+The suite is two files. `test/server.test.js` drives a real MCP client over an in-memory
+transport and covers the frontmatter contract, the file-to-tool bijection in both
+directions, name derivation and overrides, uniqueness and descriptions, the zero-argument
+claim, byte-for-byte payload fidelity, total-served equality, reachability, the `automation`
+hub, that no tool points at another, and the read-only claim. `test/http.test.js` drives
 a real client against a real listening process and covers the HTTP transport: the two
 transports agreeing, `/healthz`, the 405 and the 404, the SSE routes being **gone**, the
 4 MB body limit, concurrent requests, shutdown ordering, the `Host` allow-list, the startup
@@ -119,6 +119,7 @@ Boot **fails deliberately** when a file under `content/`:
 - derives a name that is not a valid MCP tool identifier
 - derives the same name as another file in a different folder
 - has no frontmatter `description`
+- is named by a `NAME_OVERRIDES` entry that matches no file
 
 Each would break routing for every consuming repository, so each is a startup error rather
 than a runtime surprise. The fix is usually one line in `NAME_OVERRIDES` in

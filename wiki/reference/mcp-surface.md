@@ -2,9 +2,9 @@
 
 Everything `lxagents-shared-instruction` exposes.
 
-**It exposes tools, and nothing else.** 33 of them: 32 generated — one per markdown file
-in `content/` — plus `mcp_list`, which is hand-written. There are no prompts and no
-resources. It is reachable over two transports, and they expose the same tools. See
+**It exposes tools, and nothing else.** One per markdown file in `content/`, all generated;
+nothing is hand-written. There are no prompts and no resources. It is reachable over two
+transports, and they expose the same tools. See
 [What this server does not expose](#what-this-server-does-not-expose).
 
 ## Server identity
@@ -18,9 +18,9 @@ resources. It is reachable over two transports, and they expose the same tools. 
 Every entry point calls the same `createServer()`, so the surface is identical by
 construction. A test asserts the two agree, tool for tool and byte for byte on a call.
 
-`initialize` also returns `instructions`, which names real tools, points a first-time
-caller at `root_index` or `agents_entry_point` rather than at everything, and says plainly
-that nothing is to be called at session start.
+`initialize` also returns `instructions`, which tells a session to read `automation` once at
+the start of every session, to call no other tool until its condition is true, and that each
+tool is complete on its own.
 
 ## The generated tools
 
@@ -34,13 +34,15 @@ A tool is named after its own filename:
 - the folder is dropped — `git/branching-strategy.md` is `branching_strategy`
 - `.md` is dropped
 - the name is lowercased and kebab becomes snake
-- one override: `AGENTS.md` is `agents_entry_point`, because `agents` says nothing about
-  which document it is
+- explicit overrides for the 13 GitHub and GitLab pages, named for their forge
+  (`github_api`, `gitlab_ci`, …): four filenames exist on both forges (`api`,
+  `authentication`, `issues`, `repositories`), and the rest (`actions`, `ci`, `releases`)
+  say nothing about which forge without one
 
 Dropping the folder is what keeps the short names short. The cost is that two folders
 holding the same filename would collide — and a collision **throws at boot** rather than
-letting the second file silently shadow the first. Two files named `index.md` in different
-folders is the case that would do it.
+letting the second file silently shadow the first. `skills/github/api.md`
+and `skills/gitlab/api.md` is the case that did it, which is why both are overridden.
 
 ### Descriptions
 
@@ -66,12 +68,11 @@ described: `test/server.test.js` checks that every tool's `inputSchema` has empt
 `properties` and empty `required`.
 
 It is worth being precise about what that replaced. The surface used to be one tool taking
-a `path` string, and path traversal is a real concern for that design — which is why
-`src/content.js` exists and why its `isSafeRelativePath` check runs *before* any
-filesystem call rather than after. With no path argument there is no traversal to defend
-against, so the absence of the argument **is** the defence, and a `..` is not a malformed
-request but an unnameable one. `src/content.js` is now reached only by `mcp_list`, with a
-constant path, and its check remains correct.
+a `path` string, and path traversal is a real concern for that design — which is why a
+path check once ran *before* any filesystem call rather than after. With no path argument
+there is no traversal to defend against, so the absence of the argument **is** the defence,
+and a `..` is not a malformed request but an unnameable one. Nothing reads a path a caller
+supplied, and the module that did is gone.
 
 ### Failure at boot
 
@@ -83,22 +84,23 @@ constant path, and its check remains correct.
 | Two files derive the same name | One would silently shadow the other. |
 | A file has no frontmatter `description` | It would publish as an unroutable tool. |
 | The set is empty | The server would expose nothing. |
+| An override names a file that is not in the set | A rename would leave it matching nothing, and the file would quietly take its derived name. |
 
 A malformed set fails at startup rather than returning a wrong answer to the first caller
 that needed the file.
 
-## The hand-written tool
+## The hub
 
-### `mcp_list`
+`automation` is the one tool a session reads unprompted, and the only one that names the
+others. It lists every other tool once, each with the condition that activates it, so a
+session loads what its request needs and nothing else. It is the first tool a client lists,
+its description opens with the same words as its name — "Read this tool every session" —
+and a test fails if it omits a tool, names one that does not exist, or grows past its size
+budget, because every session pays for it.
 
-Serves `index/server-registry.md`: the sibling instruction and security servers, each with
-its scope and clone URL.
-
-It is hand-written rather than generated, and it deliberately **does not list this
-server** — a registry listing the server you are already connected to invites a repository
-to clone and vendor the set it is reading, which is the exact drift the connector exists
-to prevent. A test asserts both halves of that: the registry does not name
-`LXAgents-MCP/shared-instruction`, and it does say why.
+Every other tool ends in itself: none links to, names, or sends the reader to another, and
+a test fails if one does. That is what lets a session call one tool and have everything
+that tool has.
 
 ## The bijection
 
@@ -119,8 +121,8 @@ documented all of the following as if it were shipped. None of it is.
 
 | Not exposed | Notes |
 |---|---|
-| **Prompts** | `agents-setup`, `agents-update` and the duplicate audit are **files**, served as the tools `agents_setup`, `agents_update` and `duplicate_instruction_audit`. |
-| **Resources** | There is no `agents://` URI scheme to fetch and no `manifest.json`. `agents://` survives in the instruction set as the *prose notation* its links use, not as a fetchable endpoint. |
+| **Prompts** | None. |
+| **Resources** | There is no `agents://` URI scheme to fetch and no `manifest.json`. |
 | **A CLI** | `package.json` declares one bin, `lxagents-shared-instruction`, which is the server. There is no `lxagents-agents`, no `list`/`read`/`setup`/`audit` subcommands, and no `npm run cli`. |
 | **A writer** | Every tool is read-only. The tools that would write the set are not registered rather than disabled, so pointing a repository at this server cannot mutate it. A test asserts that no tool accepts a write verb or a credential. |
 | **A registry of tools** | `src/constants.js`, `src/server/` and `src/cli.js` were removed. The surface is built by `src/tools/from-content.js` and the array in `src/server.js`. |
@@ -142,21 +144,21 @@ down here, because a hand-maintained copy of a generated list is a copy that goe
 
 ## Cost
 
-The set is loaded once, so a session pays for the files whose triggers actually fire.
-Calling every tool reproduces the oversized payload this design replaced, one call at a
-time — and there are more than thirty of them, so that is a real cost rather than a
+The set is loaded once, so a session pays for `automation` and the tools whose conditions
+actually fire. Calling every tool reproduces the oversized payload this design replaced, one
+call at a time — and there are dozens of them, so that is a real cost rather than a
 hypothetical one. `src/server.js`'s `instructions` string says so at `initialize`, and
-`content/rules/auto-activation.md` says it again as a rule.
+`automation` says it again as a rule.
 
 ## Tests
 
-`test/server.test.js` is 19 tests over a real MCP client on an in-memory transport, not a
-mock. It covers the frontmatter contract, the shared creator procedure, the bijection both
-ways, name derivation, uniqueness and descriptions, the zero-argument claim, byte-for-byte
-fidelity, total-served equality, reachability, index routing, `mcp_list` in isolation, and
-the read-only claim.
+`test/server.test.js` runs over a real MCP client on an in-memory transport, not a mock. It
+covers the frontmatter contract, the bijection both ways, name derivation and overrides,
+uniqueness and descriptions, the zero-argument claim, byte-for-byte fidelity, total-served
+equality, reachability, the hub (first, total, honest and small), the release-branch wording,
+that no tool points at another, and the read-only claim.
 
-`test/http.test.js` is 31 more, over a real client against a real listening process and a
+`test/http.test.js` is the HTTP counterpart, over a real client against a real listening process and a
 real cluster rather than an in-memory transport, because the things that can go wrong on the
 HTTP path are about sockets and process boundaries and do not reproduce in memory. It
 asserts the two transports expose the same tools and return byte-identical payloads, that

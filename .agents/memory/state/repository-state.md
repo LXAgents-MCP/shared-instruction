@@ -5,7 +5,39 @@ description: Current known state of LXAgents-MCP/shared-instruction — what exi
 
 # Repository State
 
+## 2026-10-09
+
+**The tool set was replaced.** `content/` now holds the owner's re-created set — 47 files —
+plus `automation.md`. The 34 files it held before are gone, and so is `mcp_list`. The record of
+how is `.agents/memory/tasks/replace-tool-contents.md`.
+
+**Surface.** One tool per file, all generated; nothing is hand-written. The name is the
+filename with the folder stripped and kebab turned to snake, with explicit overrides for the 13
+GitHub and GitLab pages (`github_api` … `gitlab_repositories`), because four filenames exist
+on both forges. `AGENTS.md` is no longer served, so its `agents_entry_point` override is gone.
+No tool takes an argument.
+
+**Session start.** `automation` is read once per session. It lists every other tool and the
+condition that activates it; the others are called only when their condition is true. The
+`initialize` instructions, `AGENTS.md` and a test all pin that wording. It is text, not
+mechanism: a read-only server cannot make a client call a tool.
+
+**Each tool ends in itself.** No tool but `automation` links to, names, or sends the reader to
+another, and `test/server.test.js` fails if one does. A tool that needs a neighbour's fact
+states it in a sentence.
+
+**Other conventions that changed with the set.** Frontmatter is `name` and `description` only —
+no `version`, no `author`. The release task's branch is `release/{version}` with no `v`; the
+git tag carries the `v`.
+
+**A known tension, left for the owner.** The new contents were written for a plain-files
+workspace and some say no MCP server serves them. The list is in the task record.
+
 ## 2026-09-30
+
+*Superseded where it differs from the 2026-10-09 section above: the tool surface, `mcp_list`
+and `agents_entry_point`, the file count, the four-field frontmatter, and "call nothing at
+session start".*
 
 **What this is.** A read-only MCP server that serves the LXAgents shared agent instruction
 set. Plain JavaScript, Node ESM, no build step. Published as

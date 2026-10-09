@@ -10,17 +10,15 @@ change to the set that misses one does not just leave a stale page: it ships a
 contradiction, because both copies are read as instructions.
 
 This rule is local. Only a repository that **produces** the shared set can hold a mirror
-of it — a consuming repository is forbidden from copying shared files at all, which is
-[`content/rules/shared-instructions.md`](../../content/rules/shared-instructions.md)
-§A. It is the producer's version of the copy problem.
+of it — a consuming repository copies no shared file, because a copy outlives the rule it
+copies. This is the producer's version of the copy problem.
 
 ## The mirrors
 
 | Mirror | What it reproduces |
 |---|---|
-| [`AGENTS.md`](../../AGENTS.md) (repository root) | The **Shared instruction tools** declaration block; the inline gates; the trigger table for the rest of the set; and the *Using the connector* section, which summarises [`content/rules/mcp-connector.md`](../../content/rules/mcp-connector.md) — the read sequence, the transport, and the unavailable-connector obligation. This repository consumes its own set, so its entry point goes stale exactly like a consumer's. |
-| [`content/prompts/agents-setup.md`](../../content/prompts/agents-setup.md) | Dictates the auto-activation contract and the declaration block a new consuming repository writes into its own `AGENTS.md`. Published, but a mirror all the same. |
-| [`src/server.js`](../../src/server.js) | The `instructions` string restates the routing model — call nothing at session start, one file per tool, route from the index — in the text every client receives at `initialize`. A client that reads only that gets the model without the set. |
+| [`AGENTS.md`](../../AGENTS.md) (repository root) | The **Shared instruction tools** declaration block (the `automation` row and the six conventions it names); the inline gates; and the *Using the connector* section — the read sequence, the transport, and the unavailable-connector obligation. The trigger table for the rest of the set is **not** copied: [`content/automation.md`](../../content/automation.md) is the one authority for when each tool fires. This repository consumes its own set, so its entry point goes stale exactly like a consumer's. |
+| [`src/server.js`](../../src/server.js) | The `instructions` string restates the routing model — read `automation` once per session, call nothing else until its condition is true, one file per tool — in the text every client receives at `initialize`. A client that reads only that gets the model without the set. |
 
 The discovery-protocol block has its own bounded copy list, owned by
 [`content/rules/discovery-protocol.md`](../../content/rules/discovery-protocol.md) §F. It is
@@ -37,8 +35,8 @@ reads it from `content/`; hard-coding is what puts a file in the table.
 
 ## The obligation
 
-A change to [`content/rules/auto-activation.md`](../../content/rules/auto-activation.md),
-to `shared-instructions.md` §H, to the routing model, or to any text a mirror reproduces
+A change to [`content/automation.md`](../../content/automation.md),
+to `shared-instructions.md` §D, to the routing model, or to any text a mirror reproduces
 updates every affected mirror **in the same commit** — the rule
 [`content/rules/change-propagation.md`](../../content/rules/change-propagation.md)
 applies to documentation, extended to the source and prompt copies nothing else covers.
@@ -55,8 +53,7 @@ and a major version.
 ## Why this exists
 
 The `0.8.0` request named four files to edit. Three more carried the same text and would
-have shipped the old count — one into every repository set up from the `agents-setup`
-prompt, one into every `AGENTS.md` a scaffolding tool wrote, and one into the string every
+have shipped the old count — one into every repository set up from a setup prompt since removed, one into every `AGENTS.md` a scaffolding tool wrote, and one into the string every
 client sees at `initialize`. Nothing written down would have caught it.
 
 The scaffolding tool is gone, and with it the worst mirror in the table: for a while the

@@ -11,13 +11,11 @@ src/
   http.js                     entry — the cluster, the port, and the drain
   server.js                   builds the McpServer and registers the tool surface
   version.js                  ROOT, CONTENT_DIR, VERSION, SERVER_NAME
-  content.js                  readSetFile — the one path-taking read, and its guard
   tools/
-    from-content.js           generates one tool per file in content/
-    mcp-list.js               the one hand-written tool
+    from-content.js           generates one tool per file in content/ — the whole surface
 test/
-  server.test.js              19 tests over a real client on an in-memory transport
-  http.test.js                31 tests over a real client against a real listener and a real cluster
+  server.test.js              the surface, over a real client on an in-memory transport
+  http.test.js                the HTTP path, over a real client against a real listener and a real cluster
 ```
 
 ## The tool surface is generated, not declared
@@ -92,18 +90,13 @@ it is why the pool is sized by the machine rather than by the request rate.
 `stdio` never forks, and cannot: stdout is the JSON-RPC channel there, and a worker's copy
 of it would corrupt the stream.
 
-## The one path-taking read
+## No path is ever read from a caller
 
-`src/content.js` exports `readSetFile(relativePath)`, which is the only function here that
-takes caller-influenced input. It is reached by exactly one caller — `mcp_list`, with the
-constant `index/server-registry.md` — and it is not the primary guard against anything.
-
-The primary guard is structural: **no tool takes a path**, so a caller has nothing to
-traverse with. `isSafeRelativePath` remains because it is correct and because a function
-that reads a path from its caller should not be able to escape its directory if that
-function is reused. It runs *before* any filesystem call, not after — a path that reaches
-`fs` with a `..` in it has already been resolved against the process working directory, and
-a check that runs afterwards is a check against a value the caller already influenced.
+**No tool takes a path**, so a caller has nothing to traverse with. That is the guard, and it
+is structural rather than a check: the set is read once at boot from a fixed directory, a
+tool call is a map lookup, and nothing opens a file named by a caller. There used to be a
+path-taking read and a check that ran before any filesystem call; both went with the one tool
+that reached them.
 
 ## Shutdown
 
