@@ -26,10 +26,11 @@ It is both the **producer** of the shared set and a **consumer** of it. See
 | `src/tools/` | `from-content.js` builds the whole surface, one tool per file; there is no hand-written tool. | Adding or changing a tool. |
 | `src/server.js` | Builds one `McpServer` and registers every tool; carries the `instructions` text. | Changing the MCP surface. |
 | `src/version.js` | `ROOT`, `CONTENT_DIR`, `VERSION`, `SERVER_NAME`. | Renaming the server or moving the set. |
-| `src/app.js` | The HTTP transport as an application — `POST /mcp`, `GET /healthz`, the 405, the 404, the body limit, the `Host` allow-list. Builds and returns; does not listen. | The HTTP surface. |
+| `src/app.js` | The HTTP transport as an application — `POST /mcp`, `GET /healthz`, the 405, the 404, the body limit, the `Host` allow-list, and the token check. Builds and returns; does not listen. | The HTTP surface. |
+| `src/auth.js` | The bearer token: `tokenProblem` (is it usable), `configuredToken` (read at call time, trimmed), and `requireBearerToken` (the constant-time middleware). Reached only by the HTTP path. | Anything about who may call the HTTP transport. |
 | `src/http.js` | The HTTP entry point — the cluster primary and workers, the port, the interface, the startup lines, the in-flight set, and the drain. | Anything about a listening server, a worker count, the port, or shutdown. |
 | `Dockerfile` | A pinned, non-root image for hosts that cannot run Node 20. Serves both transports; `EXPOSE 3000`, stdio entrypoint. | The toolchain the image pins, or the install command it runs. |
-| `test/` | `server.test.js` (20, in-memory) and `http.test.js` (31, against a real listener and a real cluster). | Always. Every behavioural change ships with one. |
+| `test/` | `server.test.js` (in-memory) and `http.test.js` (against a real listener and a real cluster, with a token). | Always. Every behavioural change ships with one. |
 
 There is no `src/server/`, no `src/cli/`, no `src/transport/`, and no `src/content/`
 directory. If a file you are about to edit is under one of those paths, it does not exist
@@ -45,8 +46,9 @@ There are **two**, and they differ only in transport:
 * `src/http.js` — `npm run start:http`, and the command the `Dockerfile` documents. A
   `node:cluster` primary forks `os.availableParallelism()` workers (`MCP_CLUSTER_WORKERS`
   overrides, `1` disables), each binding the same `HOST`/`PORT` and serving `POST /mcp` and
-  `GET /healthz` from the app in `src/app.js`. **The primary binds nothing and logs no
-  startup line**, so the log carries one `serving over http` line per worker. It logs to
+  `GET /healthz` from the app in `src/app.js`. **It refuses to start without
+  `MCP_AUTH_TOKEN`** — checked in the primary, before any fork. **The primary binds nothing
+  and logs no startup line**, so the log carries one `serving over http` line per worker. It logs to
   **stderr**, because it is one dynamic import away from a process whose stdout is the
   JSON-RPC channel.
 
@@ -71,9 +73,9 @@ Behind both:
 
 ```bash
 npm install
-npm test                 # node:test — two files, 50 tests
+npm test                 # node:test — two files
 npm start                # stdio
-npm run start:http       # HTTP on 0.0.0.0:3000, or $PORT/$HOST; one worker per CPU
+MCP_AUTH_TOKEN=<32+ chars> npm run start:http   # HTTP on 0.0.0.0:3000, or $PORT/$HOST; one worker per CPU; no token, no start
 npm run inspect          # MCP Inspector against the stdio server
 ```
 
@@ -93,6 +95,11 @@ entrypoint to `src/http.js` for the HTTP form.
 * **Two files outside `content/` copy its text.** The root `AGENTS.md` and the
   `instructions` string in `src/server.js` both reproduce set text and go stale silently. Grep for a sentence you changed before
   committing — see [`../../rules/set-mirrors.md`](../../rules/set-mirrors.md).
+* **HTTP tests need a token, and so does any server you start by hand.** The harness in
+  `test/http.test.js` hands every child `MCP_AUTH_TOKEN` and the SDK client the matching
+  header; a test that spawns the server any other way, or fetches `/mcp` raw, must do the same
+  or it will read a `401` as a failure of the thing it is testing. Blank the variable
+  (`MCP_AUTH_TOKEN: ""`) to test the refusal to start.
 * **Nothing writes to stdout.** stdout is the JSON-RPC channel on stdio, and `src/index.js`
   reaches `src/http.js` by dynamic import, so the HTTP process is one hop away from the
   same constraint. There is no logger module; `src/http.js` logs to stderr, and so should

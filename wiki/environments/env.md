@@ -1,18 +1,50 @@
 # Environment Variables
 
-**Five, and none of them is a secret.** Four configure the HTTP transport; the fifth picks
-which transport runs. A client that spawns the server over stdio sets none of them, which
-is why that path has nothing to configure.
+**Six, and exactly one of them is a secret.** Five configure the HTTP transport; the sixth
+picks which transport runs. A client that spawns the server over stdio sets none of them,
+which is why that path has nothing to configure — and why it needs no token.
 
 | Variable | Default | What it does |
 |---|---|---|
 | `PORT` | `3000` | The port the HTTP transport binds. |
 | `HOST` | `0.0.0.0` | The interface it binds. Loopback-only hosts need no allow-list. |
 | `MCP_ALLOWED_HOSTS` | unset | Comma-separated hostnames permitted in the `Host` header. **Off when unset.** |
+| `MCP_AUTH_TOKEN` | **none — required for HTTP** | The bearer token every HTTP request except `GET /healthz` must carry. At least 32 characters. **HTTP will not start without it.** stdio never reads it. |
 | `MCP_TRANSPORT` | `stdio` | Which transport `src/index.js` speaks: `stdio`, or `http` (`streamable-http` is accepted too). `http` reaches `src/http.js`, which serves `POST /mcp`. |
 | `MCP_CLUSTER_WORKERS` | CPU count | How many HTTP worker processes to fork. **`1` forks nothing.** |
 
-`src/index.js` reads `MCP_TRANSPORT` and nothing else. `src/http.js` reads the other four.
+`src/index.js` reads `MCP_TRANSPORT` and nothing else. The HTTP path — `src/http.js`, and the
+app and `src/auth.js` it builds — reads the other five.
+
+**Why `MCP_AUTH_TOKEN` is required rather than optional.** The transport decides: a server a
+client spawns is a pipe on the client's own machine, so there is nobody to authenticate; a
+server on a port is reachable by anyone who can open a socket, so every request must prove the
+caller holds the token. An optional token would mean a deployment that forgot to set it ran
+open and said nothing, so instead the process refuses to start — one line on stderr naming the
+variable, and exit code `1` — and `createApp` refuses to build without it, so the check cannot
+be skipped by calling the app directly.
+
+```bash
+export MCP_AUTH_TOKEN="$(openssl rand -hex 32)"    # 64 hex characters; keep it, clients need it
+npm run start:http
+```
+
+* **Length.** Anything under 32 characters is refused at startup, so a value like `test` is
+  found by you and not by a scanner. Surrounding whitespace is dropped, because a token read
+  out of a file or an `env_file` often ends in a newline and an HTTP header cannot.
+* **Sending it.** `Authorization: Bearer <token>` on every request. A missing header and a wrong
+  token are both a `401` with `WWW-Authenticate: Bearer`; the second also says
+  `error="invalid_token"`. There is no query-string form, because a URL is logged.
+* **One token, shared.** Every client holds the same value, so there is no per-client identity
+  and no revoking one client alone. Rotate it by changing the variable and restarting; the
+  server is stateless, so a restart drops nothing.
+* **Never logged.** The startup line says a token is required and never what it is, and a
+  rejected token is not echoed either. Keep it out of the image, the repository and the
+  command line: pass it from the environment, an `env_file`, or the host's secret store.
+* **`GET /healthz` is the one open route**, so an orchestrator's probe needs no token. It returns
+  `{ status, server, version }` and nothing else.
+* **Put TLS in front.** A bearer token sent over plain `http` can be read by anyone on the
+  path. This server does not terminate TLS; whatever fronts it must.
 
 **Why `MCP_CLUSTER_WORKERS` defaults to a count rather than a number.** One process
 handling every request leaves the other CPUs idle, so the default is

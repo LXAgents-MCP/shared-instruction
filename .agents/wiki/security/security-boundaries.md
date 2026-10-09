@@ -33,9 +33,10 @@ In practice, in a session that touches more than one repository:
   and copies are what
   [`directories.md`](../../../content/rules/directories.md) forbids anyway.
 * **Never assume this repository's posture applies outward.** This one has no
-  authentication and no secrets *by design*. Carrying "there is nothing to protect here"
-  into a repository that holds credentials is the worst version of this mistake, and it is
-  the easy one to make, because it feels like context rather than a claim.
+  authentication on stdio, one bearer token on HTTP, and nothing in its content that is
+  confidential, *by design*. Carrying "there is nothing to protect here" into a repository
+  that holds credentials is the worst version of this mistake, and it is the easy one to
+  make, because it feels like context rather than a claim.
 
 The trigger row in [`AGENTS.md`](../../../AGENTS.md) loads this page on security,
 authentication, and deployment work so the rule is in front of you *before* the reasoning
@@ -49,7 +50,8 @@ that would violate it, not after.
 | A tool's shape in `src/tools/from-content.js` | It still takes **no argument**. A path parameter is the single change that would reopen traversal, and it is the one to argue against hardest. |
 | The read path | No filesystem or network I/O was introduced. Reads are in-memory lookups, and that is what stops a read being steered at the disk. |
 | `Dockerfile` | `--ignore-scripts` survives, the runtime stage still ends as `USER node`, and any `EXPOSE` still matches the port the entrypoint actually binds. Either of the first two dropped turns a pinned, non-root image into one that runs install hooks as root. |
-| `src/http.js`, or anything touching a transport | `MCP_ALLOWED_HOSTS` still defaults to unset rather than to a permissive list, sessions are still deleted when their stream closes, and no `McpServer` is shared between them. |
+| `src/http.js`, or anything touching a transport | `MCP_ALLOWED_HOSTS` still defaults to unset rather than to a permissive list, sessions are still deleted when their stream closes, and no `McpServer` is shared between them. HTTP still refuses to start without `MCP_AUTH_TOKEN`, and stdio still never reads it. |
+| `src/auth.js`, or the middleware order in `src/app.js` | The check still runs after the `Host` allow-list and before the body parser and every route; the comparison is still constant-time; `GET /healthz` is still the only exemption and still exact; there is still no query-string form, no opt-out flag and no loopback waiver; and the token still never reaches a log line, an error or a response. A test pins each of these, and each was shown to fail when its control was removed. |
 | A new dependency | It is genuinely needed — [`../../rules/repository.md`](../../rules/repository.md) names the three in the runtime tree and requires a recorded decision for a fourth. Each one is transitive attack surface. |
 | Any config default | Loosening a default is a posture change affecting every consumer, not a convenience. Raise it rather than take it. |
 
@@ -65,10 +67,15 @@ Ask the user; do not resolve these on your own initiative.
   rather than a convenience. A URL that reaches an unexpected endpoint, a client pointed
   at someone else's host, or a connector that resolves where you did not configure it is
   now a finding: stop and say so.
-* **Making any served content non-public.** Authentication becomes a prerequisite of that
-  change, not a follow-up, and the change is bigger than it looks. Note that the HTTP
-  transport made this a live question rather than a structural impossibility — the content
-  can now be served selectively to a network, which it previously could not.
+* **Making any served content non-public.** The bearer token gates who may use a deployed
+  instance, not the text: the set is on npm and in every checkout, so a key on this server
+  does not make a byte of it confidential. That change needs a different delivery mechanism,
+  and it is bigger than it looks. The HTTP transport made it a live question rather than a
+  structural impossibility.
+* **Any way to run HTTP without the token.** An opt-out flag, a variable that disables the
+  check, a loopback exemption, a second route outside the middleware, or widening the
+  `/healthz` exemption. The fail-closed start is the control; each of these is a hole shaped
+  like a convenience.
 * **Deploying the HTTP transport on a routable interface without `MCP_ALLOWED_HOSTS`.** The
   allow-list is off unless set, and the previous implementation's equivalent guard also
   defaulted to off — see `activation-security.md`. Turning it on is the decision; taking
@@ -79,8 +86,10 @@ Ask the user; do not resolve these on your own initiative.
 * **A finding in content already published.** It reaches every consumer on their next
   read, so the fix is a release with an explicit *Consumers must* line, and
   [`versioning.md`](../../../content/rules/versioning.md) gates the version.
-* **Anything that would put a credential in this repository.** There are none today, and
-  the first one is a decision, not a commit.
+* **Anything that would put a credential in this repository.** There are none in it:
+  `MCP_AUTH_TOKEN` lives in the deployer's environment and nowhere here. A second secret
+  variable, or any real token in a file, a fixture or a commit, is a decision and not an
+  edit.
 
 ## D. What is not a security finding here
 
@@ -94,6 +103,10 @@ Named because each one has cost a round of investigation before:
   names the file and the invariant it broke.
 * **An edit to `content/` not appearing in a running server.** The set is read once at
   boot. Restart, do not go looking for a cache to invalidate.
-* **There being no authentication.** Deliberate, and reasoned through in the human page.
-  Re-raising it as a vulnerability is not a finding; proposing to publish something
-  confidential through it would be.
+* **stdio having no token.** Deliberate: the client spawns the process on its own machine,
+  so the only caller is whoever already runs it. Re-raising it as a vulnerability is not a
+  finding. Asking for one token for both transports is a design change to argue, not a gap.
+* **`GET /healthz` answering without a token.** Deliberate and exact: an orchestrator's probe
+  cannot send one, and the route returns only `{ status, server, version }`.
+* **Every client sharing one token.** Known and stated in the human page: no per-client
+  identity, rotate to revoke. Not a finding; a request for per-client tokens is a feature.

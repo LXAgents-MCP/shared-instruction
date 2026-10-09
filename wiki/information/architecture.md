@@ -1,13 +1,14 @@
 # Architecture
 
 Plain JavaScript (Node ESM), no build step. Two dependencies: the MCP SDK, and `express`
-for the HTTP transport. The whole server is eight files.
+for the HTTP transport. The whole server is nine files.
 
 ```
 content/                      the instruction set — 32 markdown files
 src/
   index.js                    entry — picks the transport; stdio by default
   app.js                      the HTTP transport as an application — /mcp, /healthz. Does not listen.
+  auth.js                     the bearer token: the strength check, and the middleware that enforces it
   http.js                     entry — the cluster, the port, and the drain
   server.js                   builds the McpServer and registers the tool surface
   version.js                  ROOT, CONTENT_DIR, VERSION, SERVER_NAME
@@ -65,6 +66,14 @@ selected. The two files stay separate because `package.json`'s `start:http` and 
 `Dockerfile` both name `src/http.js` and neither may change — so the HTTP path has one more
 hop than the other four servers in the organization, and the reason is a file that is not
 allowed to move.
+
+**The HTTP transport requires a bearer token, and stdio does not.** `src/auth.js` reads
+`MCP_AUTH_TOKEN` and `src/app.js` mounts its middleware after the `Host` allow-list and ahead of
+the body parser and every route, with `GET /healthz` the one exemption. `createApp` throws
+without a usable token, and `src/http.js` checks first in the primary so a missing one is a single
+line and exit code `1` rather than the same line from each worker and a respawn loop. The stdio
+path never imports `src/auth.js` and never reads the variable. The reasoning is in the
+[security model](../security/security-model.md).
 
 **The HTTP transport is stateless.** `POST /mcp` builds a fresh `McpServer` and a fresh
 `StreamableHTTPServerTransport` per request, with no session id minted, so the server keeps

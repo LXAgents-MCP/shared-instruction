@@ -104,6 +104,7 @@ The server also speaks HTTP, for when you want one instance serving several clie
 fixed address rather than one per client:
 
 ```bash
+export MCP_AUTH_TOKEN="$(openssl rand -hex 32)"   # required: HTTP will not start without it
 npm run start:http    # binds 0.0.0.0:3000, or $PORT
 ```
 
@@ -112,14 +113,16 @@ npm run start:http    # binds 0.0.0.0:3000, or $PORT
   "mcpServers": {
     "lxagents-shared-instruction": {
       "type": "http",
-      "url": "http://localhost:3000/mcp"
+      "url": "http://localhost:3000/mcp",
+      "headers": { "Authorization": "Bearer ${MCP_AUTH_TOKEN}" }
     }
   }
 }
 ```
 
-The same tools either way. Set `MCP_ALLOWED_HOSTS` to a comma-separated list of hostnames
-if you expose it beyond loopback — see [Security model](../security/security-model.md).
+The same tools either way, but only HTTP needs the token; the stdio form above needs none. Set
+`MCP_ALLOWED_HOSTS` to a comma-separated list of hostnames if you expose it beyond loopback — see
+[Security model](../security/security-model.md).
 
 ## 5. Paste this into your `AGENTS.md`
 
@@ -142,7 +145,8 @@ block. If it is not, install it locally:
 Then register it as a stdio MCP server named `lxagents-shared-instruction`, with
 `command: node`, `args: ["src/index.js"]`, and
 `cwd: ./mcps/LXAgents-MCP/shared-instruction`. A host serving it over HTTP registers
-`type: http` and `url: https://<host>/mcp` instead, under the same name.
+`type: http`, `url: https://<host>/mcp` and an `Authorization: Bearer <token>` header
+instead, under the same name; without the header every request is a `401`.
 
 **`mcps/` must be in this repository's `.gitignore`.** The clone is a runtime, not
 content. It is never committed.

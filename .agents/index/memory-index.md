@@ -24,6 +24,7 @@ the same commit that creates it.
 |---|---|
 | [`../memory/decisions/express-for-http-transport.md`](../memory/decisions/express-for-http-transport.md) | Why `express` became the third runtime dependency, for the HTTP transport. |
 | [`../memory/decisions/delete-branch-on-stacked-merge.md`](../memory/decisions/delete-branch-on-stacked-merge.md) | Why a stacked chain is merged with branch deletion on — three pull requests reported MERGED while `master` had none of the work. |
+| [`../memory/decisions/http-bearer-token.md`](../memory/decisions/http-bearer-token.md) | Why the HTTP transport requires a bearer token and refuses to start without one, when the set had no authentication by design. |
 
 ## findings/
 

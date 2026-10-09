@@ -8,7 +8,8 @@ instead of cloning or vendoring a copy of them.
 - **Server id:** `lxagents-shared-instruction`
 - **Package:** `@lxagents-mcp/shared-instruction`
 - **Transport:** stdio, or stateless HTTP at `POST /mcp` for running it as a service at a
-  fixed address. Both serve the same tool surface.
+  fixed address. Both serve the same tool surface. **HTTP requires a bearer token**
+  (`MCP_AUTH_TOKEN`); stdio, which a client spawns on its own machine, needs none.
 - **Surface:** one tool per markdown file in `content/`, and nothing else. Every one is
   read-only and every one takes no arguments. For the current count,
   enumerate the connector's tools.
@@ -56,9 +57,10 @@ Serve it to an MCP client over stdio:
 npm start
 ```
 
-Or as a service over HTTP:
+Or as a service over HTTP, which will not start without a token of at least 32 characters:
 
 ```bash
+export MCP_AUTH_TOKEN="$(openssl rand -hex 32)"
 npm run start:http
 ```
 
@@ -97,16 +99,19 @@ A server running at a fixed address is reached over HTTP instead:
   "mcpServers": {
     "lxagents-shared-instruction": {
       "type": "http",
-      "url": "http://shared-instruction.example.com:3000/mcp"
+      "url": "http://shared-instruction.example.com:3000/mcp",
+      "headers": { "Authorization": "Bearer ${MCP_AUTH_TOKEN}" }
     }
   }
 }
 ```
 
 **stdio is still the right default** wherever the client can spawn a process — it has no
-port to secure and nothing to deploy. The HTTP form is for a host that cannot run Node 20,
-or for one service several clients share. Set `MCP_ALLOWED_HOSTS` on anything reachable
-beyond your own machine; the allow-list is off unless you set it. See
+port to secure, no token to keep, and nothing to deploy. The HTTP form is for a host that
+cannot run Node 20, or for one service several clients share. Every HTTP request except
+`GET /healthz` must carry `Authorization: Bearer <token>`, and a bearer token is only as
+private as the connection it travels on, so put TLS in front. Set `MCP_ALLOWED_HOSTS` on
+anything reachable beyond your own machine; the allow-list is off unless you set it. See
 [`wiki/environments/env.md`](wiki/environments/env.md).
 
 **Registering a server does not reach a session that is already running.** A client loads
@@ -118,13 +123,14 @@ still absent from the tool surface until the session restarts.
 ```bash
 docker build -t lxagents-shared-instruction:3.1.0 .
 docker run --rm -i lxagents-shared-instruction:3.1.0                            # stdio
-docker run --rm -p 3000:3000 lxagents-shared-instruction:3.1.0 node src/http.js  # HTTP
+docker run --rm -p 3000:3000 -e MCP_AUTH_TOKEN lxagents-shared-instruction:3.1.0 node src/http.js  # HTTP
 ```
 
 A pinned, non-root image for hosts that cannot run Node 20. The default entrypoint is
 stdio, so `-i` is not optional there — without it the server sees closed stdin and exits.
 Overriding the entrypoint to `src/http.js` serves on port 3000 instead, and `-p` is what
-makes that reachable; `EXPOSE` documents the port, it does not publish it. Details in
+makes that reachable; `EXPOSE` documents the port, it does not publish it. The HTTP form
+exits unless `MCP_AUTH_TOKEN` is set, and stdio never needs it. Details in
 [Docker](wiki/environments/docker.md).
 
 ## Documentation

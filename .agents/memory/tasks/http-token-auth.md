@@ -59,3 +59,46 @@ log names that under **Consumers must**; the version needs the owner's approval.
 Landed: this record and its row in `memory-index.md`. The `PR` column is filled by task 3, not
 here, so no later branch needs a rebase. Nothing outside `.agents/` changes in this task. Task 2
 depends on nothing from this entry except the plan above.
+
+### Task 2 — feat/http-token-auth
+
+Landed. HTTP requires `Authorization: Bearer <MCP_AUTH_TOKEN>` on every route except
+`GET /healthz`, and refuses to start without a token of at least 32 characters. stdio is
+unchanged and never reads the variable. `npm test` runs 70 tests, up from 54, all passing.
+
+**Code.** New `src/auth.js` (`tokenProblem`, `configuredToken`, `requireBearerToken`). `src/app.js`
+mounts the middleware after the `Host` allow-list and before the body parser, with the exact
+`GET /healthz` exemption, and `createApp` throws without a usable token. `src/http.js` checks in
+the primary before forking and sets the exit code rather than calling `process.exit`, because
+nothing is listening yet and the line must not be cut off. The startup line says a token is
+required and never what it is.
+
+**Tests.** Every existing HTTP test now runs with a token. Sixteen new ones cover missing, wrong,
+malformed and correct credentials, no route being revealed, the check running before the body is
+parsed, the exact `/healthz` exemption, the token never reaching the output, the refusal to start
+through both entry points with one worker and several (once, and not a respawn loop), and stdio
+ignoring even an unusable value. Four controls were each broken on purpose and the matching test
+failed every time: the comparison made always-true, the check moved after the body parser, the
+primary's check removed, and the `/healthz` exemption loosened to a prefix.
+
+**Docs.** The security model, its agent-facing counterpart, the environment, Docker, setup,
+connect and local-install pages, the surface and architecture pages, the README, the Dockerfile
+comments, the repository map and the repository state now say what is true. The decision is
+recorded in `decisions/http-bearer-token.md`.
+
+**Left stale on purpose — instruction files, for the owner to decide.** The discovery protocol
+forbids editing these unprompted, so each is reported in the pull request instead:
+
+- `AGENTS.md`, the HTTP row of the "Register it" table: registration now also needs an
+  `Authorization` header.
+- `.agents/rules/repository.md`: "two transports and five variables" is now six; the HTTP run
+  command in its table now needs `MCP_AUTH_TOKEN`.
+- `content/skills/engineering/mcp-server.md`: its three-state diagnostics table has no row for a
+  `401`, the new way a registered HTTP connector reports no tools. This one is published, so it
+  would be a release of its own.
+
+**Not verified.** The Docker image was not built, as before. Nothing was deployed or run against
+the Render service. The `${MCP_AUTH_TOKEN}` header expansion and the `claude mcp add --header`
+form are written from the clients' documented behaviour and were not run against a client here.
+
+Left for task 3: version, changelog, the two log indexes, the `PR` column and closing this record.
