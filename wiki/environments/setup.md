@@ -70,8 +70,13 @@ serves the same tools at `POST /mcp`; see
 ```bash
 npm start             # stdio
 npm run start:stdio   # the same thing, named for what it is
-npm run start:http    # HTTP on 0.0.0.0:3000, or $PORT
+MCP_AUTH_TOKEN="$(openssl rand -hex 32)" npm run start:http   # HTTP on 0.0.0.0:3000, or $PORT
 ```
+
+**HTTP needs a token and stdio does not.** `start:http` exits with code `1` and one line on
+stderr if `MCP_AUTH_TOKEN` is unset or shorter than 32 characters. The one-liner above makes a
+throwaway token for a throwaway run; for anything a client will reach, generate it once, keep it,
+and give the same value to the clients. See [Environment variables](env.md).
 
 The two entry points differ only in transport. Same tools, same content, same
 read-only surface. `MCP_TRANSPORT=http node src/index.js` is the same server reached the

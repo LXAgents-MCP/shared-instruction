@@ -13,7 +13,7 @@ transports, and they expose the same tools. See
 |---|---|
 | `name` | `lxagents-shared-instruction` |
 | `version` | from `package.json`, read at import by `src/version.js` |
-| transport | stdio (`src/index.js`) or stateless HTTP (`src/http.js`, `POST /mcp`) |
+| transport | stdio (`src/index.js`), or stateless HTTP (`src/http.js`, `POST /mcp`) with a required bearer token |
 
 Every entry point calls the same `createServer()`, so the surface is identical by
 construction. A test asserts the two agree, tool for tool and byte for byte on a call.
@@ -127,10 +127,15 @@ documented all of the following as if it were shipped. None of it is.
 | **A writer** | Every tool is read-only. The tools that would write the set are not registered rather than disabled, so pointing a repository at this server cannot mutate it. A test asserts that no tool accepts a write verb or a credential. |
 | **A registry of tools** | `src/constants.js`, `src/server/` and `src/cli.js` were removed. The surface is built by `src/tools/from-content.js` and the array in `src/server.js`. |
 | **Health and readiness endpoints** | `GET /healthz`, and nothing else. **This row previously read the opposite** — "No `/healthz`, no `/readyz`… a probe endpoint on a server that serves only public markdown is a route that exists to be scanned" — and the objection was met with consistency rather than refuted. The four sibling servers already serve `/healthz`, and a deployment that has to treat one of five identically shaped servers differently is one this repository declined to pay for. What answers is `{ status, server, version }` and nothing derived from the set, before any body is read, so the route is not a window onto the content. |
-| **Authentication** | Neither transport has any, and adding it would not make the content less public — it is on npm. See the [security model](../security/security-model.md). |
+| **Authentication on stdio** | None, and none is needed: a client spawns the process on its own machine, so the only caller is whoever already runs it. The HTTP transport is different — see below and the [security model](../security/security-model.md). |
 
 **What the HTTP transport does expose** is the same tool surface, at `POST /mcp`, plus
-`GET /healthz`. It is **stateless**: every request carries everything it needs, no session
+`GET /healthz`. **Every route except `GET /healthz` needs `Authorization: Bearer <token>`**,
+matched in constant time against `MCP_AUTH_TOKEN`; a missing or wrong token is a `401` with
+`WWW-Authenticate: Bearer` and error code `-32001` in the JSON-RPC envelope, and it is given
+before the body is read and before any route is revealed, so an unauthenticated caller cannot
+tell a `404` from a `405` from a route that exists. The process refuses to start without a
+token of at least 32 characters. It is **stateless**: every request carries everything it needs, no session
 id is minted, and there is no session store to bound. Any other method on `/mcp` is a 405
 that says so, and any other path is a JSON-RPC 404.
 

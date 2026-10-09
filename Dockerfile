@@ -42,7 +42,12 @@ EXPOSE 3000
 # The HTTP transport is a command away rather than a second image, because the two share
 # every byte of payload and differ only in the entry point:
 #
-#   docker run --rm -p 3000:3000 … node src/http.js
+#   docker run --rm -p 3000:3000 -e MCP_AUTH_TOKEN … node src/http.js
+#
+# The HTTP form refuses to start without MCP_AUTH_TOKEN (at least 32 characters) and exits 1
+# with a line saying so; the stdio form never reads it. The token is passed at run time and
+# is deliberately not an ENV line here: a value baked into the image ships to everyone who
+# pulls it.
 #
 # The whole default lives in CMD, and this file sets no ENTRYPOINT of its own, which is
 # what makes that command work. An ENTRYPOINT cannot be replaced by the command that

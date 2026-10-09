@@ -23,23 +23,33 @@ to the clone — the full procedure, including where to put the clone, is in
 
 **There is also a remote form**, for a server running at a fixed address rather than
 spawned per client. Start it with `npm run start:http` — it binds `0.0.0.0:3000` unless
-`PORT` says otherwise — and register it by URL:
+`PORT` says otherwise, and it **will not start without `MCP_AUTH_TOKEN`** — and register it by
+URL, sending the same token as a bearer credential:
 
 ```json
 {
   "mcpServers": {
     "lxagents-shared-instruction": {
       "type": "http",
-      "url": "https://shared-instruction.example.com/mcp"
+      "url": "https://shared-instruction.example.com/mcp",
+      "headers": { "Authorization": "Bearer ${MCP_AUTH_TOKEN}" }
     }
   }
 }
 ```
 
+`${MCP_AUTH_TOKEN}` is read from the client's own environment, so the token is not written
+into a file that gets committed. Use a client that can send a header — Claude Code
+(`claude mcp add --transport http … --header "Authorization: Bearer …"`), a `.mcp.json`
+`headers` entry, the Agent SDK, or the Inspector. A client that can only authenticate with
+OAuth cannot use a static token. Without the header every request except `GET /healthz`
+is a `401`, and the connector reports no tools.
+
 The same tools either way; the transport changes how you reach them, not what they are.
-**Prefer stdio for a repository that can spawn a process** — it needs no port to expose and
-no process to keep alive. Choose HTTP when the server's lifecycle should not be tied to one
-client. If you expose it beyond loopback, set `MCP_ALLOWED_HOSTS` — see
+**Prefer stdio for a repository that can spawn a process** — it needs no port to expose, no
+token to keep, and no process to keep alive. Choose HTTP when the server's lifecycle should not
+be tied to one client. Put TLS in front of it, since a bearer token over plain `http` can be
+read on the path, and if you expose it beyond loopback, set `MCP_ALLOWED_HOSTS` — see
 [Security model](../security/security-model.md).
 
 **Registering does not reach a running session.** A client loads its connector list at

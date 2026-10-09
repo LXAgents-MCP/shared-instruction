@@ -100,10 +100,13 @@ deployed client** and was a deliberate, owner-reviewed decision — see
 `.agents/memory/tasks/sse-to-mcp-transport.md`. The application is in `src/app.js` and does
 not listen, which is what lets `src/http.js` own the port, the startup lines and the drain
 without the two being tangled. `src/index.js` reaches it by **dynamic import**, so express
-never loads into a stdio process whose stdout is the JSON-RPC channel. Five environment
-variables reach the HTTP path, none of them a secret: `PORT`, `HOST`, `MCP_ALLOWED_HOSTS`,
-`MCP_TRANSPORT` and `MCP_CLUSTER_WORKERS`. **The allow-list is off unless set**; the same
-control in the removed transport defaulted to off, which made it inert. **The HTTP entry
+never loads into a stdio process whose stdout is the JSON-RPC channel. Six environment
+variables are read, one of them a secret: `PORT`, `HOST`, `MCP_ALLOWED_HOSTS`,
+`MCP_AUTH_TOKEN`, `MCP_TRANSPORT` and `MCP_CLUSTER_WORKERS`. **The HTTP transport requires
+`MCP_AUTH_TOKEN`** — a bearer token of at least 32 characters on every route except
+`GET /healthz` — and will not start without it; stdio never reads it. The authentication
+change is recorded in `.agents/memory/tasks/http-token-auth.md`. **The allow-list is off unless
+set**; the same control in the removed transport defaulted to off, which made it inert. **The HTTP entry
 point is a `node:cluster` primary**: it forks `os.availableParallelism()` workers by
 default, each binding the same `PORT` through the cluster's shared handle, and the primary
 itself binds nothing and writes no `serving over http` line — so a container's log carries
@@ -123,7 +126,10 @@ otherwise promises there is nothing to do and there is.
 
 **Deployed, and reachable.** A Render service serves the HTTP transport at
 `https://lxagents-mcp-shared-instruction.onrender.com` — `POST /mcp` for the protocol and
-`GET /healthz` for liveness, which answered `200` when checked on 2026-09-30. **This file
+`GET /healthz` for liveness, which answered `200` when checked on 2026-09-30. **A version that
+requires `MCP_AUTH_TOKEN` will not start on that service until the variable is set on it**, and
+the service tracks `master`, so merging the change deploys it; every client of the endpoint then
+needs the `Authorization` header. Set the variable and update the clients first. **This file
 previously said "Not deployed anywhere", and that was wrong rather than stale**: the
 listener is a capability *and* a running service, and treating them as the same thing is
 what hid it. Consuming repositories reach this package through `npx`, a local clone,

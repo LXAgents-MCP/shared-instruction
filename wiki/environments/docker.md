@@ -46,8 +46,14 @@ missing flag. There is nothing to publish: this form has no port.
 Override the entrypoint to serve instead of attaching a pipe:
 
 ```bash
-docker run --rm -p 3000:3000 lxagents-shared-instruction:3.1.0 node src/http.js
+docker run --rm -p 3000:3000 -e MCP_AUTH_TOKEN lxagents-shared-instruction:3.1.0 node src/http.js
 ```
+
+**`MCP_AUTH_TOKEN` is required for this form.** `-e MCP_AUTH_TOKEN` with no value passes the
+variable through from your shell; `--env-file` or your host's secret store work too. Without
+it the container exits with code `1` and one line saying why — it does not start open. The
+stdio form above needs no token. Never bake the value into the image with an `ENV` line: it
+would ship to everyone who pulls it.
 
 **`-p` is what makes it reachable**, and forgetting it produces a container that is
 running, healthy, and connectable from nowhere. `EXPOSE 3000` documents the port; it does
@@ -64,6 +70,7 @@ allow-list is off unless you set it:
 
 ```bash
 docker run --rm -p 3000:3000 \
+  -e MCP_AUTH_TOKEN \
   -e MCP_ALLOWED_HOSTS=shared-instruction.example.com \
   lxagents-shared-instruction:3.1.0 node src/http.js
 ```
@@ -141,7 +148,7 @@ response and a quicker check than a handshake.
 
 - [Local setup](setup.md) — running the server without a container.
 - [Architecture](../information/architecture.md) — the two transports it has.
-- [Environment variables](env.md) — `PORT`, `HOST`, `MCP_ALLOWED_HOSTS`, `MCP_TRANSPORT`,
-  `MCP_CLUSTER_WORKERS`.
+- [Environment variables](env.md) — `PORT`, `HOST`, `MCP_ALLOWED_HOSTS`, `MCP_AUTH_TOKEN`,
+  `MCP_TRANSPORT`, `MCP_CLUSTER_WORKERS`.
 - [Security model](../security/security-model.md) — what a container does and does
   not change about exposure.
