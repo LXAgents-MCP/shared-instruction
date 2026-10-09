@@ -96,13 +96,3 @@ statement of what it was trying to do, the review will be about clarity rather t
 correctness — and you will get a long list of small notes instead of one that matters.
 
 Write the "what and why" first, and split a change that does two things.
-
-## See also
-
-* [`../authoring/technical-writing.md`](../authoring/technical-writing.md) — the same
-  discipline for prose: state the consequence, not just the rule
-* [`../engineering/mcp-server.md`](../engineering/mcp-server.md) — where silent failure is
-  most likely in this workspace's history
-* [`../../rules/repository.md`](../../rules/repository.md) §The Proxy Rule — shared
-  infrastructure with two clients, the case where reviewing one client's change means
-  checking the other's

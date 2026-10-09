@@ -34,7 +34,7 @@ from parts.
 
 **`glab repo view` infers from the git remote**, so it works in a checkout and nowhere else.
 On a self-hosted instance the remote's host selects the instance, so `glab` needs an auth
-entry for that host — see [`authentication.md`](authentication.md).
+entry for that host.
 
 **`last_activity_at`** is the field for "what is actually being worked on", the counterpart to
 GitHub's `pushedAt`. `updated_at` moves on metadata changes and is a poor sort for activity.
@@ -98,8 +98,7 @@ configurable.
     glab api "projects/{id}/repository/branches?search=feature"
 
 Branch names are not validated against a naming convention — GitLab has no built-in pattern.
-Any naming rule here is this workspace's, not the forge's: see
-[`../../git/branching-strategy.md`](../../git/branching-strategy.md).
+Any naming rule here is this workspace's, not the forge's.
 
 ## Agents
 
@@ -118,12 +117,3 @@ blocking.
 GitLab "not found" results are a path or a host mistake.
 
 **Sandbox:** needs the network; 403 in-session.
-
-## Related
-
-* [`merge-requests.md`](merge-requests.md) — the project path applies there
-* [`issues.md`](issues.md) — issues are always project-scoped
-* [`ci.md`](ci.md) — where protected branches matter most
-* [`authentication.md`](authentication.md) — instance selection happens here
-* [`../reference/git-hosting-common.md`](../reference/git-hosting-common.md) — the "project"
-  collision this page exists to defuse

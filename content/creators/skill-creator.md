@@ -21,8 +21,8 @@ anything to do at all.
 | A plugin, or a plugin marketplace | Write a page describing it |
 | A clone already sitting in the workspace | Delete it, then write the page |
 
-The path is always `.agents/skills/{type}/{file-name}.md`. The prohibition itself lives
-in [`../rules/repository.md`](../rules/repository.md) §The never-install rule.
+The path is always `.agents/skills/{type}/{file-name}.md`. The prohibition is absolute: nothing
+handed over is installed, cloned, or vendored.
 
 ### Why, in one paragraph
 
@@ -52,8 +52,7 @@ enters the workspace, not what you already have.
    register, or clone something *into this workspace*, say what the rule is in one
    sentence and record it instead. If they genuinely want the repo on their machine, hand
    them the clone command to run on the host, **outside** this workspace's root.
-2. **Pick the type.** From
-   [`../rules/directories.md`](../rules/directories.md) §G:
+2. **Pick the type.**
 
    | The capability is a… | Type |
    |---|---|
@@ -65,12 +64,12 @@ enters the workspace, not what you already have.
    | The specification as published | `reference/` |
 
    If nothing fits, create the type — lowercase kebab-case, a plain topic noun — and
-   register it in `directories.md` **and** in the index that owns this scope, together.
+   register it in the folder tables **and** in the index that owns this scope, together.
 3. **Name the file after the subject**, in kebab-case, and put the same word in
    `name`. One subject per file; if the page wants two headings, it is two files.
 4. **Write the page** (below).
-5. **Link it in.** From the page that referred to the capability, and from
-   [`../index/agents-index.md`](../index/agents-index.md).
+5. **Link it in.** From the page that referred to the capability, and from the index
+   that owns this scope.
 6. **Check nothing was installed.** `git status` will not help — the root is not a
    repository. Look at the root listing instead. If a folder appeared that should not
    have, that is the bug to fix.
@@ -81,15 +80,14 @@ enters the workspace, not what you already have.
 
 ```yaml
 ---
-name: anthropic-agent-skills
-description: How Anthropic's Agent Skills format works — the frontmatter fields a skill
-  may and may not carry, the naming and length limits, the on-disk layout, and how a
-  skill actually gets triggered. Read before writing or reviewing any SKILL.md.
+name: example-capability
+description: What the capability is, the limits that actually bind, and what goes wrong
+  when they are ignored. Read before using or reviewing anything that depends on it.
 ---
 ```
 
 A workspace page is **not** a `SKILL.md` and is never run through Anthropic's
-`quick_validate.py`, so the six-key allowlist above does not constrain one. Frontmatter in
+`quick_validate.py`, so the key allowlist that validator enforces does not constrain one. Frontmatter in
 `.agents/` is `name` and `description` only — no `version`, no `author` — and the
 allowlist applies when writing a real skill for a real installation.
 
@@ -118,23 +116,14 @@ allowlist applies when writing a real skill for a real installation.
   coverage and delivers nothing. If you do not know enough to write something real, say
   so instead of writing something empty.
 
-## The existing page
-
-[`../skills/reference/anthropic-agent-skills.md`](../skills/reference/anthropic-agent-skills.md)
-is the worked example of everything above, and it is the reference to read when writing a
-page about Anthropic's own skill format. Read it before writing another one — it records
-the binding limits from `quick_validate.py`, not from prose that has drifted.
-
 ## What this creator refuses
 
 * Cloning, installing, or vendoring an MCP server, a skill, a plugin, or a marketplace
   into this workspace. Recording one is the whole job.
-* Writing an instruction. If the finding is "a rule should say X", that is
-  [`instruction-creator.md`](../creators/instruction-creator.md), and it is gated by
-  [`discovery-protocol.md`](../rules/discovery-protocol.md).
-* Writing into `wiki/` or `.agents/wiki/`. Those are
-  [`information-creator.md`](../creators/information-creator.md).
-* Writing memory. That is [`memory-creator.md`](../creators/memory-creator.md).
+* Writing an instruction. If the finding is "a rule should say X", propose it to the
+  owner; do not write it.
+* Writing into `wiki/` or `.agents/wiki/`, or writing memory. Those belong to other
+  creators.
 * Creating a skill *tree* that installs anything. This tree is documentation. Nothing in
   it is executed, and no row in the instruction tools block routes to it.
 
@@ -145,17 +134,5 @@ rule change and is not gated** — no plan approval, no discovery proposal. That
 different from the never-install rule, which is about what may exist in the workspace
 rather than what may be written down.
 
-If recording a capability reveals a **missing rule**, stop and follow
-[`../rules/discovery-protocol.md`](../rules/discovery-protocol.md): propose it, do not
+If recording a capability reveals a **missing rule**, stop: propose it to the owner, do not
 write it.
-
-## Related
-
-| Concern | Owner |
-|---|---|
-| Placement — the authority, wins over this file | [`../rules/directories.md`](../rules/directories.md) §G |
-| What may never be installed | [`../rules/repository.md`](../rules/repository.md) §The never-install rule |
-| A rule noticed while working | [`../rules/discovery-protocol.md`](../rules/discovery-protocol.md) |
-| Session links — never in any artifact | [`../rules/no-session-links.md`](../rules/no-session-links.md) |
-| Branch and commit format | [`../git/branching-strategy.md`](../git/branching-strategy.md), [`../git/commit-conventions.md`](../git/commit-conventions.md) |
-| The runnable counterpart | [`tool-creator.md`](../creators/tool-creator.md) |

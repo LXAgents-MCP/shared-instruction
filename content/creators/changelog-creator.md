@@ -30,7 +30,7 @@ Sections, in this order, omitting empty ones: `Added`, `Changed`, `Deprecated`, 
 ## Creating a version directory requires user approval
 
 A new version directory **is** a version claim, so it is gated exactly like bumping
-`package.json` — [`../rules/versioning.md`](../rules/versioning.md). Ask which
+`package.json`. Ask which
 version applies before creating it, and wait.
 
 ## Never rewrite a release
@@ -60,26 +60,12 @@ Strip any session link the originals carried rather than copying it into the dig
 Every version, newest first, one row per version directory with a one-line summary and the
 files it contains.
 
-## Related
-
-Everything this creator follows, each in the file that owns it — **not restated here**:
-
-| Concern | Owner |
-|---|---|
-| Branch naming, one branch per task | [`../git/branching-strategy.md`](../git/branching-strategy.md) |
-| Commit message format | [`../git/commit-conventions.md`](../git/commit-conventions.md) |
-| Pull request body | [`../git/pull-request-template.md`](../git/pull-request-template.md) |
-| Placement — the authority, wins over this file | [`../rules/directories.md`](../rules/directories.md) |
-| A rule you notice mid-task | [`../rules/discovery-protocol.md`](../rules/discovery-protocol.md) |
-| What this workspace may never install | [`../rules/repository.md`](../rules/repository.md) |
-| Version bumps — never automatic | [`../rules/versioning.md`](../rules/versioning.md) |
-| What may be registered, and where | [`index-creator.md`](../creators/index-creator.md) |
-| The plan that runs before this | [`plan-creator.md`](../creators/plan-creator.md) |
+## Where this applies
 
 **There is no second instruction set.** This workspace is plain `.md` files under
 `.agents/` — no server serving them, no plugin, no connector, nothing to override.
 
-`branching-strategy.md`, `commit-conventions.md`, and `pull-request-template.md` are written
+The branch, commit, and pull request conventions are written
 for a repository with a default branch. **The root here has no git at all**, so there is no
 branch to create and no commit to make — root work is written directly and recorded in
 memory. The conventions apply inside `orgs/{org}/{repo}/`.

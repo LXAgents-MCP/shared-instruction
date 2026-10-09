@@ -6,9 +6,8 @@ description: What this workspace does when it is handed an MCP server — the se
 # MCP Server
 
 **This page is about an MCP server arriving in this workspace, not about building one.**
-For the build side — transports, the handshake, tool declarations, testing — read
-[`mcp-builder.md`](mcp-builder.md). They are different subjects and they used to be one file,
-which is why this page now opens by saying which question it answers.
+The build side — transports, the handshake, tool declarations, testing — is a different
+subject and is not covered here. They used to be one file, which is why this page now opens by saying which question it answers.
 
 ## The rule: record it, never install it
 
@@ -22,10 +21,9 @@ do not add it to this workspace. You write it down** at
 Six types, chosen by what the capability *is*: `document/`, `visual-design/`,
 `engineering/`, `authoring/`, `guidance/`, `reference/`.
 
-The procedure is [`../../creators/skill-creator.md`](../../creators/skill-creator.md); the
-placement rule is [`../../rules/directories.md`](../../rules/directories.md) §G; the
-prohibition itself is [`../../rules/repository.md`](../../rules/repository.md)
-§The never-install rule.
+The procedure: pick the type by what the capability *is*, name the file for its subject,
+write the page, and check nothing was installed. The prohibition is absolute — nothing
+handed over is installed, cloned, or vendored.
 
 **Why:** a checkout at this root cannot be versioned — the root is not a git repository — so
 it drifts with no diff to show it and no way back. It pulls in a dependency tree and a build
@@ -46,12 +44,11 @@ tool authored here is the opposite case. **Copying someone else's script into
 
 ## What a page about an MCP server records
 
-The capability knowledge, per [`../../creators/skill-creator.md`](../../creators/skill-creator.md):
-what the server exposes, how it authenticates, which endpoints are worth calling, and what
+The capability knowledge: what the server exposes, how it authenticates, which endpoints are worth calling, and what
 its failure modes are. Not the server itself.
 
 Two things belong on separate pages rather than inside one, because they are different
-subjects: **how MCP works** (a protocol fact — see [`mcp-builder.md`](mcp-builder.md)), and
+subjects: **how MCP works** (a protocol fact), and
 **how this workspace treats an MCP server that turns up in it** (this page).
 
 ## The three-state connector diagnosis
@@ -81,10 +78,6 @@ restart, so a session that misreads state three keeps retrying a cure that canno
 never lower the bar to match — a tool that cannot be called is a different failure from a
 tool that is absent, and only the first is a bug in the server.
 
-The full diagnosis, as it was worked out against a real connector, is preserved in
-[`../../wiki/context/retired-instruction-files.md`](../../wiki/context/retired-instruction-files.md)
-§The three-state diagnosis.
-
 ## A note on history, because it explains the rule
 
 This workspace's instruction set began as a copy of a set served over MCP by
@@ -94,5 +87,3 @@ from the start, and why a server arriving here is a page rather than a dependenc
 
 Two clones used to sit at the root: `anthropics/skills/` and
 `LXAgents-MCP/shared-instruction/`. Both are gone or unused, and neither should come back.
-The record of what each contained is in
-[`../../wiki/context/instruction-set-history.md`](../../wiki/context/instruction-set-history.md).

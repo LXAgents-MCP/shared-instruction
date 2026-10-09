@@ -125,15 +125,4 @@ the normal blocked state, and it is not a failure to fix — it is waiting on a 
 **Never merge your own PR without being asked.** An agent that opens a PR and merges it in
 the same turn has bypassed the only review the change was going to get.
 
-**Sandbox:** every command here needs the network and will 403 in-session. See
-[`authentication.md`](authentication.md).
-
-## Related
-
-* [`authentication.md`](authentication.md) — before any of this works
-* [`actions.md`](actions.md) — the status checks that gate a merge
-* [`api.md`](api.md) — for anything `gh` does not wrap
-* [`../../git/pull-request-template.md`](../../git/pull-request-template.md) — the body
-  structure this workspace expects
-* [`../reference/git-hosting-common.md`](../reference/git-hosting-common.md) — review
-  vocabulary shared with GitLab
+**Sandbox:** every command here needs the network and will 403 in-session.

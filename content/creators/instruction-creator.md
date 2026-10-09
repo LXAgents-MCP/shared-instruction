@@ -17,17 +17,16 @@ else.
    covers the subject, extend that file — **but only when the extension shares that file's
    `name`** (step 4). A new rule about a new topic is a **new file**, whatever the old file
    happens to mention nearby.
-3. **Choose or create the folder.** Use the tables in
-   [`../rules/directories.md`](../rules/directories.md). If nothing fits, create a
-   new folder — lowercase kebab-case, a plain topic noun — and register it in that file's
-   tables in the same commit.
+3. **Choose or create the folder.** Use the repository's folder tables.
+   If nothing fits, create a new folder — lowercase kebab-case, a plain topic noun — and
+   register it in those tables in the same commit.
 4. **Write the file.** Frontmatter is **`name` and `description` only** — see below.
    **One topic**, one `#` H1, and only what belongs to that topic. Rules in the imperative
    and testable: a reader must be able to tell whether they complied. Replace "should
    generally" with the actual condition.
 5. **Register it** in the index that owns that scope, in the same commit.
 6. **If it introduces a new automatic behavior**, add its trigger row to the
-   Instruction tools block in the root [`AGENTS.md`](../../AGENTS.md).
+   Instruction tools block in the root `AGENTS.md`.
 7. **Commit.**
 
 ## Frontmatter is `name` and `description`. Nothing else.
@@ -50,7 +49,7 @@ Three reasons they are worse than useless here:
 **They cannot be maintained honestly.** Every one was `1.0.0` while the files changed
 substantially beneath them, which is the exact failure a version number exists to prevent —
 a `1.0.0` that means nothing is worse than no number, because something reading it trusts
-it. And `versioning.md` requires approval for every bump, so keeping them would mean either
+it. And every version bump needs the owner's approval, so keeping them would mean either
 gating every substantive edit or leaving them permanently stale.
 
 **`author` is noise for a single-author workspace.** `LXAgents` on 29 files and `RBZagan`
@@ -61,11 +60,8 @@ control at the root to recover the authorship.
 **There is no consumer to serve.** A version is a claim made to someone downstream. There
 is no downstream.
 
-**What still matters is provenance, and it is recorded elsewhere** — in
-[`../rules/memory-policy.md`](../rules/memory-policy.md) for what a *project* may remember,
-and in
-[`../wiki/context/instruction-set-history.md`](../wiki/context/instruction-set-history.md)
-for how this tree reached its current shape. A file's history is a memory concern, not a
+**What still matters is provenance, and it is recorded elsewhere** — in a
+project's memory for what it may remember, and in a history page for how this tree reached its current shape. A file's history is a memory concern, not a
 frontmatter key.
 
 **Do not reintroduce either key** to record that a file changed. If a change is worth
@@ -91,49 +87,33 @@ near-duplicate but has a different subject is not one. **Duplication is the less
 here**, and this workspace has the receipts: a block copied into six creator files on
 purpose, registered as an allowed exception, and then drifted into a claim about a server
 that no longer existed — six identical copies, all wrong in the same direction, because
-nobody edits six places when one rule changes. **Facts live once, and every other file links
-to them.**
+nobody edits six places when one rule changes. **A fact is stated in the tool that owns it, and
+another tool that needs it states it in a sentence of its own, never by pointing at the first.**
 
-**"It makes this file unusable on its own."** It does, and that is correct. A creator that
+**"It makes this file unusable on its own."** Each tool must be usable on its own, and none
+points at another. That is not licence to carry a neighbour's procedure. A creator that
 also carried the commit format, the session-link rule, the placement mandate, and the
 discovery gate was 85 lines of somebody else's rules wrapped around 45 lines of its own —
-and the part an agent actually needed was the smaller share. **Link, do not inline.** The
-files it points at are one hop away and are the ones that get updated.
+and the part an agent actually needed was the smaller share. **State the one fact you
+need, in a sentence, and stop.**
 
 ## What this creator refuses
 
-* Writing documentation into an instruction folder — that is
-  [`information-creator.md`](../creators/information-creator.md).
-* Writing state — that is
-  [`memory-creator.md`](../creators/memory-creator.md).
-* Writing a plan — that is [`plan-creator.md`](../creators/plan-creator.md), and it
-  happens before this creator runs.
+* Writing documentation into an instruction folder, writing state, or writing a plan —
+  those belong to other creators, and a plan is written before this creator runs.
 * Putting rules in `AGENTS.md` or in any index. Those are entry points and routers.
 * Appending a rule to a file whose `name` it does not share. **That is a new file.**
 * Adding a `version` or an `author` to frontmatter. **`name` and `description` only.**
-* **Inlining another file's content** so this one reads on its own.
+* **Copying another file's body** so this one reads on its own. State the one fact you
+  need, not the procedure around it.
 * **Writing anything that assumes an MCP server, a plugin, or a second instruction set.**
   This workspace is plain `.md`. If content is served from somewhere else, that is a
-  finding under [`../rules/discovery-protocol.md`](../rules/discovery-protocol.md), not a
-  new rule.
-## Related
+  finding to propose, not a new
+  rule.
 
-Everything this creator follows, each in the file that owns it — **not restated here**:
+## Where this applies
 
-| Concern | Owner |
-|---|---|
-| Branch naming, one branch per task | [`../git/branching-strategy.md`](../git/branching-strategy.md) |
-| Commit message format | [`../git/commit-conventions.md`](../git/commit-conventions.md) |
-| Pull request body | [`../git/pull-request-template.md`](../git/pull-request-template.md) |
-| Placement — the authority, wins over this file | [`../rules/directories.md`](../rules/directories.md) |
-| A rule you think should exist | [`../rules/discovery-protocol.md`](../rules/discovery-protocol.md) |
-| What this workspace may never install | [`../rules/repository.md`](../rules/repository.md) |
-| Version bumps — never automatic | [`../rules/versioning.md`](../rules/versioning.md) |
-| Registering the file in an index | [`index-creator.md`](../creators/index-creator.md) |
-| The plan that runs before this | [`plan-creator.md`](../creators/plan-creator.md) |
-| A rule you notice mid-task | [`../rules/discovery-protocol.md`](../rules/discovery-protocol.md) |
-
-`branching-strategy.md`, `commit-conventions.md`, and `pull-request-template.md` are written
+The branch, commit, and pull request conventions are written
 for a repository with a default branch. **The root here has no git at all**, so there is no
 branch to create and no commit to make — the root work is written directly and recorded in
 memory. The conventions apply inside `orgs/{org}/{repo}/`.

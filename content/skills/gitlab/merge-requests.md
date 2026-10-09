@@ -6,8 +6,7 @@ description: Creating, reviewing, and merging GitLab merge requests — draft st
 # GitLab merge requests
 
 A GitLab merge request is a GitHub pull request under a different name. This page covers
-only what differs; the shared vocabulary is in
-[`../reference/git-hosting-common.md`](../reference/git-hosting-common.md).
+only what differs.
 
 ## iid, not id
 
@@ -123,12 +122,3 @@ removed the only review.
 `discussions_not_resolved` are normal waiting states, not failures.
 
 **Sandbox:** needs the network; 403 in-session.
-
-## Related
-
-* [`authentication.md`](authentication.md) — before any of this works
-* [`ci.md`](ci.md) — the pipelines that gate a merge
-* [`issues.md`](issues.md) — MRs and issues share some API endpoints
-* [`api.md`](api.md) — for anything `glab` does not wrap
-* [`../reference/git-hosting-common.md`](../reference/git-hosting-common.md) — shared review
-  vocabulary

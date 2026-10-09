@@ -106,9 +106,3 @@ Then check the states, then check the contrast, then the responsive behaviour.
 This page records how to make an interface look considered. It is not a component library
 and carries no code — if a task needs an actual UI, that is a project under
 `orgs/{org}/{repo}/` or `Personal/{project}/`, where it can have real dependencies.
-
-## See also
-
-* [`../authoring/technical-writing.md`](../authoring/technical-writing.md) — the same
-  principle applied to prose: structure before polish
-* [`../guidance/code-review.md`](../guidance/code-review.md) — checking for these in review

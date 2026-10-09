@@ -1,6 +1,6 @@
 ---
 name: shared-instructions
-description: The always-on task and git workflow mandate — what applies to every request without a trigger, and which file owns each part.
+description: The always-on task and git workflow mandate — what applies to every request without a trigger, and the three permission gates.
 ---
 
 # Workspace Instructions
@@ -15,8 +15,7 @@ There is one instruction set, at `{repo}/.agents/`, and it is authoritative here
 
 **This workspace runs on plain `.md` files.** No MCP server serves them, no plugin supplies
 them, no marketplace distributes them, and no second set exists to reconcile against. A
-capability is recorded as a page — see
-[`../rules/repository.md`](../rules/repository.md) §The never-install rule — and never
+capability is recorded as a page, and never
 installed, cloned, or resolved from somewhere else.
 
 The `shared` / `local` vocabulary is retired. *"Is this true beyond this workspace?"* is
@@ -31,13 +30,12 @@ gives the path — and edit it. That is the whole procedure.
 
 The quality bars are the real constraint:
 
-* A rule you **notice is missing** is still proposed, not written. See
-  [`discovery-protocol.md`](discovery-protocol.md). Editing a rule that exists is ordinary
-  work; inventing a new one is gated.
-* Shape, frontmatter, and one-subject-per-file:
-  [`../creators/instruction-creator.md`](../creators/instruction-creator.md).
+* A rule you **notice is missing** is still proposed to the owner, not written. Editing a
+  rule that exists is ordinary work; inventing a new one is gated.
+* Shape: every instruction file carries `name` and `description` frontmatter and covers
+  one subject.
 * A change this large wants a **memory record**, because the root has no version and no
-  history. See [`../rules/memory-policy.md`](../rules/memory-policy.md).
+  history.
 
 **One caution that replaces the old one.** The root is not a git repository, so these files
 have no version history. There is no `git diff` to recover a bad edit from and no rollback.
@@ -49,30 +47,37 @@ Everything in this section applies to **every** request, automatically. There is
 phrase and no opt-in. A user who says only "fix the typo" has still asked for the procedure
 below; silence is not an exemption, and neither is the size of the change.
 
-This section is the **mandate**, not the procedure. Each row names the file that owns one,
-and that file remains the single authority for how it is carried out.
+This section is the **mandate**, not the procedure: it says what must happen on every
+request, not how.
 
-| On every request you must… | Authority |
-|---|---|
-| Read the Instruction tools block and declare the four mandatory tools | the root [`AGENTS.md`](../../AGENTS.md) |
-| **Write a plan, and make sure `.agents/plans/` exists** before any work that is more than one step | [`../creators/plan-creator.md`](../creators/plan-creator.md) §A |
-| Refine the requirements and put the plan in front of the user **before** writing a file or changing state | [`../creators/plan-creator.md`](../creators/plan-creator.md) §A |
-| Wait for the user to **approve** that plan before writing a file, creating a branch, or changing state | [`../creators/plan-creator.md`](../creators/plan-creator.md) §B |
-| Break the work into tasks and present the list before starting — task 1 is the record, task `n` is the release | [`../creators/plan-creator.md`](../creators/plan-creator.md) §B |
-| Write the task record **before** the work, and append each task's entry as that task lands | [`../creators/memory-creator.md`](../creators/memory-creator.md) |
-| Isolate each task on its own branch — one task, one branch, never two on one | [`../git/branching-strategy.md`](../git/branching-strategy.md) |
-| Ask before opening a pull request, and ask again before merging one | [`../creators/plan-creator.md`](../creators/plan-creator.md) §F |
-| Propose any instruction you think should exist — never write it yourself | [`discovery-protocol.md`](discovery-protocol.md) |
-| Stop and write a diagnostic report the moment this workflow is bypassed despite activation having run | the root [`AGENTS.md`](../../AGENTS.md) §When activation runs but the workflow does not |
+On every request you must:
+
+* Read the Instruction tools block in the root `AGENTS.md` and declare the four mandatory
+  tools.
+* **Write a plan, and make sure `.agents/plans/` exists** before any work that is more
+  than one step.
+* Refine the requirements and put the plan in front of the user **before** writing a file
+  or changing state.
+* Wait for the user to **approve** that plan before writing a file, creating a branch, or
+  changing state.
+* Break the work into tasks and present the list before starting — task 1 is the record,
+  task `n` is the release.
+* Write the task record **before** the work, and append each task's entry as that task
+  lands.
+* Isolate each task on its own branch — one task, one branch, never two on one.
+* Ask before opening a pull request, and ask again before merging one.
+* Propose any instruction you think should exist — never write it yourself.
+* Stop and write a diagnostic report the moment this workflow is bypassed despite
+  activation having run.
 
 **The gates are not trigger-gated; the procedures are.** `AGENTS.md` fires most conventions
-from a trigger — `plan_creator` on a request of more than one step,
-`branching_strategy` when a branch is about to exist. What is *not* trigger-gated is the part
+from a trigger — the plan procedure on a request of more than one step,
+the branch procedure when a branch is about to exist. What is *not* trigger-gated is the part
 that has to stand before the work starts: **the gates live inline in `AGENTS.md`**, read from
 disk at session start, while the tools supply the procedures that implement them.
 
 The activation contract — routing table, precedence order, gates, cost discipline — lives in
-that same `AGENTS.md` and nowhere else. It was briefly `rules/auto-activation.md`, which put
+that same `AGENTS.md` and nowhere else. It was briefly a separate rule file, which put
 one hop between the file every session already opens and the rules for how to use it.
 
 The distinction is the whole design. A permission gate first read at the moment you are about
@@ -80,7 +85,7 @@ to write a file has already failed; a branch-naming procedure fetched at the mom
 a branch has not. So the cheap, always-true half is inline and the expensive,
 sometimes-needed half is a call.
 
-[`discovery-protocol.md`](discovery-protocol.md) is the sharpest case. Its trigger would fire
+The discovery protocol is the sharpest case. Its trigger would fire
 only once you had already recognised a finding for what it is — the point at which writing
 the rule yourself is one edit away. Its gate therefore stands in `AGENTS.md` from the start
 of every request, including the request that never mentions rules at all.
@@ -103,18 +108,8 @@ already given — for this task or as a standing instruction. Once given, do not
 
 **No gate is satisfied by inference.** A detailed request is not an approved plan, finishing
 the work is not permission to open anything, and a green pipeline is not permission to merge
-it. The full terms of the plan gate are in
-[`../creators/plan-creator.md`](../creators/plan-creator.md) §B.
+it.
 
-## Related
-
-| Concern | Owner |
-|---|---|
-| Precedence between the kinds of file | the root [`AGENTS.md`](../../AGENTS.md) §Precedence |
-| Placement — the authority | [`directories.md`](directories.md) |
-| What may never be installed | [`repository.md`](repository.md) §The never-install rule |
-| Version bumps in a real project — never automatic, and never here | [`versioning.md`](versioning.md) |
-
-**This file's name is retired.** It is called `shared-instructions.md` because the links
-point there, and there is nothing shared any more. The content is the always-on mandate, and
+**This file's name is retired.** It is still called `shared-instructions.md` because earlier
+references point there, and there is nothing shared any more. The content is the always-on mandate, and
 that is what it is about.

@@ -83,7 +83,7 @@ before the permissions.
 
 `glab` is **much narrower than `gh`**. There is no `glab repo view` equivalent covering
 everything; `glab repo` is thin. Expect to fall through to `glab api` — which is the GitLab
-API, so [`api.md`](api.md) applies with GitLab's paths.
+API, so the API conventions apply with GitLab's paths.
 
 `glab mr create` and `glab mr merge` cover the common merge-request work. Beyond that,
 `curl` or `glab api` against `/api/v4`.
@@ -91,7 +91,7 @@ API, so [`api.md`](api.md) applies with GitLab's paths.
 ## The GitHub trap does not apply
 
 GitHub's Codespaces inject a read-only `GITHUB_TOKEN` that silently shadows a working `gh`
-login — see [`../github/authentication.md`](../github/authentication.md). **GitLab has no
+login. **GitLab has no
 equivalent.** A `GITLAB_TOKEN` in the environment is one you set deliberately, and there is
 no read-only injection to unwrap.
 
@@ -101,8 +101,8 @@ token itself.
 ## Agents
 
 **Never print a token.** Not in a command, not in an error, not in a script. Reference it by
-variable name only. See [`../../rules/no-session-links.md`](../../rules/no-session-links.md)
-for the parallel rule.
+variable name only. The parallel rule: never write a link to an assistant session into
+anything a repository records.
 
 **Prefer a project or group access token over a personal one** for anything automated. It
 survives the person leaving, and it can be scoped to one project.
@@ -113,11 +113,3 @@ problem, ahead of permissions.
 **The sandbox has no network egress.** Every command here fails with 403 in-session. That
 is the network, not the token — and unlike GitHub there is no shadowing to rule out, so a
 403 here in-session is unambiguous.
-
-## Related
-
-* [`api.md`](api.md) — the API these credentials reach
-* [`merge-requests.md`](merge-requests.md) — the main reason to authenticate
-* [`../github/authentication.md`](../github/authentication.md) — the other forge, and the
-  trap that does not transfer
-* [`../reference/git-hosting-common.md`](../reference/git-hosting-common.md) — vocabulary

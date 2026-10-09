@@ -99,13 +99,4 @@ should be treated as one.
 ## What this workspace does not do
 
 No PDF tooling is installed here, and the sandbox has no network egress to install any.
-If a task needs a PDF operation, hand the owner a command to run on the host — that
-constraint is in [`../../rules/repository.md`](../../rules/repository.md) §Working
-agreements.
-
-## See also
-
-* [`xlsx.md`](xlsx.md) — the same "the format has no concept of what you want" problem in
-  a spreadsheet
-* [`../../reference/anthropic-agent-skills.md`](../reference/anthropic-agent-skills.md) —
-  the skill format, when a document task is itself a skill
+If a task needs a PDF operation, hand the owner a command to run on the host.

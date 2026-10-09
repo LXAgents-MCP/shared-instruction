@@ -83,9 +83,9 @@ Index files sit in the set's `index/` folder, so:
 
 | Target | Link |
 |---|---|
-| The local instruction tree | `../rules/repository.md` |
-| The local agent wiki | `../wiki/context/repository-map.md` |
-| The human wiki | `../../wiki/information/overview.md` |
+| The local instruction tree | `../rules/{file}.md` |
+| The local agent wiki | `../wiki/context/{file}.md` |
+| The human wiki | `../../wiki/information/{file}.md` |
 | A sibling index | `project-wiki-index.md` |
 | The other set | `{shared}/…` or `agents://…` — never a relative path |
 
@@ -115,31 +115,16 @@ Walk the local set and `wiki/`, then report all six:
    omission, because the two rows drift apart and the index then describes a set that does
    not exist. Checking for absence cannot find this; count the occurrences.
 7. Any local file whose `name` matches a file in another set **without** an override row —
-   then hand off to the duplicate-audit technique in
-   [`../wiki/context/retired-instruction-files.md`](../wiki/context/retired-instruction-files.md)
-   §The duplicate-audit technique. **Read its precondition first**: if no such set can be
-   resolved, the correct output is one line saying so, never a list of deletions.
+   then it is a probable duplicate: report it as a finding and delete nothing.
+   **Check first that the other set can be resolved**: if it cannot, the correct output is
+   one line saying so, never a list of deletions.
 
-## Related
-
-Everything this creator follows, each in the file that owns it — **not restated here**:
-
-| Concern | Owner |
-|---|---|
-| Branch naming, one branch per task | [`../git/branching-strategy.md`](../git/branching-strategy.md) |
-| Commit message format | [`../git/commit-conventions.md`](../git/commit-conventions.md) |
-| Pull request body | [`../git/pull-request-template.md`](../git/pull-request-template.md) |
-| Placement — the authority, wins over this file | [`../rules/directories.md`](../rules/directories.md) |
-| A rule you notice mid-task | [`../rules/discovery-protocol.md`](../rules/discovery-protocol.md) |
-| What this workspace may never install | [`../rules/repository.md`](../rules/repository.md) |
-| Version bumps — never automatic | [`../rules/versioning.md`](../rules/versioning.md) |
-| What may be registered, and where | [`index-creator.md`](../creators/index-creator.md) |
-| The plan that runs before this | [`plan-creator.md`](../creators/plan-creator.md) |
+## Where this applies
 
 **There is no second instruction set.** This workspace is plain `.md` files under
 `.agents/` — no server serving them, no plugin, no connector, nothing to override.
 
-`branching-strategy.md`, `commit-conventions.md`, and `pull-request-template.md` are written
+The branch, commit, and pull request conventions are written
 for a repository with a default branch. **The root here has no git at all**, so there is no
 branch to create and no commit to make — root work is written directly and recorded in
 memory. The conventions apply inside `orgs/{org}/{repo}/`.

@@ -13,8 +13,7 @@ Creates and maintains files under `{repo}/.agents/memory/`.
 a project's memory.
 
 **At a workspace root, this creator does not run.** There is no memory tree there, and
-creating one is refused — see [`../rules/memory-policy.md`](../rules/memory-policy.md) §A and
-[`../rules/directories.md`](../rules/directories.md) §A.1.
+creating one is refused.
 
 If you are at a root and believe state must be recorded, the work belongs in a project.
 **Name the project and go there.** If the subject is not project work at all, it is not
@@ -41,7 +40,7 @@ writes outside the repository the work is in.
 
    | Situation | File |
    |---|---|
-   | Ongoing work | `tasks/{slug}.md` — created as **task 1** of the work it plans, then appended to by every task after it. See [`plan-creator.md`](plan-creator.md) §B. |
+   | Ongoing work | `tasks/{slug}.md` — created as **task 1** of the work it plans, then appended to by every task after it. |
    | What happened in a session | `sessions/{yyyy-mm-dd}-{slug}.md` |
    | A choice with consequences | `decisions/{slug}.md` |
    | Current live state of an area | `state/{area}.md`, overwritten in place |
@@ -75,9 +74,7 @@ writes outside the repository the work is in.
 * Anything you would not put in a public commit — memory is committed to git like
   everything else.
 * **A path outside the repository** — an absolute path, a home directory, or a machine's
-  folder name. Memory is read on other machines. See
-  [`../rules/repository.md`](../rules/repository.md) §No file names a location outside
-  itself.
+  folder name. Memory is read on other machines, and no file names a location outside itself.
 
 ## Memory is never normative
 
@@ -93,47 +90,26 @@ commit as your work.
 
 * When a task ships, mark its `tasks/` file `status: done` with a closing entry. For a
   multi-task request this happens in the **release task**, which also fills the record's
-  `PR` column — see [`plan-creator.md`](plan-creator.md)
-  §F.
+  `PR` column.
 * At each release, fold `sessions/` files older than that release into one digest under the
-  release's log directory, then delete the originals and their rows in `memory-index.md` —
-  see [`changelog-creator.md`](changelog-creator.md).
-
-Full policy: [`../rules/memory-policy.md`](../rules/memory-policy.md).
+  release's log directory, then delete the originals and their rows in `memory-index.md`.
 
 ## Boundaries
 
 This creator never writes rules and never writes wiki pages in either tree.
 
-* If a memory entry starts sounding like a permanent rule, route it through
-  [`instruction-creator.md`](instruction-creator.md) and
-  [`../rules/discovery-protocol.md`](../rules/discovery-protocol.md).
-* If it is a durable fact, route it through
-  [`information-creator.md`](information-creator.md).
+* If a memory entry starts sounding like a permanent rule, propose it to the user as a
+  rule rather than writing it into memory.
+* If it is a durable fact, it belongs in a wiki page, not in memory.
 
 **And it never runs at a workspace root** — step 0, and the refusal above.
 
-## Related
-
-Everything this creator follows, each in the file that owns it — **not restated here**:
-
-| Concern | Owner |
-|---|---|
-| Branch naming, one branch per task | [`../git/branching-strategy.md`](../git/branching-strategy.md) |
-| Commit message format | [`../git/commit-conventions.md`](../git/commit-conventions.md) |
-| Pull request body | [`../git/pull-request-template.md`](../git/pull-request-template.md) |
-| Placement — the authority, wins over this file | [`../rules/directories.md`](../rules/directories.md) §A.1 |
-| Why the root has no memory | [`../rules/memory-policy.md`](../rules/memory-policy.md) §A |
-| A rule you notice mid-task | [`../rules/discovery-protocol.md`](../rules/discovery-protocol.md) |
-| What this workspace may never install | [`../rules/repository.md`](../rules/repository.md) |
-| Version bumps — never automatic | [`../rules/versioning.md`](../rules/versioning.md) |
-| What may be registered, and where | [`index-creator.md`](../creators/index-creator.md) |
-| The plan that runs before this | [`plan-creator.md`](../creators/plan-creator.md) |
+## Where this applies
 
 **There is no second instruction set.** This workspace is plain `.md` files under
 `.agents/` — no server serving them, no plugin, no connector, nothing to override.
 
-`branching-strategy.md`, `commit-conventions.md`, and `pull-request-template.md` are written
+The branch, commit, and pull request conventions are written
 for a repository with a default branch. **A workspace root has no git at all**, so there is
 no branch to create and no commit to make there — and no memory either. Root work is written
 directly, planned in `.agents/plans/`, and described in `.agents/wiki/context/`. The

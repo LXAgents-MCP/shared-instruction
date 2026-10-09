@@ -32,9 +32,8 @@ page in `.agents/wiki/`, when layout, commands, entry points, or gotchas moved; 
 flight changed.
 
 Indexes and memory are already governed elsewhere — a file added, moved, or removed
-updates its owning index in the same commit
-([`../creators/index-creator.md`](../creators/index-creator.md)), and memory is
-written as you work ([`memory-policy.md`](../rules/memory-policy.md)). This rule
+updates its owning index in the same commit, and memory is
+written as you work. This rule
 covers the pages that describe **behaviour**, which nothing else does.
 
 ## Which commit
@@ -44,8 +43,8 @@ request. Reviewers read the diff to decide whether a change is right, and a diff
 changes behaviour without changing its documentation reads as though nothing was
 documented in the first place.
 
-The one thing that may lag is a `wiki/logs/` entry, which is a version claim and belongs
-to [`versioning.md`](../rules/versioning.md).
+The one thing that may lag is a `wiki/logs/` entry, which is a version claim and needs the
+owner's approval before it is written.
 
 ## When the stale file is an instruction
 
@@ -53,8 +52,7 @@ Documentation you fix yourself. **An instruction you do not.**
 
 When a change makes a rule wrong, do not rewrite it — that is exactly what the discovery
 protocol exists to prevent, and it applies no less when the rule is provably stale.
-Collect the finding and present it, per
-[`discovery-protocol.md`](../rules/discovery-protocol.md). Then say in the pull
+Collect the finding and present it to the user without applying it. Then say in the pull
 request body which instructions you left stale and why, so the next reader knows the gap
 is known rather than missed.
 
@@ -73,7 +71,7 @@ to present. A "yes" to 4 means say so out loud rather than hoping it is noticed.
 ## This is a convention, not automation
 
 Nothing enforces this mechanically. It holds because the root
-[`AGENTS.md`](../../AGENTS.md) puts it in front of an agent
+`AGENTS.md` puts it in front of an agent
 before the work starts, and because pull request review catches what slips past. If it
 ever needs teeth — a check that fails a commit touching source without touching
 documentation — that is a real change to propose, not something this file can assert

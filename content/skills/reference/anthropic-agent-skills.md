@@ -232,5 +232,3 @@ gives.
 * Cite the source for anything factual about an external format, and say which version
   it was read from. Upstream moves.
 * Link to it from the page that referred to the capability, so it is reachable.
-
-The procedure is [`../../creators/skill-creator.md`](../../creators/skill-creator.md).

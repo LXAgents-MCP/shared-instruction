@@ -18,13 +18,10 @@ again, because a request's shape and the procedure for producing it are the same
 
 **The creator writes the plan and nothing else.** The record, `wiki/`, `.agents/wiki/`
 and the work itself belong to other creators. The workflow says when those happen and
-in what order; it does not perform them. The record's own shape belongs to
-[`memory-creator.md`](../creators/memory-creator.md), and this file links to it
-rather than restating it.
+in what order; it does not perform them. The record's shape is given in §B and §E.
 
-The workflow is not opt-in and needs no trigger phrase: it runs on every request. The
-mandate is in [`../rules/shared-instructions.md`](../rules/shared-instructions.md)
-§H; what follows is the procedure it points at.
+The workflow is not opt-in and needs no trigger phrase: it runs on every request. What
+follows is the procedure.
 
 The plan this describes is **untracked and local to whichever repository is running
 it** — never published, never shared, never committed. That is still why the working
@@ -56,9 +53,7 @@ reasoning. This table says only what each artifact is and where it goes.
 Two of the four need a repository to exist in. **At a workspace root, which is not a git
 repository, only the plan is real**: there is no branch to create, no commit to make, and
 no release to cut, so §C, §F, and the release slot do not apply there. The plan is still
-worth writing — for the stronger reason that no commit could ever capture it. See
-[`../rules/repository.md`](../rules/repository.md) §This directory is not a git
-repository.
+worth writing — for the stronger reason that no commit could ever capture it.
 
 # The workflow
 
@@ -69,7 +64,7 @@ Before starting work:
 1. Read `{repo}/.agents/index/memory-index.md` and load any task or state file that
    matches the request, so you **continue** rather than restart. **In a project only** —
    a workspace root has no memory tree, so there is nothing to read there and the step is
-   skipped. See [`../rules/memory-policy.md`](../rules/memory-policy.md) §A.
+   skipped.
 
 1b. **Make sure `{repo}/.agents/plans/` exists.** Create it if it does not. The folder is
    authorized to be empty, and its absence is never a reason to hold the plan in context
@@ -184,8 +179,12 @@ behind and forces a rebase of the whole stack. §F fills the column without that
 
 ## C. One branch per task, stacked in order
 
-The naming and message format are *Branch & Commit Convention* below. This section is
-only what is specific to running a task list, which that section does not say:
+Branch names are `{type}/{primary-noun}` — lowercase, kebab-case — where `type` is one of
+`feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`,
+`revert`, with no tool-preset prefix (`claude/`, `codex/`, `cursor/`), no generated suffix,
+and no session identifier. Commit messages are `type(optional scope): description` —
+imperative, no trailing period, no links, no session trailer. Beyond those, this section
+is only what is specific to running a task list:
 
 * **Task 1's branch is `chore/{slug}-plan`.** A record is not documentation — `wiki/` and
   `.agents/wiki/` are the documentation trees and memory is neither — so `chore` is its
@@ -220,7 +219,7 @@ only what is specific to running a task list, which that section does not say:
 **Work independent of the stack is not a second plan.** It is a subagent, spawned by the
 task that needs it, carrying no plan of its own — and the test for which it is: *does the
 later task need the earlier one's result?* The working rule is in
-[`../../AGENTS.md`](../../AGENTS.md) §Multi-agent working; this section says only that a
+the root `AGENTS.md` §Multi-agent working; this section says only that a
 subagent is not an exception to the ordering above.
 
 ## E. Record as you go
@@ -240,9 +239,8 @@ subagent is not an exception to the ordering above.
 * Record any decision a future session would otherwise re-litigate in
   `{repo}/.agents/memory/decisions/`.
 * Update the owning index in the same commit as any file you add, move, or remove.
-* Collect anything that should become a rule as a finding under
-  [`../rules/discovery-protocol.md`](../rules/discovery-protocol.md), tagged `local`.
-  Do not write it into the set yourself.
+* Collect anything that should become a rule as a finding, tagged `local`, and present
+  it to the user when the work is done. Do not write it into the set yourself.
 
 ## F. Pull requests and merging
 
@@ -264,9 +262,9 @@ subagent is not an exception to the ordering above.
 * The `PR` column of `{repo}/.agents/memory/tasks/{slug}.md` is filled by the **release task**,
   not by task 1. The release task is last and already contains every branch below it, so
   writing the numbers there rebases nothing.
-* Title and body follow
-  [`../git/pull-request-template.md`](../git/pull-request-template.md), and carry no
-  session link ([`../rules/no-session-links.md`](../rules/no-session-links.md)).
+* The title is plain and human-readable, never a commit prefix such as `feat:`. The body
+  has Overview, Added, Modified, Deleted, and Summary sections. Neither carries a session
+  link.
 * **Ask the user before merging anything, and wait for an explicit yes**, on the same
   terms as the pull request gate above. Never merge on your own initiative, and never
   enable auto-merge without being asked.
@@ -298,8 +296,7 @@ subagent is not an exception to the ordering above.
   after the work merged is a record the next session has to re-verify.
 
 **Versions and the release task.** Any pull request follows the template above; merging
-requires user approval per §F. A version change requires user approval per
-[`../rules/versioning.md`](../rules/versioning.md) — including a new
+requires user approval per §F. A version change requires the user's explicit approval — including a new
 `wiki/logs/{Major}/{Minor}/{Patch}/` directory, which is a version claim. The release
 branch is named for the approved version, so it is not created before that approval.
 
@@ -431,19 +428,7 @@ that gate authorises.
 - Committing anything under `.agents/plans/`, or deleting the `.gitignore`
   entry that keeps it out.
 - Writing the task record, memory, `wiki/`, or `.agents/wiki/` — those belong to
-  the creators in this folder, reached from the repository's `AGENTS.md`.
+  other creators.
 - Starting the work. The plan is not the work.
 - Adding a second center file, or a routing table outside `tasks.md`.
 - Skipping the record, or writing it at the end instead of as task 1.
-
-## Related
-
-- [`../git/branching-strategy.md`](../git/branching-strategy.md) — branch
-  naming and the stacking order.
-- [`../git/commit-conventions.md`](../git/commit-conventions.md) — the commit
-  message format.
-- [`memory-creator.md`](memory-creator.md) — the task record that outlives the
-  plan, and the shape it must take.
-- [`index-creator.md`](index-creator.md) — registering a file this creator adds.
-- [`../rules/discovery-protocol.md`](../rules/discovery-protocol.md) — a rule
-  noticed while working, proposed rather than written.

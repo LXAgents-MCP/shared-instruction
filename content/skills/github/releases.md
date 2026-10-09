@@ -69,8 +69,7 @@ history with no release describing it. That is recoverable; `git push --delete o
 v1.2.0` is not.
 
 **Never delete or replace a published release to "fix" it.** Cut a new version. The
-`versioning.md` rule in this workspace says the same thing: never re-tag, never rewrite a
-release.
+same applies to versions in general: never re-tag, never rewrite a release.
 
 ## Agents
 
@@ -88,10 +87,3 @@ published release is out. When the tag and notes are not confirmed, draft is the
 choice.
 
 **Sandbox:** needs the network; 403 in-session.
-
-## Related
-
-* [`api.md`](api.md) — release assets and the endpoints behind them
-* [`actions.md`](actions.md) — releases are usually triggered by a tag workflow
-* [`../../rules/versioning.md`](../../rules/versioning.md) — never re-tag, never rewrite a
-  release

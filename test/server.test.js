@@ -234,6 +234,97 @@ test("every tool is generated from a file", async () => {
   assert.deepEqual(names, [...TOOL_FILES.keys()].sort());
 });
 
+// Each tool ends in itself. A tool is read on its own, by a session that has not read any other,
+// so a pointer to another tool is a pointer to text the reader does not have. The detector
+// below is deliberately about links, filenames and ids, not about prose: single words such as
+// `api` or `issues` are ordinary English, so only the forms that can only mean a file are matched.
+
+/** Anthropic's own skills happen to share names with two tools here. They are facts, not pointers. */
+const EXTERNAL_NAMES = {
+  "skills/reference/anthropic-agent-skills.md": ["skill-creator", "skill_creator", "mcp-builder", "mcp_builder"],
+};
+
+const escapeRegExp = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+/** Every pointer from `file` to a different tool, as [line, kind, what]. */
+function pointersFrom(file, tools) {
+  const hits = [];
+  const allowed = new Set(EXTERNAL_NAMES[file.path] ?? []);
+
+  file.text.split("\n").forEach((line, index) => {
+    const at = index + 1;
+
+    for (const match of line.matchAll(/\]\(([^)]*)\)/g)) {
+      const target = match[1];
+      if (/^(https?:|mailto:|#)/.test(target) || target.includes("{")) continue;
+      hits.push([at, "link", target]);
+    }
+
+    for (const other of tools) {
+      if (other.path === file.path) continue;
+
+      const sameName = other.stem === file.stem; // github/api.md and gitlab/api.md
+      const pathless = other.path.replace(/\.md$/, "");
+      if (
+        !sameName &&
+        (new RegExp(`(?<![\\w-])${escapeRegExp(other.stem)}\\.md\\b`).test(line) ||
+          line.includes(pathless))
+      ) {
+        hits.push([at, "path", other.path]);
+      }
+
+      // A stem is only an id when no override renames it: `pull-requests` is a GitHub API
+      // word, `github_pull_requests` is the tool.
+      const words = new Set(
+        [other.overridden ? other.name : other.stem, other.frontmatterName].filter((word) =>
+          /[-_]/.test(word),
+        ),
+      );
+      for (const word of [...words]) {
+        words.add(word.replaceAll("-", "_"));
+        words.add(word.replaceAll("_", "-"));
+      }
+      for (const word of words) {
+        if (word === file.stem || word === file.frontmatterName || allowed.has(word)) continue;
+        if (new RegExp(`(?<![\\w-])${escapeRegExp(word)}(?![\\w-])`).test(line)) {
+          hits.push([at, "name", word]);
+        }
+      }
+    }
+  });
+
+  return hits;
+}
+
+test("every tool except automation ends in itself", async () => {
+  const tools = [];
+  for (const [name, path] of TOOL_FILES) {
+    const text = await readFile(join(CONTENT_DIR, path), "utf8");
+    tools.push({
+      name,
+      path,
+      text,
+      stem: path.split("/").pop().replace(/\.md$/, ""),
+      overridden: Object.hasOwn(NAME_OVERRIDES, path),
+      frontmatterName: text.match(/^name:\s*(\S.*)$/m)?.[1].trim() ?? "",
+    });
+  }
+
+  const problems = [];
+  for (const tool of tools) {
+    if (tool.name === "automation") continue; // the hub is the one tool that routes to the others
+    for (const [line, kind, what] of pointersFrom(tool, tools)) {
+      problems.push(`${tool.path}:${line} points at ${what} (${kind})`);
+    }
+  }
+
+  assert.deepEqual(
+    problems,
+    [],
+    `a tool must not link to, name, or send the reader to another tool:\n${problems.join("\n")}`,
+  );
+});
+
 // The release branch form. A typo guard, not a control: it proves each tool that names
 // branches states the form, not that an agent obeys it.
 

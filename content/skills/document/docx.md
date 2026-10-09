@@ -78,8 +78,3 @@ stored with `w:delText`, not `w:t` — a common cause of deleted text reappearin
   that is not empty means something was lost, usually formatting or fields.
 * **Fonts are named, not embedded,** unless the document embeds them. Rendering differs
   across machines.
-
-## See also
-
-* [`pdf.md`](pdf.md) — when the deliverable is a PDF rather than an editable document
-* [`xlsx.md`](xlsx.md) — the same ZIP-of-XML packaging, with formulas on top

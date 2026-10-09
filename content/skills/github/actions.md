@@ -84,7 +84,7 @@ review finding on a workflow file.
 **`GITHUB_TOKEN` inside a workflow is not a user's token.** It is scoped to the repository
 and its permissions default to read-only or whatever the workflow declares under `permissions:`.
 A workflow that pushes to another repository needs an explicit secret — this is the same
-shadowing trap as [`authentication.md`](authentication.md), in a different place.
+shadowing trap as a read-only token taking precedence over your login, in a different place.
 
 **Secrets are not available to workflows triggered by `pull_request` from a fork.** That is
 the point of the restriction, not a bug.
@@ -97,8 +97,7 @@ cancel can leave a deployment half-applied.
 **Check the run on the PR's head commit, not on the branch's latest state.** A green run on
 an older commit is not evidence about the current code.
 
-**"Checks green" ≠ "mergeable".** Required reviews are separate from required checks — see
-[`pull-requests.md`](pull-requests.md).
+**"Checks green" ≠ "mergeable".** Required reviews are separate from required checks.
 
 **Read `--log-failed` before theorising.** Most CI failures name the cause in the output.
 
@@ -107,10 +106,3 @@ workflow is code with side effects, it cannot be diffed against history at the r
 wrong edit runs on every subsequent push for everyone.
 
 **Sandbox:** needs the network; 403 in-session.
-
-## Related
-
-* [`pull-requests.md`](pull-requests.md) — required checks gate the merge
-* [`repositories.md`](repositories.md) — branch protection names the required checks
-* [`releases.md`](releases.md) — tag-triggered workflows
-* [`api.md`](api.md) — the runs API behind `gh run`

@@ -109,13 +109,4 @@ order.
 
 **Confirm `path_with_namespace` before assuming a project does not exist.**
 
-**Every call needs the network** and 403s in-session — that is the sandbox. See
-[`authentication.md`](authentication.md).
-
-## Related
-
-* [`authentication.md`](authentication.md) — instance and token
-* [`merge-requests.md`](merge-requests.md) — the id/iid distinction this API makes costly
-* [`repositories.md`](repositories.md) — namespaces and numeric project ids
-* [`ci.md`](ci.md) — the pipelines API
-* [`../github/api.md`](../github/api.md) — the same concepts on the other forge
+**Every call needs the network** and 403s in-session — that is the sandbox.

@@ -12,8 +12,7 @@ state model. Everything below is either how to use the contract well, or a speci
 real server breaks.
 
 **This page is about building a server.** What this workspace does when one is *handed to
-it* — recorded as a page, never installed — is a different subject, and it is
-[`mcp-server.md`](mcp-server.md).
+it* — recorded as a page, never installed — is a different subject, and it is not covered here.
 
 ---
 
@@ -137,8 +136,7 @@ Three things decide whether a tool is ever used, and all three are in that decla
 
 **The description is the only trigger mechanism.** The client model reads it and decides.
 Write it as *what it does* plus *when to reach for it*, and enumerate the situations — the
-way the Anthropic skill format does. That is the same rule, documented in
-[`../reference/anthropic-agent-skills.md`](../reference/anthropic-agent-skills.md).
+way the Anthropic skill format does. That is the same rule: the description is the only trigger.
 
 **Parameter names and descriptions are the model's only guide.** `q` is unusable. Write
 `pattern` and say what form it takes — regex or literal, case-sensitive or not.
@@ -219,8 +217,9 @@ Either way, exercise it with **MCP Inspector**: `npx @modelcontextprotocol/inspe
 * **Test a truncated result** — return more than fits, and see whether the client copes.
 * **Assert the tools appear in the client's tool list, not that the health check passes.**
   A reachable server is reachable; that is all `GET /healthz` answers, and a client can
-  report a server connected while contributing none of its tools. That failure and its
-  diagnosis are in [`mcp-server.md`](mcp-server.md) §The three-state connector diagnosis.
+  report a server connected while contributing none of its tools. Connectors load at session
+  start, so a server added mid-session can be reported connected and still contribute no
+  tools; only a restart of the session cures that.
 
 ---
 
@@ -244,9 +243,8 @@ rather than failing silently.
 **Overlapping tools.** Two tools that do nearly the same thing get chosen between
 arbitrarily, and the wrong one. Merge them or make the boundary obvious.
 
-**Treating a health check as proof the tools are published.** Covered above, and diagnosed
-in [`mcp-server.md`](mcp-server.md) §The three-state connector diagnosis — it is a runtime
-fact rather than a build mistake, which is why the diagnosis lives there.
+**Treating a health check as proof the tools are published.** Covered above; it is a runtime
+fact rather than a build mistake.
 
 ---
 
@@ -289,14 +287,3 @@ guide, a Python guide, and an evaluation guide — under a `reference/` folder. 
 vendored into this workspace and are not linked from here.** The essentials are folded into
 this page; the per-language implementation detail is shallower than those guides. Fetch the
 skill from its source if you need that depth.
-
----
-
-# Related
-
-* [`mcp-server.md`](mcp-server.md) — what happens when an MCP server is handed to *this*
-  workspace: recorded as a page, never installed, plus the connector diagnosis
-* [`../reference/anthropic-agent-skills.md`](../reference/anthropic-agent-skills.md) — the
-  description-as-trigger rule, which a tool declaration follows
-* [`../../rules/repository.md`](../../rules/repository.md) §The never-install rule — the rule
-  that makes an MCP server a page rather than a dependency
