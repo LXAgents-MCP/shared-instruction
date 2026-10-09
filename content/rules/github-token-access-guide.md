@@ -1,8 +1,6 @@
 ---
 name: github-token-access-guide
 description: Why gh and git fail with 403 or "not accessible by integration" in a Codespace, and the env -u GITHUB_TOKEN fix that makes the credential you already have get used.
-version: 1.0.0
-author: LXAgents
 ---
 
 # GitHub Token Access

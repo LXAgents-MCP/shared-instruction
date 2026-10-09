@@ -5,7 +5,7 @@ import test from "node:test";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { CONTENT_DIR } from "../src/version.js";
-import { TOOL_FILES } from "../src/tools/from-content.js";
+import { NAME_OVERRIDES, TOOL_FILES } from "../src/tools/from-content.js";
 import { TOOL_MODULES, createServer } from "../src/server.js";
 
 /** A client connected to a fresh server over an in-memory pipe. */
@@ -45,60 +45,23 @@ async function markdownFiles(dir = CONTENT_DIR) {
 
 // The set's own conventions, before the tool surface is tested at all.
 
-test("every served file declares the four-field frontmatter", async () => {
-  // name, description, version, author. `version` is the only record of what
-  // changed in a file — there is no upgrade step, so without it a stale file
-  // looks identical to a fresh one, and a consumer cannot tell them apart.
-  // `description` is load-bearing a second way: it is the tool description, so a
-  // file without one is a tool a client cannot route on.
+test("every served file declares name and description in its frontmatter", async () => {
+  // Two fields, not four. The set carries no `version` or `author` in a file: the
+  // release log is the record of what changed, and a per-file version is a second
+  // place to forget to update. `description` is load-bearing: it is the tool
+  // description, so a file without one is a tool a client cannot route on.
   for (const [path, full] of await markdownFiles()) {
     const text = await readFile(full, "utf8");
     const block = text.match(/^---\s*\n(.*?)\n---/s);
 
     assert.ok(block, `${path} has no frontmatter`);
-    for (const field of ["name", "description", "version", "author"]) {
+    for (const field of ["name", "description"]) {
       assert.match(
         block[1],
         new RegExp(`^${field}:\\s*\\S`, "m"),
         `${path} is missing \`${field}:\` in its frontmatter`,
       );
     }
-  }
-});
-
-test("every creator carries the shared procedure", async () => {
-  // The procedure is duplicated across the folder by design, so it can drift
-  // with nothing to catch it. plan-creator.md shipped without it; this test is
-  // what stops the next one from doing the same.
-  const creators = (await markdownFiles()).filter(([path]) =>
-    path.startsWith("creators/"),
-  );
-
-  assert.ok(creators.length >= 7, `expected the full creator set, found ${creators.length}`);
-
-  // Split on headings rather than matching one: a checkout on Windows serves
-  // CRLF, and a `^## ` lookahead does not match "\r\n## ".
-  const section = (text) => {
-    const parts = text.replace(/\r\n/g, "\n").split(/^## /m);
-    return parts.find((p) => p.startsWith("Branch & Commit Convention\n")) ?? null;
-  };
-
-  const reference = section(
-    await readFile(join(CONTENT_DIR, "creators/memory-creator.md"), "utf8"),
-  );
-  assert.ok(reference, "memory-creator.md must carry the procedure");
-
-  for (const [path, full] of creators) {
-    const text = await readFile(full, "utf8");
-    assert.ok(
-      section(text),
-      `${path} is a creator and must carry the shared procedure`,
-    );
-    assert.equal(
-      section(text).replace(/\r\n/g, "\n"),
-      reference.replace(/\r\n/g, "\n"),
-      `${path} has drifted from the shared procedure in memory-creator.md`,
-    );
   }
 });
 
@@ -122,13 +85,16 @@ test("the tool list and the files on disk are a bijection", async () => {
   assert.ok(files.length > 20, `expected a real set, found ${files.length} files`);
 });
 
-test("every tool name is derived from its own filename", () => {
+test("every tool name is derived from its own filename, or is an explicit override", () => {
   // The derivation is the design: a file's name is what a caller reads in the
   // tool list, so it has to survive the trip. Folder stripped, `.md` dropped,
-  // kebab to snake. AGENTS.md is the one documented exception.
+  // kebab to snake. The overrides are the documented exceptions, and they are
+  // checked here by path so an override cannot drift away from the file it names.
   for (const [name, path] of TOOL_FILES) {
-    if (path === "AGENTS.md") {
-      assert.equal(name, "agents_entry_point", "the entry point override must hold");
+    assert.match(name, /^[a-z][a-z0-9_]{0,63}$/, `${name} is not a usable tool name`);
+
+    if (Object.hasOwn(NAME_OVERRIDES, path)) {
+      assert.equal(name, NAME_OVERRIDES[path], `${path} must be named by its override`);
       continue;
     }
 
@@ -140,7 +106,31 @@ test("every tool name is derived from its own filename", () => {
       .replace(/-/g, "_");
 
     assert.equal(name, expected, `${path} derives ${name}, expected ${expected}`);
-    assert.match(name, /^[a-z][a-z0-9_]{0,63}$/, `${name} is not a usable tool name`);
+  }
+});
+
+test("every override names a file in the set", () => {
+  // Boot already refuses a stale override; this keeps the property visible in the
+  // suite, where a change to the boot check would otherwise go unnoticed.
+  const paths = new Set(TOOL_FILES.values());
+
+  for (const path of Object.keys(NAME_OVERRIDES)) {
+    assert.ok(paths.has(path), `override ${path} matches no file`);
+  }
+});
+
+test("forge pages are named for their forge", () => {
+  // Four filename pairs exist on both forges (`api`, `authentication`, `issues`,
+  // `repositories`), and the rest (`ci`, `actions`, `releases`) mean nothing without
+  // one. A page under a forge folder must say which forge, in the tool name.
+  for (const [name, path] of TOOL_FILES) {
+    const forge = path.match(/^skills\/(github|gitlab)\//)?.[1];
+    if (!forge) continue;
+
+    assert.ok(
+      name.startsWith(`${forge}_`),
+      `${path} is a ${forge} page and must be named ${forge}_…, found ${name}`,
+    );
   }
 });
 
@@ -221,7 +211,12 @@ test("the whole set is reachable by tool name", async () => {
   const names = new Set(tools.map((tool) => tool.name));
   const byPath = new Map([...TOOL_FILES].map(([name, path]) => [path, name]));
 
-  for (const path of ["index/root-index.md", "AGENTS.md", "rules/versioning.md"]) {
+  for (const path of [
+    "creators/plan-creator.md",
+    "git/branching-strategy.md",
+    "rules/versioning.md",
+    "skills/github/api.md",
+  ]) {
     const name = byPath.get(path);
 
     assert.ok(name, `${path} must have a tool`);
@@ -229,186 +224,14 @@ test("the whole set is reachable by tool name", async () => {
   }
 });
 
-test("the instructions index routes every convention it should", async () => {
-  const { client } = await connect();
-  const text = textOf(
-    await client.callTool({ name: "instructions_index", arguments: {} }),
-  );
-
-  for (const path of [
-    "creators/plan-creator.md",
-    "creators/memory-creator.md",
-    "creators/instruction-creator.md",
-    "creators/security-creator.md",
-    "rules/versioning.md",
-    "rules/no-session-links.md",
-  ]) {
-    assert.ok(text.includes(path), `the index must route ${path}`);
-  }
-});
-
-// auto_activation is the source of truth for when each convention fires. A tool
-// can be published, servable, and unrouted, and nothing else in the suite would
-// notice — which is how the table reached 23 of 32. This pins the invariant.
-
-test("auto_activation routes every published tool", async () => {
+test("every tool is generated from a file", async () => {
+  // There is no hand-written tool: a tool the generator did not build is a tool no
+  // file backs, and it would serve text the set does not hold.
   const { client } = await connect();
   const { tools } = await client.listTools();
-  const text = textOf(
-    await client.callTool({ name: "auto_activation", arguments: {} }),
-  );
+  const names = tools.map((tool) => tool.name).sort();
 
-  const unrouted = tools
-    .map((tool) => tool.name)
-    .filter((name) => !text.includes(`\`${name}\``));
-
-  assert.deepEqual(
-    unrouted,
-    [],
-    `auto_activation.md must name every published tool, or a convention can ` +
-      `fire with nothing to route on. Unrouted: ${unrouted.join(", ")}`,
-  );
-});
-
-// mcp_list is the one hand-written tool. It is not generated, so it is pinned
-// here rather than covered by the bijection.
-
-test("mcp_list is the only tool outside the generated surface", async () => {
-  const { client } = await connect();
-  const { tools } = await client.listTools();
-  const names = tools.map((tool) => tool.name);
-
-  assert.equal(names.length, TOOL_FILES.size + 1);
-  assert.ok(names.includes("mcp_list"));
-  assert.ok(!TOOL_FILES.has("mcp_list"), "mcp_list is hand-written, not derived");
-});
-
-test("mcp_list takes no arguments", async () => {
-  const { client } = await connect();
-  const { tools } = await client.listTools();
-  const list = tools.find((tool) => tool.name === "mcp_list");
-
-  assert.deepEqual(list.inputSchema.properties ?? {}, {});
-  assert.ok(
-    list.description.includes("before cloning"),
-    "description must name the routing decision, so a caller can choose without calling",
-  );
-});
-
-test("mcp_list returns the registry with every sibling", async () => {
-  const { client } = await connect();
-  const text = textOf(
-    await client.callTool({ name: "mcp_list", arguments: {} }),
-  );
-
-  for (const repo of [
-    "LXAgents-MCP/security",
-    "RBAgents-MCP/shared-instruction",
-    "RBAgents-MCP/security",
-  ]) {
-    assert.ok(text.includes(repo), `registry must name ${repo}`);
-  }
-});
-
-// The org pages are how a reader finds a server this file has not heard about. They are
-// asserted at the organisation level and never at the repository level: MCAgents-MCP has
-// no known repository list, so naming a repo there would put an invented claim in the one
-// column a caller trusts. Adding a real server later does not touch this test.
-
-test("mcp_list names every publishing organisation on both forges", async () => {
-  const { client } = await connect();
-  const text = textOf(
-    await client.callTool({ name: "mcp_list", arguments: {} }),
-  );
-
-  for (const org of ["LXAgents-MCP", "RBAgents-MCP", "MCAgents-MCP"]) {
-    for (const forge of ["github", "gitlab"]) {
-      const url = `https://${forge}.com/${org}`;
-      assert.ok(text.includes(url), `registry must name ${url}`);
-    }
-  }
-});
-
-// The gate is instruction text, because the server is read-only and cannot prompt: a tool
-// call returns this file and the calling agent is the only thing that can honour it. That
-// makes the text the whole mechanism, and a softened "you may wish to ask" would fail
-// nothing. These assertions are the enforcement.
-
-test("mcp_list gates the clone behind an explicit user decision", async () => {
-  const { client } = await connect();
-  const text = textOf(
-    await client.callTool({ name: "mcp_list", arguments: {} }),
-  );
-
-  // The published file is hard-wrapped, so a phrase can straddle a line break without
-  // anything being wrong with it. Matching the raw text would make the assertion fail on
-  // a rewrap and pass on a rewording, which is exactly backwards: these pin meaning, not
-  // layout. Whitespace is collapsed first, so only the wording is load-bearing.
-  const flat = text.replace(/\s+/g, " ");
-
-  assert.match(
-    flat,
-    /Report the whole list to the user first/,
-    "the caller must be told to show the user everything, not a shortlist",
-  );
-  assert.match(
-    flat,
-    /Ask the user which they want/,
-    "selecting is the user's decision, and the caller must ask",
-  );
-  assert.match(
-    flat,
-    /Do not clone, write a config file, or register a connector without an explicit yes/,
-    "the clone itself is the gated act, and it needs an explicit yes",
-  );
-  assert.match(
-    flat,
-    /Silence is not permission/,
-    "an unanswered request is not consent to write to someone's disk",
-  );
-  assert.match(
-    flat,
-    /it has not told you to clone/,
-    "naming a server is not permission to clone it; the two gates are separate",
-  );
-});
-
-test("mcp_list does not let the organisation list displace its own warning", async () => {
-  const { client } = await connect();
-  const text = textOf(
-    await client.callTool({ name: "mcp_list", arguments: {} }),
-  );
-
-  // The org table includes the repository this server is served from, so the guard
-  // above is what stops a reader cloning a set they already resolve. "already
-  // connected" is the sentence that tells them so, and the table must not bury it.
-  assert.ok(
-    text.includes("already connected"),
-    "the registry must still say why its own server is absent from the list",
-  );
-  assert.ok(
-    /does not claim to be a complete index/.test(text),
-    "the org pages and the server table are different lists; say so",
-  );
-});
-
-test("mcp_list does not tell a caller to install the server it is on", async () => {
-  const { client } = await connect();
-  const text = textOf(
-    await client.callTool({ name: "mcp_list", arguments: {} }),
-  );
-
-  // A server listing itself invites a repository to clone and vendor the set it
-  // is already connected to - the exact drift the connector exists to prevent.
-  assert.doesNotMatch(
-    text,
-    /LXAgents-MCP\/shared-instruction/,
-    "the registry must not name its own repository",
-  );
-  assert.ok(
-    text.includes("already connected"),
-    "the registry should say why its own server is absent",
-  );
+  assert.deepEqual(names, [...TOOL_FILES.keys()].sort());
 });
 
 // The read-only claim, now over a surface with no arguments at all.
@@ -450,14 +273,14 @@ test("the server needs no key to answer", async () => {
 
   const { client } = await connect();
   const text = textOf(
-    await client.callTool({ name: "root_index", arguments: {} }),
+    await client.callTool({ name: "plan_creator", arguments: {} }),
   );
 
   assert.ok(text.length > 500, "the set is served without a key");
 });
 
 test("TOOL_MODULES is the whole surface, and every module is well formed", () => {
-  assert.equal(TOOL_MODULES.length, TOOL_FILES.size + 1);
+  assert.equal(TOOL_MODULES.length, TOOL_FILES.size);
 
   for (const { config, handler } of TOOL_MODULES) {
     assert.equal(typeof config.name, "string");
@@ -472,7 +295,7 @@ test("no tool module can write to the set", async () => {
   const { client } = await connect();
   const { tools } = await client.listTools();
 
-  assert.equal(tools.length, TOOL_FILES.size + 1);
+  assert.equal(tools.length, TOOL_FILES.size);
   assert.ok(
     CONTENT_DIR.endsWith("content"),
     "the set root is content/, and every read is resolved inside it",

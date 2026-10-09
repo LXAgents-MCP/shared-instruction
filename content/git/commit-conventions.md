@@ -1,8 +1,6 @@
 ---
 name: commit-conventions
 description: Conventional Commits for commit messages only — format, scope, body, the no-session-trailer rule, and what rides in the same commit.
-version: 1.0.0
-author: LXAgents
 ---
 
 # Commit Conventions
@@ -15,7 +13,7 @@ type(optional scope): description
 
 Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`,
 `chore`, `revert` — the same list as
-[`branching-strategy.md`](agents://git/branching-strategy.md).
+[`branching-strategy.md`](../git/branching-strategy.md).
 
 Scope is a module or subsystem: `docs(wiki):`, `feat(auth):`, `chore(deps):`,
 `fix(registry):`.
@@ -34,7 +32,7 @@ Optional. Short bullets explaining **what** and **why** — not how, the diff sh
 ## No session links, no session trailers
 
 Not in the subject, not in the body, not as a trailer. See
-[`../rules/no-session-links.md`](agents://rules/no-session-links.md). If your tooling
+[`../rules/no-session-links.md`](../rules/no-session-links.md). If your tooling
 appends one by default, **strip it before committing**. A `Co-Authored-By:` line naming a
 tool or model is fine; a line carrying a session identifier is not.
 
@@ -67,4 +65,4 @@ feat(registry): load instruction content once at boot
 
 **Pull request titles use a different format** — plain, human-readable, never a
 Conventional Commit prefix. See
-[`pull-request-template.md`](agents://git/pull-request-template.md).
+[`pull-request-template.md`](../git/pull-request-template.md).

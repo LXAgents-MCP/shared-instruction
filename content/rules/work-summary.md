@@ -1,8 +1,6 @@
 ---
 name: work-summary
 description: Finished work is reported back — what changed, what was verified, what was not done, and what still needs a decision.
-version: 1.0.0
-author: LXAgents
 ---
 
 # Work Summary
@@ -35,7 +33,7 @@ Five things. Drop one only when it genuinely does not apply, never to save space
    of: a version bump, a deletion, opening or merging a pull request, declaring an
    override. State the options, and make a recommendation.
 5. **Findings.** Anything worth adding to either instruction set, in the shape
-   [`discovery-protocol.md`](agents://rules/discovery-protocol.md) requires — at the
+   [`discovery-protocol.md`](../rules/discovery-protocol.md) requires — at the
    end, one block per finding, never applied first.
 
 ## Report what happened, not what was hoped
@@ -63,7 +61,7 @@ has to parse.
   the summary is the record of what.
 * **Not the request restated.** The user wrote it; they do not need it read back.
 * **Not a place for a session link.** Describe the work; never point at the
-  conversation — [`no-session-links.md`](agents://rules/no-session-links.md).
+  conversation — [`no-session-links.md`](../rules/no-session-links.md).
 * **Not a substitute for the artifacts.** Memory, indexes, and changelogs are still
   written. A summary is delivered to a person and then scrolls away; the repository is
   what remains.
@@ -73,9 +71,9 @@ has to parse.
 To the user, in the reply that ends the task. It is not a file, and it does not get
 committed.
 
-The durable record of the same work belongs in `.agents/memory/tasks/` and, for a
-release, in `wiki/logs/` — see
-[`../creators/memory-creator.md`](agents://creators/memory-creator.md) and
-[`../creators/changelog-creator.md`](agents://creators/changelog-creator.md). The
+The durable record of the same work belongs in `{repo}/.agents/memory/tasks/` — a
+project's, never a workspace root's — and, for a release, in `wiki/logs/`. See
+[`../creators/memory-creator.md`](../creators/memory-creator.md) and
+[`../creators/changelog-creator.md`](../creators/changelog-creator.md). The
 summary and the memory entry are written from the same facts; neither replaces the
 other.

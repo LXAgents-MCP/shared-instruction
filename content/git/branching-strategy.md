@@ -1,8 +1,6 @@
 ---
 name: branching-strategy
 description: One task, one branch — naming as {type}/{primary-noun}, no tool-preset prefixes, no session identifiers, stacked in dependency order.
-version: 1.0.0
-author: LXAgents
 ---
 
 # Branching Strategy
@@ -43,7 +41,7 @@ author: LXAgents
 * **Random or generated suffixes.** A branch name is read by people; a hash is noise. If
   two tasks would collide on a name, the names are not specific enough — fix the names.
 * **Session, run, conversation, or trace identifiers** — see
-  [`../rules/no-session-links.md`](agents://rules/no-session-links.md).
+  [`../rules/no-session-links.md`](../rules/no-session-links.md).
 
 If a branch already violates the convention, recreate it correctly and delete the wrong
 one, or present the options to the user.
@@ -58,7 +56,7 @@ long enough to conflict with itself was two tasks.
 For multi-task work, branches stack in dependency order: task 1 branches from the default
 branch, task `k` branches from task `k-1`'s branch. Each branch therefore already contains
 everything before it, which is what keeps the merges conflict-free. See
-[`../creators/plan-creator.md`](agents://creators/plan-creator.md) §C.
+[`../creators/plan-creator.md`](../creators/plan-creator.md) §C.
 
 When one change spans repositories, each repository gets its own branch **with the same
 name**, and the merge order is stated in each pull request body.

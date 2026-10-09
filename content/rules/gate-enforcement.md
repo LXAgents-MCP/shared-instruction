@@ -1,8 +1,6 @@
 ---
 name: gate-enforcement
 description: A permission gate written as instruction text is kept by the reading agent's compliance, not by a mechanism — how to tell the two apart, and what to say about one when writing it.
-version: 1.0.0
-author: LXAgents
 ---
 
 # Gate Enforcement
@@ -59,7 +57,7 @@ required" does not.
 
 ## Worked example
 
-[`../index/server-registry.md`](agents://index/server-registry.md) gates the clone behind an
+The (now-removed) `server-registry.md` gated the clone behind an
 explicit user decision, and that gate is **text-borne**: `mcp_list` reads a file and returns
 it, so the calling agent is the only thing that can honour the instruction. The file says
 so where an agent reads it, and its tests pin the wording — which is a typo guard on the

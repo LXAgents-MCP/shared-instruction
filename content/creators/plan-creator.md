@@ -1,34 +1,64 @@
 ---
 name: plan-creator
-description: Intake, the plan gate, the record and release slots, stacked branches, and the untracked working plan under a repository's .agents/plans/.
-version: 1.0.0
-author: RBZagan
+description: What a multi-step request becomes — plan, record, branch, release — plus intake, the plan gate, the record and release slots, stacked branches, and the untracked working plan under a repository's .agents/plans/.
 ---
 
 # Plan Creator
 
-Two subjects, because a plan is not a thing that appears on its own. It is the output
-of a request taken in deliberately, split into tasks, gated on the user's approval, and
-stacked on branches — and the untracked checklist the work is tracked against while it
-runs. This file carries both: **§A–§F are the workflow**, and *The working plan* is
-what the creator writes.
+Three subjects, because a plan is not a thing that appears on its own. First, what a
+request taken in deliberately *becomes* — four artifacts, three of which outlive the work.
+Then the procedure that produces them: split into tasks, gated on the user's approval,
+stacked on branches. And the untracked checklist the work is tracked against while it
+runs. This file carries all three: **§What a request becomes** is the shape, **§A–§F are
+the workflow**, and *The working plan* is what the creator writes.
+
+This file used to be two — `planning/task-workflow.md` carried the shape and this one the
+procedure, and the two overlapped at `3.0.0` without either saying so. They are one file
+again, because a request's shape and the procedure for producing it are the same subject.
 
 **The creator writes the plan and nothing else.** The record, `wiki/`, `.agents/wiki/`
 and the work itself belong to other creators. The workflow says when those happen and
 in what order; it does not perform them. The record's own shape belongs to
-[`memory-creator.md`](agents://creators/memory-creator.md), and this file links to it
+[`memory-creator.md`](../creators/memory-creator.md), and this file links to it
 rather than restating it.
 
 The workflow is not opt-in and needs no trigger phrase: it runs on every request. The
-mandate is in [`../rules/shared-instructions.md`](agents://rules/shared-instructions.md)
+mandate is in [`../rules/shared-instructions.md`](../rules/shared-instructions.md)
 §H; what follows is the procedure it points at.
 
-This is served by `lxagents-shared-instruction` and carries this set's version. The
-plan it describes is **untracked and local to whichever repository is running it** — a
-plan is never published, never shared, and never committed, so serving the creator
-that writes one leaks no repository's work.
+The plan this describes is **untracked and local to whichever repository is running
+it** — never published, never shared, never committed. That is still why the working
+plan lives outside the repository's history; only the reasoning about *why it is safe
+to serve remotely* no longer applies, because there is no remote.
 
 ---
+
+# What a request becomes
+
+Four artifacts, and only one of them is disposable. Read this before the workflow: the
+workflow below is the procedure that produces them, and a step that names an artifact is
+easier to follow once you know which one it is naming.
+
+| Artifact | Tracked? | Lives in | Outlives the work? |
+|---|---|---|---|
+| **The plan** | No — `.gitignore` excludes `.agents/plans/` | `{repo}/.agents/plans/` | No. Deleted or abandoned when the work lands. |
+| **The record** | Yes | `{repo}/.agents/memory/tasks/{slug}.md` | Yes. It is the only account of what was agreed. |
+| **The branch** | Yes | The repository's own git history | Yes. The diff is the work. |
+| **The release** | Yes | `wiki/logs/{Major}/{Minor}/{Patch}/` and the two log indexes | Yes. It is the notice a consumer gets. |
+
+**Three of the four are tracked, and each of the three outlives the work.** That is the
+whole reason for the shape: the plan is scratch, and the other three are what a reader of
+the finished chain relies on. §B and §E enforce the invariants that keep them reviewable —
+the record written before the diff exists, every task appending to it in its own commit,
+and the release treated as a task rather than an afterthought — and those sections give the
+reasoning. This table says only what each artifact is and where it goes.
+
+Two of the four need a repository to exist in. **At a workspace root, which is not a git
+repository, only the plan is real**: there is no branch to create, no commit to make, and
+no release to cut, so §C, §F, and the release slot do not apply there. The plan is still
+worth writing — for the stronger reason that no commit could ever capture it. See
+[`../rules/repository.md`](../rules/repository.md) §This directory is not a git
+repository.
 
 # The workflow
 
@@ -36,9 +66,15 @@ that writes one leaks no repository's work.
 
 Before starting work:
 
-1. Resolve the shared set ([`../rules/mcp-connector.md`](agents://rules/mcp-connector.md)).
-2. Read `{repo}/.agents/index/memory-index.md` and load any task or state file that
-   matches the request, so you **continue** rather than restart.
+1. Read `{repo}/.agents/index/memory-index.md` and load any task or state file that
+   matches the request, so you **continue** rather than restart. **In a project only** —
+   a workspace root has no memory tree, so there is nothing to read there and the step is
+   skipped. See [`../rules/memory-policy.md`](../rules/memory-policy.md) §A.
+
+1b. **Make sure `{repo}/.agents/plans/` exists.** Create it if it does not. The folder is
+   authorized to be empty, and its absence is never a reason to hold the plan in context
+   instead. This is step zero of every plan, and it comes before the questions in step 2 —
+   the plan needs a home, and the home has to exist before the plan is written.
 
 Then ask the user for three things, in one message:
 
@@ -64,11 +100,16 @@ goes between them.
 
 | # | Slot | What it is |
 |---|---|---|
-| `1` | **The task record** | Creates `.agents/memory/tasks/{slug}.md` — the confirmed task list, written *before* any of it is built. |
+| `1` | **The task record** | Creates `{repo}/.agents/memory/tasks/{slug}.md` — the confirmed task list, written *before* any of it is built. **In a project**; a root has no memory, so the plan file is the record there. |
 | `2…n-1` | **The work** | One task per unit of work. |
 | `n` | **The release** | Version, changelog, index rows, and the closing entry on the record. |
 
-Splitting applies to the middle only:
+Splitting applies to the middle only.
+
+**Every task list starts here, every time.** A single self-contained edit still gets a
+plan — a one-task list of three tasks. What does not get one is a request that is genuinely
+one step: read a file, answer a question, fix a typo. The threshold is *more than one
+step*, not *how much work*, and it is judged before starting rather than partway through.
 
 * Split the work when the parts touch different areas, can be reviewed independently, or
   must land in a particular order.
@@ -77,7 +118,9 @@ Splitting applies to the middle only:
   three tasks, because a record nobody can read and a release nobody logged are how the
   work stops being reviewable.
 * **A change that spans repositories is always more than one work task** — one per
-  repository, with the shared-set change first, since consumers depend on it.
+  repository, ordered by which one the others depend on, and the dependency named in the
+  plan. There is no shared set that must land first: each repository's instruction set is
+  its own, so the ordering is a fact about *this* change and not about the architecture.
 
 Present the task list **before doing any work**, numbered `1…n`, each with:
 
@@ -165,9 +208,15 @@ only what is specific to running a task list, which that section does not say:
 * If task `k` invalidates an assumption behind a later task, stop, update the plan, and
   tell the user rather than silently reworking the list.
 
+**Work independent of the stack is not a second plan.** It is a subagent, spawned by the
+task that needs it, carrying no plan of its own — and the test for which it is: *does the
+later task need the earlier one's result?* The working rule is in
+[`../../AGENTS.md`](../../AGENTS.md) §Multi-agent working; this section says only that a
+subagent is not an exception to the ordering above.
+
 ## E. Record as you go
 
-* **Every task appends its own entry to `.agents/memory/tasks/{slug}.md`, in the same
+* **Every task appends its own entry to `{repo}/.agents/memory/tasks/{slug}.md`, in the same
   commit as its work** — never in a follow-up commit, and never batched at the end. One
   `### Task k — {branch}` heading per task, saying what landed, what was left, and
   anything the next task now depends on.
@@ -180,11 +229,11 @@ only what is specific to running a task list, which that section does not say:
   Nothing is written to the per-task section in advance. Task 1 creates the file with the
   plan and its own entry, and stops there.
 * Record any decision a future session would otherwise re-litigate in
-  `.agents/memory/decisions/`.
+  `{repo}/.agents/memory/decisions/`.
 * Update the owning index in the same commit as any file you add, move, or remove.
 * Collect anything that should become a rule as a finding under
-  [`../rules/discovery-protocol.md`](agents://rules/discovery-protocol.md), tagged `local`
-  or `shared`. Do not write it into either set yourself.
+  [`../rules/discovery-protocol.md`](../rules/discovery-protocol.md), tagged `local`.
+  Do not write it into the set yourself.
 
 ## F. Pull requests and merging
 
@@ -203,12 +252,12 @@ only what is specific to running a task list, which that section does not say:
   part of the work and where each one went. This is a body edit, not a commit, which is
   precisely why it costs nothing — pushing to branch 1 at this point would invalidate
   every branch above it.
-* The `PR` column of `.agents/memory/tasks/{slug}.md` is filled by the **release task**,
+* The `PR` column of `{repo}/.agents/memory/tasks/{slug}.md` is filled by the **release task**,
   not by task 1. The release task is last and already contains every branch below it, so
   writing the numbers there rebases nothing.
 * Title and body follow
-  [`../git/pull-request-template.md`](agents://git/pull-request-template.md), and carry no
-  session link ([`../rules/no-session-links.md`](agents://rules/no-session-links.md)).
+  [`../git/pull-request-template.md`](../git/pull-request-template.md), and carry no
+  session link ([`../rules/no-session-links.md`](../rules/no-session-links.md)).
 * **Ask the user before merging anything, and wait for an explicit yes**, on the same
   terms as the pull request gate above. Never merge on your own initiative, and never
   enable auto-merge without being asked.
@@ -235,13 +284,13 @@ only what is specific to running a task list, which that section does not say:
 * Report the final state: which pull requests merged, in which repositories, in what
   order, the result of the tree check above, and anything left open. Present any
   discovery findings.
-* Close out `.agents/memory/tasks/{slug}.md` in the release task's commit: fill the `PR`
+* Close out `{repo}/.agents/memory/tasks/{slug}.md` in the release task's commit: fill the `PR`
   column, add the release task's own entry, and mark the record done. A record left open
   after the work merged is a record the next session has to re-verify.
 
 **Versions and the release task.** Any pull request follows the template above; merging
 requires user approval per §F. A version change requires user approval per
-[`../rules/versioning.md`](agents://rules/versioning.md) — including a new
+[`../rules/versioning.md`](../rules/versioning.md) — including a new
 `wiki/logs/{Major}/{Minor}/{Patch}/` directory, which is a version claim.
 
 ---
@@ -256,6 +305,16 @@ work while it runs.
 
 - A plan lives at `{repo}/.agents/plans/`, which the repository's `.gitignore`
   excludes. Nothing in it is staged, committed, or pushed, ever.
+- **The plan goes in the repository doing the work.** Root work plans at
+  `<root>/.agents/plans/`; a project at `orgs/{org}/{repo}` plans in
+  `orgs/{org}/{repo}/.agents/plans/`. Never write a project's plan at the root — it
+  splits one repository's reasoning across two places, and the root's next session
+  inherits a plan for work it has no context for.
+- **At a root that is not a git repository, there is nothing to exclude.** `plan-creator`
+  normally verifies the exclusion with `git check-ignore`; that command fails outright at
+  such a root — `fatal: not a git repository` — and the precondition is *unsatisfiable*
+  rather than unmet. The plans are still untracked, for the stronger reason that no commit
+  can ever be made. Write the plan, and note that there is no history to keep it out of.
 - **Verify the exclusion with `git check-ignore`, never by matching the line.**
   Both `.agents/plans/` and `/.agents/plans/` cover the same path — the first
   matches at any depth, the second is anchored to the repository root — so
@@ -340,62 +399,20 @@ that gate authorises.
 - Every task still appends its own entry to `{repo}/.agents/memory/tasks/{slug}.md`
   in **its own commit**, per §E. The plan is not that record and does not replace it.
 - When the two disagree, the task record wins — it is the one that was reviewed.
-  The plan is scratch and is deleted or abandoned when the work merges.
+- **The plan's last act is to delete its own folder.** When every box is ticked and the
+  work has landed, `.agents/plans/` is removed — not moved, not kept, not archived. A
+  plan is scratch; the record it produced is what a later session reads.
 
----
+  **Deleted** and **abandoned** are different endings, and the difference is whether
+  anything was built. A finished plan is deleted, because its record says what landed. An
+  abandoned one — the work dropped, mid-flight — is also removed, but nothing replaces it,
+  so say plainly in the record what was attempted and why it stopped. Leaving a plan in
+  the folder is not one of the two: the folder is flat and holds only what is in flight,
+  so a leftover plan reads as work under way.
 
-# Conventions this creator applies
-
-## Branch & Commit Convention
-
-Applies to every commit this creator makes.
-
-**Branches** — `{type}/{primary-noun}`, from `feat`, `fix`, `docs`, `style`, `refactor`,
-`perf`, `test`, `build`, `ci`, `chore`, `revert`. Branch off the default branch; one task
-per branch, one pull request per branch. Never commit directly to the default branch,
-never use a tool-preset prefix (`claude/`, `codex/`, `cursor/`), never add a generated
-suffix. Multi-task work stacks in dependency order. Canonical:
-[`../git/branching-strategy.md`](agents://git/branching-strategy.md).
-
-**Commits** — `type(optional scope): description`. Imperative subject, plain text, no
-trailing period, no links, no issue IDs. Optional body of short bullets saying what and
-why. Commit each logical change; never batch a session into one commit; review the diff
-first. Index and memory updates ride in the **same commit** as the change they describe.
-Canonical: [`../git/commit-conventions.md`](agents://git/commit-conventions.md).
-
-## Which Set
-
-Choose the set before the folder. Universal content goes to the shared set served by the
-`lxagents-shared-instruction` connector; repository-specific content stays local; memory is always
-local. A shared file is never copied into a repository except as a declared override
-registered in `.agents/index/root-index.md`. See
-[`../rules/shared-instructions.md`](agents://rules/shared-instructions.md).
-
-## Directory Mandate
-
-* Indexes: `.agents/index/{scope}-index.md` — never an `INDEX.md`, anywhere.
-* Agent wiki: `.agents/wiki/{type}/{file}.md` (frontmatter). Human wiki:
-  `wiki/{folder}/{file}.md` (no frontmatter).
-* Memory: `.agents/memory/{type}/{file}.md` — local only.
-* Instructions: `{set}/{folder}/{file}.md` — one subject per file, matching the filename.
-
-Audience test: would a human contributor read it? → `wiki/`. Does it exist only so an agent
-behaves correctly? → `.agents/wiki/`. Both? Facts once in `wiki/`, linked from the agent
-page. When nothing fits, create a new folder rather than forcing the file into the closest
-one. Placement authority: [`../rules/directories.md`](agents://rules/directories.md).
-
-## No Session Links
-
-Nothing this creator writes, commits, or posts may carry an assistant or tool session link
-— including any trailer or footer its tooling appends by default. Strip it before the
-commit or the post goes out.
-[`../rules/no-session-links.md`](agents://rules/no-session-links.md)
-
-## Registration
-
-Every file this creator creates, moves, or removes is registered in the index that owns
-that scope, **in the same commit**. See
-[`index-creator.md`](agents://creators/index-creator.md).
+  This is the last step, and it is not done until it has happened — a plan that describes
+  deleting itself and stays on disk is a worse artefact than one that was never written,
+  because it is confident and wrong.
 
 ---
 
@@ -411,12 +428,12 @@ that scope, **in the same commit**. See
 
 ## Related
 
-- [`../git/branching-strategy.md`](agents://git/branching-strategy.md) — branch
+- [`../git/branching-strategy.md`](../git/branching-strategy.md) — branch
   naming and the stacking order.
-- [`../git/commit-conventions.md`](agents://git/commit-conventions.md) — the commit
+- [`../git/commit-conventions.md`](../git/commit-conventions.md) — the commit
   message format.
 - [`memory-creator.md`](memory-creator.md) — the task record that outlives the
   plan, and the shape it must take.
 - [`index-creator.md`](index-creator.md) — registering a file this creator adds.
-- [`../rules/discovery-protocol.md`](agents://rules/discovery-protocol.md) — a rule
+- [`../rules/discovery-protocol.md`](../rules/discovery-protocol.md) — a rule
   noticed while working, proposed rather than written.
