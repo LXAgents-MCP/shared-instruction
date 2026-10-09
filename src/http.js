@@ -2,6 +2,7 @@
 import cluster from "node:cluster";
 import { availableParallelism } from "node:os";
 import { allowedHosts, createApp } from "./app.js";
+import { MIN_TOKEN_LENGTH, tokenProblem } from "./auth.js";
 import { SERVER_NAME, VERSION } from "./version.js";
 
 /**
@@ -16,7 +17,8 @@ import { SERVER_NAME, VERSION } from "./version.js";
  * `.agents/memory/tasks/` has the reasoning.
  *
  * The application itself is in `src/app.js`, which builds and returns an express app and
- * does not listen. This file owns the port, the interface, the workers, the startup lines,
+ * does not listen. Every route but `GET /healthz` needs the bearer token in `MCP_AUTH_TOKEN`,
+ * and this process will not start without one. This file owns the port, the interface, the workers, the startup lines,
  * and the drain.
  */
 
@@ -97,6 +99,10 @@ function startWorker() {
     const where = HOST === "0.0.0.0" ? "all interfaces" : HOST;
     log(`${SERVER_NAME} ${VERSION} serving over http on :${PORT}/mcp (${where})`);
 
+    // The token is required for the process to be here at all, so this line is a statement
+    // of fact and not a warning. It never carries the value.
+    log(`${SERVER_NAME} ${VERSION} bearer token required on every route except GET /healthz.`);
+
     // Said out loud, because the default is the unguarded one. Someone reading a container's
     // startup log is the only person who can act on it, and a control that is off silently
     // is worse than no control at all — it reads as present. Printed once per worker, which
@@ -161,6 +167,24 @@ function startWorker() {
  * a process that answers nothing.
  */
 function startPrimary() {
+  // Fail closed, before anything is forked. HTTP without a token is an open door on a network,
+  // and the only thing that can be done about it is not to start. Checked here as well as in
+  // `createApp` because here it is reported once: left to the workers, a missing token would be
+  // the same line printed by each of them and then a respawn loop through the crash limit.
+  //
+  // `exitCode` and a return, not `process.exit()`: nothing is listening yet, so the process
+  // ends on its own once the line is written, and the line is never cut off.
+  const problem = tokenProblem();
+  if (problem) {
+    log(
+      `${SERVER_NAME} ${VERSION} will not start the HTTP transport: ${problem}. ` +
+        `Set MCP_AUTH_TOKEN to a secret of at least ${MIN_TOKEN_LENGTH} characters, for example ` +
+        "the output of: openssl rand -hex 32. stdio needs no token.",
+    );
+    process.exitCode = 1;
+    return;
+  }
+
   const count = workerCount();
 
   // Read by the respawn handler below, and set by the signal handler further down, so it is

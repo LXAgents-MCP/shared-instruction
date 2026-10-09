@@ -1,6 +1,7 @@
 import express from "express";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { hostHeaderValidation } from "@modelcontextprotocol/sdk/server/middleware/hostHeaderValidation.js";
+import { configuredToken, requireBearerToken, tokenProblem } from "./auth.js";
 import { createServer } from "./server.js";
 import { SERVER_NAME, VERSION } from "./version.js";
 
@@ -13,7 +14,9 @@ import { SERVER_NAME, VERSION } from "./version.js";
  *
  * The surface is deliberately narrow: `POST /mcp` and `GET /healthz`, a JSON-RPC 405 for
  * any other method on `/mcp`, a JSON-RPC 404 for everything else, and one answer for a
- * body the transport cannot read. Nothing here is a second source of truth about the tool
+ * body the transport cannot read. **Everything except `GET /healthz` needs the bearer
+ * token** — see `src/auth.js` for why, and `createApp` for where. Nothing here is a second
+ * source of truth about the tool
  * list — `createServer()` is the same factory `src/index.js` uses on stdio, and it
  * returns a fresh `McpServer` per call, so each request gets its own. Sharing one across
  * requests would be a real bug: `McpServer` holds per-connection state.
@@ -68,15 +71,26 @@ function rpcError(res, status, code, message) {
 /**
  * Build the HTTP application.
  *
- * @param {{ inFlight?: Set<() => void> }} [options] — `inFlight`, when given, receives one
- *   closer per in-flight `/mcp` request, so the entry point can drain them deliberately on
- *   shutdown rather than dropping them when the process exits. This is what replaced the
- *   SSE session map: the map counted *connections*, which on a stateless transport is the
- *   same thing counted by a different name, and a set of closers is what a drain can
- *   actually act on.
+ * @param {{ inFlight?: Set<() => void>, token?: string }} [options] — `inFlight`, when given,
+ *   receives one closer per in-flight `/mcp` request, so the entry point can drain them
+ *   deliberately on shutdown rather than dropping them when the process exits. This is what
+ *   replaced the SSE session map: the map counted *connections*, which on a stateless
+ *   transport is the same thing counted by a different name, and a set of closers is what a
+ *   drain can actually act on.
+ *
+ *   `token` is the bearer token every request but `/healthz` must carry. It defaults to
+ *   `MCP_AUTH_TOKEN`, read now. **There is no way to build this app without one**: a missing or
+ *   too-short token throws, so an unauthenticated HTTP server cannot come from forgetting an
+ *   option. `src/http.js` checks first, in the primary, to report it once instead of once per
+ *   worker.
  * @returns {import("express").Express}
  */
-export function createApp({ inFlight } = {}) {
+export function createApp({ inFlight, token = configuredToken() } = {}) {
+  const problem = tokenProblem(token);
+  if (problem) {
+    throw new Error(`Refusing to build the HTTP app: ${problem}.`);
+  }
+
   const app = express();
 
   // Express stamps `X-Powered-By: Express` on every response it sends, which hands an
@@ -105,6 +119,25 @@ export function createApp({ inFlight } = {}) {
   if (hosts.length > 0) {
     app.use(hostHeaderValidation(hosts));
   }
+
+  // The token check, after the `Host` allow-list and ahead of the body parser and every route.
+  // Ahead of the parser, so a caller without the token cannot make this server read and parse
+  // up to 4 MB; ahead of the routes, so it cannot find out which exist — the 404 and the 405
+  // are answers about routes, and they are only given to a caller who may ask.
+  //
+  // `GET /healthz` is the one exemption, and it is exact: the method and the path, nothing that
+  // merely starts with it. An orchestrator's probe cannot send a token, and the route returns
+  // only `{ status, server, version }`. The exemption is never looser than the route: express
+  // would also match `/healthz/` and `HEAD`, and those fall through to the check and are
+  // refused, which is the safe direction to be wrong in.
+  const authenticate = requireBearerToken(token);
+  app.use((req, res, next) => {
+    if (req.method === "GET" && req.path === "/healthz") {
+      next();
+      return;
+    }
+    authenticate(req, res, next);
+  });
 
   app.use(express.json({ limit: BODY_LIMIT_BYTES }));
 
