@@ -5,7 +5,7 @@ description: Requiring a bearer token on the HTTP transport while stdio stays op
 
 # Require a Token on the HTTP Transport
 
-## 2026-10-09 — in progress
+## 2026-10-09 — done
 
 **Goal.** A server reached over a network proves who is calling; a server a client spawns on its
 own machine does not have to.
@@ -20,18 +20,18 @@ that said this server has no authentication says what is true now.
 environment and appears nowhere in a log, a response or a file. `content/` does not change — nothing
 in the published set describes how an HTTP client authenticates, so the tool surface is untouched.
 
-**Status:** in progress.
+**Status:** done. Pull requests #101, #102 and #103, merged in that order by rebase, each branch deleted as it merged.
 
 ## Tasks
 
 | # | Title | Branch | PR |
 |---|---|---|---|
-| 1 | Task record | `chore/http-token-auth-plan` | |
-| 2 | Require a token on HTTP | `feat/http-token-auth` | |
-| 3 | Release | `release/{version}` | |
+| 1 | Task record | `chore/http-token-auth-plan` | [#101](https://github.com/LXAgents-MCP/shared-instruction/pull/101) |
+| 2 | Require a token on HTTP | `feat/http-token-auth` | [#102](https://github.com/LXAgents-MCP/shared-instruction/pull/102) |
+| 3 | Release | `release/5.0.0` | [#103](https://github.com/LXAgents-MCP/shared-instruction/pull/103) |
 
-Branches stack: task 1 from `master`, task `k` from task `k-1`. The `PR` column is filled by
-task 3.
+Branches stack: task 1 from `master`, task `k` from task `k-1`. The `PR` column was filled by
+task 3, once the pull requests existed.
 
 ## Decisions the owner approved with the plan
 
@@ -116,5 +116,5 @@ git tag was created; a tag carries a version too and needs its own approval.
 merge, so `MCP_AUTH_TOKEN` has to be set on it before this lands, or the deploy fails at startup.
 The changelog says so first among the steps.
 
-The `PR` column and the closing of this record follow once the pull requests exist, in their own
-commit on this branch. Nothing is stacked on this branch, so that commit invalidates nothing.
+The `PR` column was filled and this record closed in the commit that followed, once the pull
+requests existed. Nothing is stacked on this branch, so that commit invalidated nothing.
