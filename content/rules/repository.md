@@ -14,24 +14,21 @@ This workspace is **standalone, permanently**.
 The instruction set lives at `.agents/` and is authoritative. It began as a copy of a
 shared set served over MCP; that server is gone, and the copy is now the original. There
 is nothing to resolve, no `agents://` scheme, and no upgrade path to one. This is not a
-deployment mode to be migrated away from — see
-[`shared-instructions.md`](shared-instructions.md).
+deployment mode to be migrated away from.
 
 Consequences to keep in mind:
 
 * **The files under `.agents/` are yours to edit.** The old rule — do not improve them
   locally, a change belongs upstream — is withdrawn. It was right while an upstream
   existed and would have rejected the change; it would now freeze the set against every
-  future correction with nowhere to send it. The quality bars still apply:
-  [`discovery-protocol.md`](discovery-protocol.md) for proposing a *missing* rule,
-  [`../creators/instruction-creator.md`](../creators/instruction-creator.md) for shape.
+  future correction with nowhere to send it. The quality bars still apply: a *missing* rule is proposed to the owner,
+  and a rule file carries `name` and `description` frontmatter and covers one subject.
 * **There is no migration procedure.** The old steps — delete `git/`, `prompts/`,
   `creators/`, `planning/` and the shared `rules/` files, then install a connector
   bootstrap block — described a destination that no longer exists. Executing them would
   delete the instruction set. They are gone deliberately.
 * **The five files that described the old distribution model were merged into
-  [`../wiki/context/retired-instruction-files.md`](../wiki/context/retired-instruction-files.md)
-  and deleted on 2026-10-04** — 1201 lines carrying the connector's tool surface, the
+  one wiki history page and deleted on 2026-10-04** — 1201 lines carrying the connector's tool surface, the
   three-state toolless diagnosis, and the duplicate-audit technique. That page is history:
   nothing routes to it for permission.
 * **The root is not a git repository, so these files have no version history.** Read
@@ -63,9 +60,9 @@ folder. The `git/` conventions in `.agents/git/` apply there, not here.
 
 Three practical effects at this level:
 
-* No branch, no commit, and no push. So `plan-creator.md`'s `git check-ignore` precondition is
-  **unsatisfiable rather than unmet** — see *Before writing* there — and its git steps are
-  skipped, not failed.
+* No branch, no commit, and no push. So the plan's `git check-ignore` check on
+  `.agents/plans/` is **unsatisfiable rather than unmet** — it fails with
+  `fatal: not a git repository` — and the git steps of a plan are skipped, not failed.
 * `wiki/logs/` does not exist: no version, no release history.
 * **`AGENTS.md` may be edited directly. Nothing protects it** — so read before overwriting,
   and prefer a targeted edit to a rewrite. There is no diff and no rollback here.
@@ -95,9 +92,7 @@ What replaced it:
   `tests/test_server_proxy.py` in the bridge project, covering both paths and both auth
   styles; `Personal/` is empty, so that project does not exist. Until they are written,
   **every edit here is verified by hand** — one `/api/v1/*` request with a Bearer token,
-  one `/v1/*` with an `x-api-key` header. See
-  [`../../wiki/information/architecture.md`](../../wiki/information/architecture.md)
-  §Known gap.
+  one `/v1/*` with an `x-api-key` header.
 * **Keep the Thai comments.** They explain intent the code alone doesn't.
 
 ## Folder layout
@@ -131,7 +126,7 @@ platform from the git remote, never from the folder name.
 — and `<root>` is defined here, once, as "the folder holding `AGENTS.md`."**
 
 Nothing else. No absolute path, no home directory, no drive letter, no machine's folder
-name. Every other file links to this section rather than restating the definition, because
+name. Write it that way rather than restating the definition, because
 twenty-one references that each spelled out a folder name is how the folder name became
 load-bearing in the first place.
 
@@ -171,9 +166,8 @@ rule is not "avoid absolute paths in commands."
   module it compiles. It is never committed — the root is not a repository — and it is not a
   precedent for a `.venv/`, `node_modules/`, or build output, which are still forbidden.
   Stated with its reasoning in the root
-  [`AGENTS.md`](../../AGENTS.md) §Conventions.
-* **No `INDEX.md` anywhere.** Indexes live in `.agents/index/{scope}-index.md`. See
-  [`../rules/directories.md`](../rules/directories.md).
+  `AGENTS.md` §Conventions.
+* **No `INDEX.md` anywhere.** Indexes live in `.agents/index/{scope}-index.md`.
 * **No third documentation tree.** `wiki/` and `.agents/wiki/` are the only two.
   `.agents/skills/` records things that live outside this workspace and is not a
   documentation tree about it.
@@ -209,9 +203,8 @@ or a clone of one — you do not add it to this workspace. You write it down.**
 | A plugin or plugin marketplace | Describe it in `.agents/skills/{type}/{file-name}.md` |
 | A clone already sitting in the workspace | Delete it, then record it as above |
 
-The record is written with
-[`skill-creator.md`](../creators/skill-creator.md) and placed by
-[`directories.md`](../rules/directories.md) §G.
+The record is one page per capability, under `.agents/skills/{type}/`, named for what it
+describes.
 
 **Why.** A checkout at a non-git root cannot be versioned, so it drifts silently and
 cannot be rolled back. It drags in a build system, a dependency tree, and a license
@@ -258,7 +251,7 @@ resolve only where a `wiki/` exists. The dependency runs one way, and that one-w
 what makes the copy sound: the instruction set never depends on a document that was not
 carried.
 
-**Therefore [`../index/project-wiki-index.md`](../index/project-wiki-index.md) stays.** It
+**Therefore the project-wiki index stays.** It
 routes into a tree that is not copied, so on a machine that has not written one yet those
 rows resolve to nothing — which the file now says outright. Deleting the index instead
 would orphan five links and leave the human tree unreachable on any machine, which is the

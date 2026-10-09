@@ -19,7 +19,7 @@ condition that activates each. The server boots and `npm test` is green.
 the owner will delete it, so nothing here may depend on it afterwards: files are copied, never
 linked.
 
-**Status:** open. Tasks 1–3 of 7 landed.
+**Status:** open. Tasks 1–4 of 7 landed.
 
 ## Tasks
 
@@ -118,4 +118,49 @@ still shows `chore/release`. A typo guard, not a control. 18 pass in `server.tes
 
 **For task 4:** this is the only deliberate change to the owner's wording. Task 4's diff against
 this branch should be links and pointers and nothing else.
+
+### Task 4 — refactor/self-contained-tools
+
+Landed. No tool except `automation` (task 5) links to, names, or sends the reader to another
+tool. Before: 321 links across 44 of the 47 files, 25 pointing at files that do not exist in the
+set, about 60 filename mentions in prose, and one reference to a section that was never there.
+After: none, and `server.test.js` fails if one comes back — a link, another tool's path, or
+another tool's id or frontmatter name. The test was mutation-checked: adding a link, a path and
+two ids to one file made it fail on all four.
+
+**Method.** Navigation-only pointers were deleted: 20 `Related` and `See also` sections in
+`skills/`, and the identical `Related` ownership table in the six creators that carried it.
+Where a sentence leaned on another tool for a fact, the fact was written in (D4): the branch
+type list and commit format in `plan_creator`, the pull request title and body shape, the
+`pat()` helper in `github_authentication`, the connector-restart cure in `mcp_builder`.
+References to the consumer's own `AGENTS.md` stay as plain text, since it is not a tool.
+
+**One allowlist, stated in the test.** `anthropic-agent-skills` names Anthropic's own
+`skill-creator` and `mcp-builder` skills. They share a name with two tools here and are facts
+about another vendor, not pointers.
+
+**One rule reversed on purpose.** `instruction_creator` said "Facts live once, and every other
+file links to them", "Link, do not inline", and refused "inlining another file's content". That
+is the opposite of what the owner asked for, so the three sentences now say the reverse: a tool
+states the one fact it needs in a sentence of its own, never by pointing, and still does not copy
+a neighbour's procedure. The owner's instruction was explicit; this is recorded so it is a
+decision and not a surprise.
+
+**Contradictions left as written, for the owner to decide.** The contents were written for a
+plain-files workspace and are now served by an MCP server. These sentences say otherwise:
+
+| Tool | What it says |
+|---|---|
+| `shared_instructions` | "This workspace runs on plain `.md` files. No MCP server serves them"; the activation contract "lives in … `AGENTS.md` and nowhere else" |
+| `repository` | "This workspace runs on plain files … No MCP server serves any of it"; the shared set was served over MCP and "that server is gone" |
+| `mcp_server` | The copy of this very server's set "is now authoritative and the server is gone" |
+| `instruction_creator` | "one set — plain `.md` files, with no server serving them"; refuses "anything that assumes an MCP server" |
+| `index_creator`, `information_creator`, `memory_creator`, `changelog_creator`, `security_creator` | "There is no second instruction set … no server serving them, no plugin, no connector" |
+| `directories` | refers to a "second instruction set" as something that does not exist |
+
+The `shared_instructions` sentence about routing living only in `AGENTS.md` also disagrees with
+the `automation` hub that task 5 adds.
+
+**Left for later tasks.** `automation` (task 5). Docs and the local set still name the removed
+tools (task 6).
 

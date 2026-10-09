@@ -6,8 +6,7 @@ description: Never bump a version on your own initiative — what counts as a ve
 # Versioning Rules
 
 **Instruction files in `.agents/` are not versioned.** No `version`, no `author`, no stamp
-of any kind. They carry `name` and `description` and nothing else — see
-[`../creators/instruction-creator.md`](../creators/instruction-creator.md).
+of any kind. They carry `name` and `description` and nothing else.
 
 That is the whole rule for this tree. Everything below governs **a real project that
 carries a version** — a `package.json`, a released library, a deployed service — and those
@@ -52,8 +51,7 @@ all 30 files on 2026-10-04, along with `author` for the same reason — one work
 editors, no version control to recover who wrote what.
 
 **Do not reintroduce either key** to record that a file changed. What is worth recording
-belongs in a project's memory, or for this tree in
-[`../wiki/context/instruction-set-history.md`](../wiki/context/instruction-set-history.md) —
+belongs in a project's memory, or for this tree in a history page —
 where it says what happened rather than implying a number moved.
 
 ## How to propose a bump

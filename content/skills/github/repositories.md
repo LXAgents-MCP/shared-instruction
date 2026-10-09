@@ -98,12 +98,3 @@ correct response is to tell the user what protection blocked it — never to pro
 the protection.
 
 **Sandbox:** needs the network; 403 in-session.
-
-## Related
-
-* [`pull-requests.md`](pull-requests.md) — what branch protection gates
-* [`actions.md`](actions.md) — the checks a protection rule requires
-* [`issues.md`](issues.md) — labels and milestones live here
-* [`api.md`](api.md) — for the endpoints `gh` does not wrap
-* [`../../git/branching-strategy.md`](../../git/branching-strategy.md) — branch naming
-  this workspace expects

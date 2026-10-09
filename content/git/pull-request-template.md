@@ -70,10 +70,8 @@ Use exactly these sections, in this order:
 * Never leave a `{contents}` placeholder, and never ship an empty section.
 * **No session links anywhere** in the title, the body, or a review comment — and no
   generated-by footer carrying one. Strip whatever your tooling appends before posting.
-  Provenance names the tool, never the conversation. See
-  [`../rules/no-session-links.md`](../rules/no-session-links.md).
-* Add the merge-order line required by
-  [`../creators/plan-creator.md`](../creators/plan-creator.md) §F when the PR is
+  Provenance names the tool, never the conversation.
+* Add a merge-order line when the PR is
   part of an ordered chain — including a chain that spans repositories. For example:
   `Merge order: 2 of 4 — merges after #17`.
 * If a repository also has a `.github/pull_request_template.md`, **this file stays the

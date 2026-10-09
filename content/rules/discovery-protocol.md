@@ -8,7 +8,7 @@ description: How to handle a rule you think should exist — propose it, never s
 This is the single source of truth for how an agent handles a rule it thinks should
 exist. It is its own file because it is a cross-cutting process rule: it belongs to no
 single topic, and pasting it into a file about some other subject is exactly the
-mistake [`directories.md`](../rules/directories.md) forbids.
+mistake the one-subject-per-file rule forbids.
 
 ## A. The canonical block
 
@@ -33,7 +33,7 @@ Never batch-apply, never apply silently.
 **Scope of this gate:** it covers instruction files. Documentation
 pages under `wiki/` and `.agents/wiki/` may be written when the facts are real and
 verified. A project's memory under `.agents/memory/` is written freely and
-automatically — see `memory-policy.md` §A.
+automatically.
 ```
 
 ## B. Choosing the target set
@@ -57,9 +57,8 @@ decides where the rule goes. There is one set, and it is `{repo}/.agents/`.
 * A local override that has outlived its reason and should be dropped.
 
 A one-off preference the user stated for a single task is **not** a finding. Neither
-is a duplicate you spotted in passing — that is the duplicate-audit technique in
-[`../wiki/context/retired-instruction-files.md`](../wiki/context/retired-instruction-files.md)
-§The duplicate-audit technique, and it runs on request.
+is a duplicate you spotted in passing — that is a duplicate audit, and it runs only
+on request.
 
 ## D. What is gated and what is not
 
@@ -86,13 +85,11 @@ this section rather than reproducing it.
 This section used to register seven verbatim copies as "a deliberate, listed exception"
 to the facts-live-once rule, on the reasoning that an agent opening only a creator should
 still see the gate. **Those copies were deleted**, and the exception with them. The gate
-lives in this file and in the root [`AGENTS.md`](../../AGENTS.md), which every session reads
+lives in this file and in the root `AGENTS.md`, which every session reads
 before it reads anything else — so the failure the copies were protecting against, an agent
 never seeing the gate at all, cannot happen.
 
-The evidence for removing them is in
-[`../wiki/context/instruction-set-history.md`](../wiki/context/instruction-set-history.md):
-six byte-identical copies of an 85-line block all still asserted a connector that had
+The evidence for removing them: six byte-identical copies of an 85-line block all still asserted a connector that had
 already been retired, because nobody edits six places when one rule changes. **A copy of a
 rule outlives the rule it copies**, and the copies were wrong in the same direction at the
 same time.

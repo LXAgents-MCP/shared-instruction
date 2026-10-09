@@ -32,8 +32,8 @@ Five things. Drop one only when it genuinely does not apply, never to save space
 4. **What needs a decision.** Everything a rule gates and you therefore stopped short
    of: a version bump, a deletion, opening or merging a pull request, declaring an
    override. State the options, and make a recommendation.
-5. **Findings.** Anything worth adding to either instruction set, in the shape
-   [`discovery-protocol.md`](../rules/discovery-protocol.md) requires — at the
+5. **Findings.** Anything worth adding to either instruction set, each in its own block
+   with the proposed file path, `name`, `description`, and full body — presented at the
    end, one block per finding, never applied first.
 
 ## Report what happened, not what was hoped
@@ -61,7 +61,7 @@ has to parse.
   the summary is the record of what.
 * **Not the request restated.** The user wrote it; they do not need it read back.
 * **Not a place for a session link.** Describe the work; never point at the
-  conversation — [`no-session-links.md`](../rules/no-session-links.md).
+  conversation.
 * **Not a substitute for the artifacts.** Memory, indexes, and changelogs are still
   written. A summary is delivered to a person and then scrolls away; the repository is
   what remains.
@@ -72,8 +72,6 @@ To the user, in the reply that ends the task. It is not a file, and it does not 
 committed.
 
 The durable record of the same work belongs in `{repo}/.agents/memory/tasks/` — a
-project's, never a workspace root's — and, for a release, in `wiki/logs/`. See
-[`../creators/memory-creator.md`](../creators/memory-creator.md) and
-[`../creators/changelog-creator.md`](../creators/changelog-creator.md). The
+project's, never a workspace root's — and, for a release, in `wiki/logs/`. The
 summary and the memory entry are written from the same facts; neither replaces the
 other.

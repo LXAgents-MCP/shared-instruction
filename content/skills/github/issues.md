@@ -98,9 +98,3 @@ deleting, which is why the first is the default.
 writing, if the value matters.
 
 **Sandbox:** needs the network; 403 in-session.
-
-## Related
-
-* [`pull-requests.md`](pull-requests.md) — the same API, filtered differently
-* [`repositories.md`](repositories.md) — labels live on the repository
-* [`authentication.md`](authentication.md) — before any of this works

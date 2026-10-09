@@ -110,8 +110,7 @@ Also `If-Modified-Since`. Useful for polling something without burning quota.
 
 ## Agents
 
-**Never print a token** in a command, an error, or a script. See
-[`authentication.md`](authentication.md).
+**Never print a token** in a command, an error, or a script.
 
 **`--paginate` unless you are certain the result is small.** A missing page is silent.
 
@@ -121,13 +120,4 @@ Also `If-Modified-Since`. Useful for polling something without burning quota.
 exist".
 
 **Every call here needs the network** and 403s in-session — that is the sandbox, not the
-API. See [`authentication.md`](authentication.md).
-
-## Related
-
-* [`authentication.md`](authentication.md) — before anything here works
-* [`pull-requests.md`](pull-requests.md), [`issues.md`](issues.md),
-  [`repositories.md`](repositories.md), [`actions.md`](actions.md),
-  [`releases.md`](releases.md) — the operations this API backs
-* [`../reference/git-hosting-common.md`](../reference/git-hosting-common.md) — concepts
-  shared with GitLab
+API.

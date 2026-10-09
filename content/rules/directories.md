@@ -82,9 +82,9 @@ to.** If another project needs it, that project holds its own copy — and the h
 when the two diverge is to say which file differs, not to open a release process across
 repositories. There is no upstream to release to.
 
-Precedence between the kinds of file is in the root [`AGENTS.md`](../../AGENTS.md).
-Editing these files is covered by
-[`shared-instructions.md`](../rules/shared-instructions.md) §B.
+Precedence between the kinds of file is in the root `AGENTS.md`.
+Editing these files means editing the file that owns the convention; there is no other
+copy to reconcile.
 
 ### What this mandate forbids
 
@@ -126,7 +126,7 @@ These are hard failures.
 |---|---|---|---|
 | Instructions | `{repo}/.agents/{folder}/{file}.md` | Normative. Rules an agent must obey. | Only with user approval. |
 | Index | `{repo}/.agents/index/{scope}-index.md` | Routing. Pointers only. | Same commit as whatever it indexes. |
-| Project Wiki | `wiki/{folder}/{file-name}.md` | Human documentation. **Per machine — never copied**; see [`repository.md`](repository.md) §What copies to another machine. | Freely, when the facts are real. |
+| Project Wiki | `wiki/{folder}/{file-name}.md` | Human documentation. **Per machine — never copied**. | Freely, when the facts are real. |
 | Agent Wiki | `.agents/wiki/{type}/{file-name}.md` | Agent knowledge about **this workspace**. | Freely, when the facts are real. |
 | Org Wiki | `.agents/wiki/{org}/README.md`, then `.agents/wiki/{org}/{type}/{file-name}.md` | Agent knowledge about **one organization**. Never another org's content. Folder always lowercase. | Freely, when the facts are real. |
 | Skills | `.agents/skills/{type}/{file-name}.md` | Capability knowledge about an external thing. Descriptive, never normative. | Freely, and it is the correct response to being handed a skill, a plugin, or an MCP server. |
@@ -188,8 +188,7 @@ the way a memory file can. That is also why the plan for work on the instruction
 lives at the root.
 
 **Never create `.agents/memory/` here.** If you are at a root and believe state must be
-recorded, the work belongs in a project — name the project and move there. The full rule is
-in [`memory-policy.md`](memory-policy.md) §A.
+recorded, the work belongs in a project — name the project and move there.
 
 ## B. Instruction folders
 
@@ -279,8 +278,7 @@ the agent page should be a link.
    set.**
    If the answer is *the root* and the subject is **dynamic state**, stop — see §A.1.
    Ask only whether the rule is *over-fitted to one situation*, which is a quality question
-   about the rule and not about where the file goes
-   ([`discovery-protocol.md`](discovery-protocol.md)).
+   about the rule and not about where the file goes.
 2. **Classify next:** is the new file **normative** (instruction), **routing** (index),
    **human documentation** (`wiki/`), **agent knowledge** (`.agents/wiki/`), **capability
    knowledge** (`.agents/skills/`), **runnable** (`.agents/tools/`), or **dynamic state**
@@ -321,8 +319,7 @@ the agent page should be a link.
 11. Never create an `INDEX.md`. Never create a third documentation tree. Never create a
     second instruction set.
 12. Handed a skill, a plugin, a marketplace, or an MCP server — **record it in
-    `.agents/skills/{type}/`, never install it.** The full rule is in
-    [`repository.md`](../rules/repository.md); §G here only decides the path.
+    `.agents/skills/{type}/`, never install it.** §G here only decides the path.
 
 ## G. `.agents/skills/` types — capability knowledge
 
@@ -343,8 +340,8 @@ capability to the session.
 | `reference/` | The specification as published — fields, limits, and rules quoted or cited from upstream. |
 
 **A type may hold a folder, not only files.** When a subject needs more than a handful of
-pages, nest them — `.agents/skills/github/pull-requests.md` rather than one
-`github.md` covering everything. The reason is loading, not tidiness: an agent doing one
+pages, nest them — `.agents/skills/{service}/{operation}.md` rather than one
+`{service}.md` covering everything. The reason is loading, not tidiness: an agent doing one
 `gh pr create` should read one file, not the whole service. One subject per file still
 holds inside the folder; there are simply more subjects. Register the folder here when you
 create it.
@@ -355,7 +352,7 @@ being documented, where `github/` is *how* it works. Registered service folders:
 
 | Folder | Holds | Shared with |
 |---|---|---|
-| `github/` | One file per GitHub operation: authentication, pull requests, issues, repositories, releases, actions, API. | [`gitlab/`](../skills/gitlab/) — concepts both forges share go in [`reference/git-hosting-common.md`](../skills/reference/git-hosting-common.md), never duplicated across the two. |
+| `github/` | One file per GitHub operation: authentication, pull requests, issues, repositories, releases, actions, API. | `gitlab/` — concepts both forges share go in `reference/`, never duplicated across the two. |
 
 The same slot serves any future forge: `bitbucket/`, `gitea/`. A new forge is a new
 **service folder**, never a new type — the six types describe the *kind* of knowledge, and
@@ -366,14 +363,13 @@ a type (`tools/vcs/github-pr-create.py`) rather than becoming one.
 (`rules/`) or knowledge (`.agents/wiki/`). A skills page describes something that lives
 outside the repository; a wiki page describes the repository.
 
-**Authoring.** Use [`skill-creator.md`](../creators/skill-creator.md). One subject per
+**Authoring.** One subject per
 file, filename matching the subject, frontmatter `name` and `description` where the
 upstream format calls for them, and a link from the page that referred to the
 capability.
 
 **These pages are not gated.** Unlike an instruction, a skills page asserts nothing about
-how an agent must behave, so writing one is not a rule change. The never-install rule in
-[`repository.md`](../rules/repository.md) is still absolute and is a different thing:
+how an agent must behave, so writing one is not a rule change. The never-install rule is still absolute and is a different thing:
 it is about what may exist in the workspace, not about what may be written down.
 
 ## H. `.agents/tools/` — runnable capabilities
@@ -460,9 +456,7 @@ three lines are the only review most tools will get.
 
 ### Authoring
 
-Use [`tool-creator.md`](../creators/tool-creator.md). Registered in
-[`tool-index.md`](../index/tool-index.md).
+A tool is registered in the tool index.
 
 **Writing a tool is not gated** — it is code, not a rule about behaviour. But if writing
-it reveals a **missing rule**, stop and follow
-[`discovery-protocol.md`](../rules/discovery-protocol.md) and propose it.
+it reveals a **missing rule**, stop and propose it to the owner rather than writing it.

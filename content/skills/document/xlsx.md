@@ -6,7 +6,7 @@ description: How .xlsx works — the ZIP-of-XML package, shared strings, formula
 # xlsx
 
 A `.xlsx` is a ZIP of XML parts. Same packaging as
-[`docx.md`](docx.md), plus one thing that causes most of its bugs: **a formula and its
+a `.docx`, plus one thing that causes most of its bugs: **a formula and its
 value are stored separately.**
 
 ## The package
@@ -84,8 +84,3 @@ like a logic problem.
   first things a lossy round-trip drops.
 * **Open in Excel before trusting it.** LibreOffice and Google Sheets are more forgiving,
   which means passing in one of them does not prove Excel is happy.
-
-## See also
-
-* [`docx.md`](docx.md) — the same packaging without the formulas
-* [`pdf.md`](pdf.md) — for a fixed-layout export rather than an editable workbook

@@ -98,12 +98,3 @@ was already right and cannot be recovered from a file with no version history.
 That is worth stating plainly in this workspace, where it is a real constraint: **the root
 is not a git repository**, so there is no `git diff` to recover a bad edit from. Read
 first, edit narrowly.
-
-## See also
-
-* [`../visual-design/web-interface.md`](../visual-design/web-interface.md) — the same
-  hierarchy-before-polish principle applied to an interface
-* [`../guidance/code-review.md`](../guidance/code-review.md) — reviewing prose with the
-  same rigour as code
-* [`../../creators/information-creator.md`](../../creators/information-creator.md) — where
-  a page goes, and the audience test that decides it

@@ -5,8 +5,8 @@ description: GitLab CI/CD — pipelines, jobs, the .gitlab-ci.yml file, pipeline
 
 # GitLab CI/CD
 
-GitLab's pipeline is roughly GitHub's workflow run, and the same cautions from
-[`../github/actions.md`](../github/actions.md) apply: never cancel, re-run, or edit a CI
+GitLab's pipeline is roughly GitHub's workflow run, and the same cautions apply:
+never cancel, re-run, or edit a CI
 definition without being asked. This page covers what differs.
 
 ## The structure
@@ -152,11 +152,3 @@ from "the pipeline failed", and they need different responses.
 diffed against history at the root, and a wrong edit runs for everyone.
 
 **Sandbox:** needs the network; 403 in-session.
-
-## Related
-
-* [`merge-requests.md`](merge-requests.md) — pipelines gate a merge; `ci_must_pass` and
-  `ci_still_running` in `detailed_merge_status`
-* [`repositories.md`](repositories.md) — protected branches and environments
-* [`authentication.md`](authentication.md) — instance selection
-* [`api.md`](api.md) — the endpoints behind `glab ci`

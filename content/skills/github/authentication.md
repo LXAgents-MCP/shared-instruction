@@ -40,13 +40,12 @@ fix is to remove the variable for that command:
 or export a real token first. **Always** check whether `GITHUB_TOKEN` or `GH_TOKEN` is set
 before concluding that your login is broken.
 
-This workspace documents the same trap and a reusable `pat()` shell helper in
-[`../../rules/github-token-access-guide.md`](../../rules/github-token-access-guide.md).
-**Read that file rather than reimplementing it** — it is the normative version, and the
-details here are only enough to recognise the failure.
+A small shell helper makes the fix a habit: `pat() { env -u GITHUB_TOKEN "$@"; }`, then
+`pat gh pr create`. It is a **function** rather than a global `unset`, because the Codespace
+itself uses `GITHUB_TOKEN` for its own operations; the function scopes the change to one
+command.
 
-The rule is GitHub-specific. GitLab has no equivalent, so nothing here transfers — see
-[`../gitlab/authentication.md`](../gitlab/authentication.md).
+The rule is GitHub-specific. GitLab has no equivalent, so nothing here transfers.
 
 ## Tokens and scopes
 
@@ -78,9 +77,8 @@ authenticated as the account you think you are.
 ## For agents specifically
 
 **Never print a token.** Not in output, not in an error message, not in a command echo. If a
-command needs a token, reference it by variable name. See
-[`../../rules/no-session-links.md`](../../rules/no-session-links.md) for the parallel rule
-about session links.
+command needs a token, reference it by variable name. The parallel rule: never write a link to an assistant
+session into anything a repository records.
 
 **An agent should not hold a token at all where it can be avoided.** A read-only token that
 the session never uses is one fewer thing to leak. If a tool needs credentials, it takes
@@ -90,13 +88,3 @@ them from the environment and never writes them anywhere.
 session sandbox — that is the network, not the token. If you are seeing 403 *everywhere*,
 check whether you are in the sandbox before you debug authentication. Anything on this page
 has to be run by the user on their own machine.
-
-## Related
-
-* [`../../rules/github-token-access-guide.md`](../../rules/github-token-access-guide.md) —
-  the normative token guide and `pat()` helper
-* [`pull-requests.md`](pull-requests.md) — the most common reason to authenticate at all
-* [`../reference/git-hosting-common.md`](../reference/git-hosting-common.md) — vocabulary
-  shared with GitLab
-* [`../gitlab/authentication.md`](../gitlab/authentication.md) — the other forge, with
-  different failure modes

@@ -115,11 +115,3 @@ often the wrong project or the wrong instance than missing permissions.
 privileged-looking user, that may be the answer.
 
 **Sandbox:** needs the network; 403 in-session.
-
-## Related
-
-* [`merge-requests.md`](merge-requests.md) — project scope and iid apply here too
-* [`repositories.md`](repositories.md) — where projects, groups, and boards live
-* [`authentication.md`](authentication.md) — before any of this works
-* [`../reference/git-hosting-common.md`](../reference/git-hosting-common.md) — vocabulary,
-  including the "project" collision

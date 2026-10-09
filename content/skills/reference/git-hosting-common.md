@@ -6,8 +6,8 @@ description: The concepts every git host shares — forges, refs, review request
 # Git-hosting common
 
 The parts of a forge that are the same everywhere, and the small number of places where
-the same word means something else. Read this once; the per-operation pages under
-[`../github/`](../github/) and [`../gitlab/`](../gitlab/) assume it.
+the same word means something else. Read this once; the per-operation pages for each
+forge assume it.
 
 ## The vocabulary is not shared
 
@@ -96,10 +96,3 @@ Both service folders need all of the above. Duplicating it into `github/` and `g
 would give two copies that drift apart, and a reader would have no way to know which one
 to believe. Shared concept here, per-forge specifics in the service folder, one link
 between them.
-
-## Related
-
-* [`../github/`](../github/) — GitHub, one file per operation
-* [`../gitlab/`](../gitlab/) — GitLab, mirroring it
-* [`anthropic-agent-skills.md`](anthropic-agent-skills.md) — the Agent Skills format, and
-  why `description` is the only trigger mechanism
