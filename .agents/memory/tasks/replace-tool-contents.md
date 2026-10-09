@@ -19,7 +19,7 @@ condition that activates each. The server boots and `npm test` is green.
 the owner will delete it, so nothing here may depend on it afterwards: files are copied, never
 linked.
 
-**Status:** open. Tasks 1–6 of 7 landed.
+**Status:** open. Tasks 1–7 are committed and pushed; the pull requests are not yet open.
 
 ## Tasks
 
@@ -235,4 +235,35 @@ findings, and the release rows in `.agents/index/logs-index.md`.
   `.agents/index/memory-index.md` (`sse-to-mcp-transport.md`). Left alone.
 
 **Left for task 7.** The version, the changelog, the logs-index row, and filling the `PR` column.
+
+### Task 7 — release/4.0.0
+
+Committed. Version `4.0.0` — the owner approved it with the plan — in `package.json` and
+`package-lock.json` (`npm version 4.0.0 --no-git-tag-version`, so no tag exists). It is a major
+because tools are removed: 35 become 48, with 13 removed, 26 added and 22 kept under the same id.
+
+- **`wiki/logs/4/0/0/CHANGELOG.md`**, with the *Consumers must* line filled: read `automation`
+  every session; delete every row, call and override naming a removed tool (all thirteen are
+  listed); re-read the 22 tools that changed; restart open sessions; do not rely on
+  `shared_instructions` §H.
+- **`.agents/index/logs-index.md`** gains the `4/0/0` row, newest first. `content/index/logs-index.md`
+  no longer exists, so there is only one place to add it.
+- **`package-lock.json`** was at `3.1.0` while `package.json` was at `3.4.0`; both are `4.0.0` now.
+- **`repository-state`** names the version.
+
+**Two things the record cannot do yet.** The `PR` column stays empty and the status stays open
+until the pull requests exist, because their numbers do not. They need the owner's yes, which has
+not been asked for, and merging needs a second one. Once they are open, one more commit on this
+branch fills the column — it touches only the last branch, so nothing below it is rebased — and the
+record is marked done after the merge is verified against `master`.
+
+**Open, for the owner.** The contradictions listed under Task 4. The three links broken before this
+work. Whether to create the `v4.0.0` tag, which this work does not.
+
+**One test failure, not explained.** On the first full `npm test` of this task,
+`MCP_CLUSTER_WORKERS=2 binds the port from two separate workers` in `test/http.test.js` failed. It
+passed alone, three times in the HTTP file alone, and twice more in the full suite (54 of 54). That
+test waits for two worker processes to print their startup line, so it depends on how fast the
+machine forks under load; this task changed only documents and the version. No root cause was found,
+so none is claimed, and the test was not changed. If it recurs on CI it is a real finding to chase.
 
