@@ -19,19 +19,19 @@ condition that activates each. The server boots and `npm test` is green.
 the owner will delete it, so nothing here may depend on it afterwards: files are copied, never
 linked.
 
-**Status:** open. Tasks 1–7 are committed and pushed; the pull requests are not yet open.
+**Status:** done. Merged in order, #94 to #100, by rebase.
 
 ## Tasks
 
 | # | Title | Branch | PR |
 |---|---|---|---|
-| 1 | Task record | `chore/replace-tool-contents-plan` | |
-| 2 | Swap in the new set verbatim, fix tool ids, retire `mcp_list` | `refactor/tool-set` | |
-| 3 | Add the `release/{version}` branch form to the set | `feat/release-branch` | |
-| 4 | Make every tool end in itself | `refactor/self-contained-tools` | |
-| 5 | The `automation` hub | `feat/automation` | |
-| 6 | Correct current docs and the local set | `docs/tool-surface` | |
-| 7 | Release `4.0.0` | `release/4.0.0` | |
+| 1 | Task record | `chore/replace-tool-contents-plan` |[#94](https://github.com/LXAgents-MCP/shared-instruction/pull/94) |
+| 2 | Swap in the new set verbatim, fix tool ids, retire `mcp_list` | `refactor/tool-set` |[#95](https://github.com/LXAgents-MCP/shared-instruction/pull/95) |
+| 3 | Add the `release/{version}` branch form to the set | `feat/release-branch` |[#96](https://github.com/LXAgents-MCP/shared-instruction/pull/96) |
+| 4 | Make every tool end in itself | `refactor/self-contained-tools` |[#97](https://github.com/LXAgents-MCP/shared-instruction/pull/97) |
+| 5 | The `automation` hub | `feat/automation` |[#98](https://github.com/LXAgents-MCP/shared-instruction/pull/98) |
+| 6 | Correct current docs and the local set | `docs/tool-surface` |[#99](https://github.com/LXAgents-MCP/shared-instruction/pull/99) |
+| 7 | Release `4.0.0` | `release/4.0.0` |[#100](https://github.com/LXAgents-MCP/shared-instruction/pull/100) |
 
 Branches stack: task 1 from `master`, task `k` from task `k-1`.
 
@@ -266,4 +266,14 @@ passed alone, three times in the HTTP file alone, and twice more in the full sui
 test waits for two worker processes to print their startup line, so it depends on how fast the
 machine forks under load; this task changed only documents and the version. No root cause was found,
 so none is claimed, and the test was not changed. If it recurs on CI it is a real finding to chase.
+
+### Closing entry
+
+Pull requests #94–#100 were opened on the owner's yes, then merged in order 1…7 by rebase,
+each branch rebased onto `master` after the one below it merged and deleted as it merged. Rebase
+rewrites commits, so the SHAs on `master` are not the SHAs these branches were pushed with, and
+"is the branch an ancestor of `master`" cannot be the check; the check is that `master`'s tree equals
+the last branch's tree. This commit — the `PR` column and this status — is the one follow-up the
+release task needed, since the numbers did not exist until the pull requests did. It touches only
+the last branch, so nothing below it was rebased because of it.
 
