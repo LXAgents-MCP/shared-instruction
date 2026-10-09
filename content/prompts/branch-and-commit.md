@@ -20,7 +20,9 @@ it is always active; the user does not need to repeat it.**
 4. Split the request into ordered tasks and get the list confirmed. **Task 1 is always
    the task record. Task `n` is always the release. The work goes between them.**
 5. Create **one branch per task**, stacked in order: task 1 from the default branch, task
-   `k` from task `k-1`. Task 1's branch is `chore/{slug}-plan`.
+   `k` from task `k-1`. Task 1's branch is `chore/{slug}-plan`. The release task's branch is
+   `release/{version}` (for example `release/1.0.0`), written once the owner has approved the
+   version.
 6. **Task 1: write the confirmed list to `{repo}/.agents/memory/tasks/{slug}.md` before any of
    it is built.** Leave its `PR` column empty; step 13 and task `n` fill it.
 7. Work tasks `2…n-1` strictly in order.
@@ -43,7 +45,8 @@ it is always active; the user does not need to repeat it.**
 ## Branch names
 
 `{type}/{primary-noun}`, from: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`,
-`build`, `ci`, `chore`, `revert`.
+`build`, `ci`, `chore`, `revert`. The release task is the exception: `release/{version}`,
+the full `Major.Minor.Patch` with no `v` — the git tag carries the `v`.
 
 **Never commit to the default branch. Never use tool-preset branch prefixes**
 (`claude/`, `codex/`, `cursor/`, …), and never add a generated or random suffix. Full

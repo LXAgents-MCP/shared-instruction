@@ -104,10 +104,10 @@ pat() { env -u GITHUB_TOKEN "$@"; }
 ```bash
 pat() { env -u GITHUB_TOKEN "$@"; }
 
-pat gh pr create --repo OWNER/REPO --base master --head chore/release-1.2.3 \
+pat gh pr create --repo OWNER/REPO --base master --head release/1.2.3 \
   --title "Release 1.2.3" --body-file /tmp/body.md
 pat gh pr merge 12 --repo OWNER/REPO --merge --delete-branch=false
-pat git push -u origin chore/release-1.2.3
+pat git push -u origin release/1.2.3
 ```
 
 ### Do not unset it globally

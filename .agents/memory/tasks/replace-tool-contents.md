@@ -19,7 +19,7 @@ condition that activates each. The server boots and `npm test` is green.
 the owner will delete it, so nothing here may depend on it afterwards: files are copied, never
 linked.
 
-**Status:** open. Tasks 1–2 of 7 landed.
+**Status:** open. Tasks 1–3 of 7 landed.
 
 ## Tasks
 
@@ -89,4 +89,33 @@ Landed. `content/` is the owner's 47 files, byte-identical to the source reposit
 files that do not exist (task 4). Docs and the local set still name the removed tools
 (task 6). `package-lock.json` drifted to `3.4.0` under `npm install` and was reverted; it
 belongs to task 7.
+
+### Task 3 — feat/release-branch
+
+Landed. The release task's branch is `release/{version}` — the full `Major.Minor.Patch`, no
+`v`, because the git tag already carries it (`v1.0.0`). Stated in each tool that names branches,
+in its own words:
+
+- `plan_creator` — the slot table row and a §C bullet: the form, that `release` is a branch type
+  for this form alone while a release commit stays `chore(release): …`, that the task list shows
+  the placeholder until the version is approved, and that each repository's release branch carries
+  its own version. §F adds that the branch is not created before that approval.
+- `branching_strategy` — description, naming rule, allowed types, good and bad examples
+  (`release/v1.0.0`, `release/next`, `release/1.0`, `chore/release-1.0.0`), a *The release
+  branch* section, and the cross-repository sentence, which otherwise demanded the same branch
+  name in every repository.
+- `branch_and_commit` — step 5 and the *Branch names* section, which repeat the type list.
+- `github_token_access_guide` — its example branch `chore/release-1.2.3` is now `release/1.2.3`.
+
+`commit_conventions` is unchanged: `release` is not a commit type.
+
+**No tag is created, and no tool tells an agent to create one.** A tag is a version carrier and
+needs its own approval.
+
+Two tests pin the wording: each of the three branch-naming tools contains `release/{version}`
+and no `v`-prefixed form outside the bad-examples table, and no tool but `branching_strategy`
+still shows `chore/release`. A typo guard, not a control. 18 pass in `server.test.js`.
+
+**For task 4:** this is the only deliberate change to the owner's wording. Task 4's diff against
+this branch should be links and pointers and nothing else.
 
