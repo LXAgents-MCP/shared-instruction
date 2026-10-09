@@ -102,3 +102,19 @@ the Render service. The `${MCP_AUTH_TOKEN}` header expansion and the `claude mcp
 form are written from the clients' documented behaviour and were not run against a client here.
 
 Left for task 3: version, changelog, the two log indexes, the `PR` column and closing this record.
+
+### Task 3 — release/5.0.0
+
+Landed. The version is `5.0.0`, approved by the owner: a client of a deployed HTTP instance that
+sends no token now gets a `401`, and the new version will not boot without `MCP_AUTH_TOKEN`.
+`package.json` and the lockfile carry it, `wiki/logs/5/0/0/CHANGELOG.md` records it with the
+**Consumers must** steps, and `.agents/index/logs-index.md` has its row. Image tags in the docs
+move to `5.0.0`; several had been left at `3.1.0`. The repository state names the new version. No
+git tag was created; a tag carries a version too and needs its own approval.
+
+**The order of operations matters here.** The Render service tracks `master` and redeploys on
+merge, so `MCP_AUTH_TOKEN` has to be set on it before this lands, or the deploy fails at startup.
+The changelog says so first among the steps.
+
+The `PR` column and the closing of this record follow once the pull requests exist, in their own
+commit on this branch. Nothing is stacked on this branch, so that commit invalidates nothing.
