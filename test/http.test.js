@@ -17,9 +17,9 @@ import { SERVER_NAME } from "../src/version.js";
  * How many tools a correctly built surface has.
  *
  * Derived from the same array `createServer()` registers from, so adding a file to
- * `content/` does not mean editing four hardcoded numbers in this file. It was derived
- * from `TOOL_FILES.size + 1` before this — the generated per-file tools plus the one
- * hand-written `mcp_list` — which is the count `server.test.js` asserts against.
+ * `content/` does not mean editing four hardcoded numbers in this file. Every tool is
+ * generated from a file, so it equals `TOOL_FILES.size`, which is the count
+ * `server.test.js` asserts against.
  *
  * **The lower bound is the point.** A count derived from the thing under test passes
  * when the thing under test is empty, so this asserts the surface is real before using

@@ -1,13 +1,24 @@
 ---
 name: memory-creator
-description: Maintains .agents/memory/ — the one creator exempt from the approval gate, because memory that waits for permission never gets written.
-version: 1.0.0
-author: LXAgents
+description: Maintains a repository's .agents/memory/ — the one creator exempt from the approval gate, because memory that waits for permission never gets written.
 ---
 
 # Memory Creator
 
-Creates and maintains files under the local `.agents/memory/`.
+Creates and maintains files under `{repo}/.agents/memory/`.
+
+## Step 0 — where is the work?
+
+**Before anything else, name the repository doing the work.** This creator writes only into
+a project's memory.
+
+**At a workspace root, this creator does not run.** There is no memory tree there, and
+creating one is refused — see [`../rules/memory-policy.md`](../rules/memory-policy.md) §A and
+[`../rules/directories.md`](../rules/directories.md) §A.1.
+
+If you are at a root and believe state must be recorded, the work belongs in a project.
+**Name the project and go there.** If the subject is not project work at all, it is not
+memory — use the routing table at the bottom of this file.
 
 ## No approval gate
 
@@ -18,28 +29,28 @@ gets written, and a session that records nothing forces the next session to star
 The exemption covers memory only. The moment this creator wants to write a rule or a wiki
 page, the normal gates apply.
 
-## Memory is always local
+## Memory is local to its repository
 
-It lives in the consuming repository's `.agents/memory/`. This creator **never** writes
-into the shared set, never copies memory between repositories, and never uses memory to
-carry a convention.
+It lives in the repository doing the work, at `{repo}/.agents/memory/`. This creator never
+copies memory between repositories, never uses memory to carry a convention, and never
+writes outside the repository the work is in.
 
 ## Procedure
 
-1. Pick the right `{type}`:
+1. Pick the right `{type}`, under `{repo}/.agents/memory/`:
 
    | Situation | File |
    |---|---|
-   | Ongoing work | `tasks/{slug}.md` — created as **task 1** of the work it plans, then appended to by every task after it. See [`plan-creator.md`](agents://creators/plan-creator.md) §B. |
+   | Ongoing work | `tasks/{slug}.md` — created as **task 1** of the work it plans, then appended to by every task after it. See [`plan-creator.md`](plan-creator.md) §B. |
    | What happened in a session | `sessions/{yyyy-mm-dd}-{slug}.md` |
    | A choice with consequences | `decisions/{slug}.md` |
    | Current live state of an area | `state/{area}.md`, overwritten in place |
 
-2. Check `memory-index.md` for an existing file on the same subject and **extend it rather
-   than creating a near-duplicate**.
+2. Check `{repo}/.agents/index/memory-index.md` for an existing file on the same subject and
+   **extend it rather than creating a near-duplicate**.
 3. Write or update the file: frontmatter, one `#` H1, dated entries newest-first under
    `## {YYYY-MM-DD}` headings.
-4. Register it in `memory-index.md`.
+4. Register it in `{repo}/.agents/index/memory-index.md`.
 5. Commit — **in the same commit as the work it describes**.
 
 ## When to write, without being asked
@@ -55,6 +66,7 @@ carry a convention.
 
 ## Never write
 
+* **At a workspace root — never, for any type.** Step 0 stops it; this is the refusal.
 * Secrets, tokens, credentials, private keys.
 * Customer data or personal data.
 * Full file dumps.
@@ -62,6 +74,10 @@ carry a convention.
   records the URL of the session it happened in.**
 * Anything you would not put in a public commit — memory is committed to git like
   everything else.
+* **A path outside the repository** — an absolute path, a home directory, or a machine's
+  folder name. Memory is read on other machines. See
+  [`../rules/repository.md`](../rules/repository.md) §No file names a location outside
+  itself.
 
 ## Memory is never normative
 
@@ -77,107 +93,48 @@ commit as your work.
 
 * When a task ships, mark its `tasks/` file `status: done` with a closing entry. For a
   multi-task request this happens in the **release task**, which also fills the record's
-  `PR` column — see [`plan-creator.md`](agents://creators/plan-creator.md)
+  `PR` column — see [`plan-creator.md`](plan-creator.md)
   §F.
 * At each release, fold `sessions/` files older than that release into one digest under the
   release's log directory, then delete the originals and their rows in `memory-index.md` —
-  see [`changelog-creator.md`](agents://creators/changelog-creator.md).
+  see [`changelog-creator.md`](changelog-creator.md).
 
-Full policy: [`../rules/memory-policy.md`](agents://rules/memory-policy.md).
+Full policy: [`../rules/memory-policy.md`](../rules/memory-policy.md).
 
 ## Boundaries
 
 This creator never writes rules and never writes wiki pages in either tree.
 
 * If a memory entry starts sounding like a permanent rule, route it through
-  [`instruction-creator.md`](agents://creators/instruction-creator.md) and
-  [`../rules/discovery-protocol.md`](agents://rules/discovery-protocol.md).
+  [`instruction-creator.md`](instruction-creator.md) and
+  [`../rules/discovery-protocol.md`](../rules/discovery-protocol.md).
 * If it is a durable fact, route it through
-  [`information-creator.md`](agents://creators/information-creator.md).
+  [`information-creator.md`](information-creator.md).
 
-## Branch & Commit Convention
+**And it never runs at a workspace root** — step 0, and the refusal above.
 
-Applies to every commit this creator makes.
+## Related
 
-**Branches** — `{type}/{primary-noun}`, from `feat`, `fix`, `docs`, `style`, `refactor`,
-`perf`, `test`, `build`, `ci`, `chore`, `revert`. Branch off the default branch; one task
-per branch, one pull request per branch. Never commit directly to the default branch,
-never use a tool-preset prefix (`claude/`, `codex/`, `cursor/`), never add a generated
-suffix. Multi-task work stacks in dependency order. Canonical:
-[`../git/branching-strategy.md`](agents://git/branching-strategy.md).
+Everything this creator follows, each in the file that owns it — **not restated here**:
 
-**Commits** — `type(optional scope): description`. Imperative subject, plain text, no
-trailing period, no links, no issue IDs. Optional body of short bullets saying what and
-why. Commit each logical change; never batch a session into one commit; review the diff
-first. Index and memory updates ride in the **same commit** as the change they describe.
-Canonical: [`../git/commit-conventions.md`](agents://git/commit-conventions.md).
+| Concern | Owner |
+|---|---|
+| Branch naming, one branch per task | [`../git/branching-strategy.md`](../git/branching-strategy.md) |
+| Commit message format | [`../git/commit-conventions.md`](../git/commit-conventions.md) |
+| Pull request body | [`../git/pull-request-template.md`](../git/pull-request-template.md) |
+| Placement — the authority, wins over this file | [`../rules/directories.md`](../rules/directories.md) §A.1 |
+| Why the root has no memory | [`../rules/memory-policy.md`](../rules/memory-policy.md) §A |
+| A rule you notice mid-task | [`../rules/discovery-protocol.md`](../rules/discovery-protocol.md) |
+| What this workspace may never install | [`../rules/repository.md`](../rules/repository.md) |
+| Version bumps — never automatic | [`../rules/versioning.md`](../rules/versioning.md) |
+| What may be registered, and where | [`index-creator.md`](../creators/index-creator.md) |
+| The plan that runs before this | [`plan-creator.md`](../creators/plan-creator.md) |
 
-## Which Set
+**There is no second instruction set.** This workspace is plain `.md` files under
+`.agents/` — no server serving them, no plugin, no connector, nothing to override.
 
-Choose the set before the folder. Universal content goes to the shared set served by the
-`lxagents-shared-instruction` connector; repository-specific content stays local; memory is always
-local. A shared file is never copied into a repository except as a declared override
-registered in `.agents/index/root-index.md`. See
-[`../rules/shared-instructions.md`](agents://rules/shared-instructions.md).
-
-## Directory Mandate
-
-* Indexes: `.agents/index/{scope}-index.md` — never an `INDEX.md`, anywhere.
-* Agent wiki: `.agents/wiki/{type}/{file}.md` (frontmatter). Human wiki:
-  `wiki/{folder}/{file}.md` (no frontmatter).
-* Memory: `.agents/memory/{type}/{file}.md` — local only.
-* Instructions: `{set}/{folder}/{file}.md` — one subject per file, matching the filename.
-
-Audience test: would a human contributor read it? → `wiki/`. Does it exist only so an agent
-behaves correctly? → `.agents/wiki/`. Both? Facts once in `wiki/`, linked from the agent
-page. When nothing fits, create a new folder rather than forcing the file into the closest
-one. Placement authority: [`../rules/directories.md`](agents://rules/directories.md).
-
-## No Session Links
-
-Nothing this creator writes, commits, or posts may carry an assistant or tool session link
-— including any trailer or footer its tooling appends by default. Strip it before the
-commit or the post goes out.
-[`../rules/no-session-links.md`](agents://rules/no-session-links.md)
-
-## Registration
-
-Every file this creator creates, moves, or removes is registered in the index that owns
-that scope, **in the same commit**. See
-[`index-creator.md`](agents://creators/index-creator.md).
-
-## Pull Requests and Versions
-
-Any pull request follows
-[`../git/pull-request-template.md`](agents://git/pull-request-template.md); merging requires
-user approval per
-[`plan-creator.md`](agents://creators/plan-creator.md) §F. Version changes
-require user approval per [`../rules/versioning.md`](agents://rules/versioning.md).
-
-## Discovery Protocol
-
-Source of truth: [`../rules/discovery-protocol.md`](agents://rules/discovery-protocol.md).
-
-```
-## Discovery Protocol
-
-While working, if you notice an instruction worth adding — a new rule, or new
-content for an existing instruction file — do NOT create or edit it yourself.
-Collect the findings, and when the task is done present them to the user:
-
-* one finding per message block, each in its own code block;
-* state the target set — `local` (this repository) or `shared` (the organization's
-  instruction set served by the `lxagents-shared-instruction` connector);
-* include the proposed file path, `name`, `description`, and the full proposed
-  body;
-* explain in one line why it is worth adding.
-
-Then let the user select which findings to apply. Create only the selected ones.
-Never batch-apply, never apply silently. A `shared` finding is never written from a
-consuming repository — it is reported so it can be raised against the shared set.
-
-**Scope of this gate:** it covers instruction files in either set. Documentation
-pages under `wiki/` and `.agents/wiki/` may be written when the facts are real and
-verified. Memory under `.agents/memory/` is written freely and automatically — see
-`memory-policy.md`.
-```
+`branching-strategy.md`, `commit-conventions.md`, and `pull-request-template.md` are written
+for a repository with a default branch. **A workspace root has no git at all**, so there is
+no branch to create and no commit to make there — and no memory either. Root work is written
+directly, planned in `.agents/plans/`, and described in `.agents/wiki/context/`. The
+conventions here, and this creator, apply inside `orgs/{org}/{repo}/`.

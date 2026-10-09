@@ -1,8 +1,6 @@
 ---
 name: model-naming-convention
 description: Every stored model identifier is {platform}/{model}, lowercase — the format, the normalization, and how to build one for a direct API call.
-version: 1.0.0
-author: LXAgents
 ---
 
 # Model Naming Convention

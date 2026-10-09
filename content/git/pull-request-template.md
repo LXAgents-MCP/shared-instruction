@@ -1,8 +1,6 @@
 ---
 name: pull-request-template
 description: Pull request title rules (human-readable, never a commit prefix) and the required Overview / Added / Modified / Deleted / Summary body.
-version: 1.0.0
-author: LXAgents
 ---
 
 # Pull Request Template
@@ -73,9 +71,9 @@ Use exactly these sections, in this order:
 * **No session links anywhere** in the title, the body, or a review comment — and no
   generated-by footer carrying one. Strip whatever your tooling appends before posting.
   Provenance names the tool, never the conversation. See
-  [`../rules/no-session-links.md`](agents://rules/no-session-links.md).
+  [`../rules/no-session-links.md`](../rules/no-session-links.md).
 * Add the merge-order line required by
-  [`../creators/plan-creator.md`](agents://creators/plan-creator.md) §F when the PR is
+  [`../creators/plan-creator.md`](../creators/plan-creator.md) §F when the PR is
   part of an ordered chain — including a chain that spans repositories. For example:
   `Merge order: 2 of 4 — merges after #17`.
 * If a repository also has a `.github/pull_request_template.md`, **this file stays the

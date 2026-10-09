@@ -19,7 +19,7 @@ condition that activates each. The server boots and `npm test` is green.
 the owner will delete it, so nothing here may depend on it afterwards: files are copied, never
 linked.
 
-**Status:** open. Task 1 of 7.
+**Status:** open. Tasks 1–2 of 7 landed.
 
 ## Tasks
 
@@ -64,3 +64,29 @@ workspace". Published here, they reach every consumer. Their meaning is not chan
 Landed: this record and its row in `memory-index.md`. The `PR` column is filled by task 7, not
 here, so no later branch needs a rebase. Nothing under `content/`, `src/` or `test/` changes in
 this task. Task 2 depends on nothing from this entry except the plan above.
+
+### Task 2 — refactor/tool-set
+
+Landed. `content/` is the owner's 47 files, byte-identical to the source repository
+(`diff -r` is empty). 34 old files are gone: 22 overwritten and 12 with no successor
+(`AGENTS.md`, the four `index/` files, `planning/task-workflow`, both `prompts/agents-*`,
+`rules/{auto-activation,duplicate-instruction-audit,mcp-connector,mcp-tool-availability}`).
+
+- **Ids.** `NAME_OVERRIDES` is now exported and holds the 13 forge pages
+  (`github_actions` … `gitlab_repositories`); the `AGENTS.md` override is gone with its file.
+  Boot now throws on an override that matches no file, so a rename cannot leave one inert.
+- **`mcp_list` retired.** `src/tools/mcp-list.js` deleted, with `src/tools/instruction.js` and
+  `src/content.js`, which nothing imported once it went. The surface is 47 generated tools and
+  no hand-written one.
+- **Tests.** Frontmatter is two fields, `name` and `description`; the new set carries no
+  `version` or `author`. Removed the tests that pinned deleted files: the shared-procedure
+  check on creators, `instructions_index`, `auto_activation`, and the six `mcp_list` tests.
+  Added override and forge-naming checks. 47 pass, 0 fail.
+- **`src/server.js`.** The `instructions` string no longer names `root_index`,
+  `agents_entry_point` or `mcp_list`. Task 5 rewrites it for `automation`.
+
+**Left for later tasks.** The files still link to each other, and 25 of those links point at
+files that do not exist (task 4). Docs and the local set still name the removed tools
+(task 6). `package-lock.json` drifted to `3.4.0` under `npm install` and was reverted; it
+belongs to task 7.
+

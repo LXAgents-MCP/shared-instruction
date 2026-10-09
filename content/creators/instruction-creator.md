@@ -1,8 +1,6 @@
 ---
 name: instruction-creator
 description: Writes instruction files in either set — decide the set, confirm it is new, write it testable, register it, wire its trigger.
-version: 1.0.0
-author: LXAgents
 ---
 
 # Instruction Creator
@@ -12,120 +10,130 @@ else.
 
 ## Procedure
 
-1. **Decide the set.** *Is this true for more than this repository?* Yes → shared; no →
-   local. From a consuming repository a shared rule is **never written** — it is proposed
-   against `LXAgents-MCP/shared-instruction`.
-2. **Confirm it does not already exist.** Check the local `agents-index.md`, then the
-   connector's tool list for the shared set — one tool per shared file, each carrying that
-   file's description. If something already covers the subject, extend that file instead of
-   adding a near-duplicate — subject to the discovery protocol below.
+1. **Name the repository.** The rule goes in `{repo}/.agents/`, where `{repo}` is the
+   repository doing the work. There is **one set** — this workspace is plain `.md` files,
+   with no server serving them and no second set to reconcile against.
+2. **Confirm it does not already exist.** Check `agents-index.md`. If something already
+   covers the subject, extend that file — **but only when the extension shares that file's
+   `name`** (step 4). A new rule about a new topic is a **new file**, whatever the old file
+   happens to mention nearby.
 3. **Choose or create the folder.** Use the tables in
-   [`../rules/directories.md`](agents://rules/directories.md). If nothing fits, create a
+   [`../rules/directories.md`](../rules/directories.md). If nothing fits, create a
    new folder — lowercase kebab-case, a plain topic noun — and register it in that file's
    tables in the same commit.
-4. **Write the file.** Valid frontmatter, one topic, one `#` H1. Rules in the imperative
+4. **Write the file.** Frontmatter is **`name` and `description` only** — see below.
+   **One topic**, one `#` H1, and only what belongs to that topic. Rules in the imperative
    and testable: a reader must be able to tell whether they complied. Replace "should
    generally" with the actual condition.
 5. **Register it** in the index that owns that scope, in the same commit.
-6. **If it introduces a new automatic behavior**, add its trigger row to
-   [`../rules/auto-activation.md`](agents://rules/auto-activation.md) and mirror the row
-   into consuming repositories' `AGENTS.md`.
+6. **If it introduces a new automatic behavior**, add its trigger row to the
+   Instruction tools block in the root [`AGENTS.md`](../../AGENTS.md).
 7. **Commit.**
+
+## Frontmatter is `name` and `description`. Nothing else.
+
+```yaml
+---
+name: one-kebab-case-name
+description: What it covers, and when it applies — one or two lines.
+---
+```
+
+**No `version`. No `author`.** Those keys were carried from the served-set model, where a
+file's version told a consumer which release it had adopted. That model is gone, so they
+were 30 identical `1.0.0` stamps that had never once been bumped — **a version that never
+changes records nothing but the day it was written.** Removed from every file in
+`.agents/` on 2026-10-04.
+
+Three reasons they are worse than useless here:
+
+**They cannot be maintained honestly.** Every one was `1.0.0` while the files changed
+substantially beneath them, which is the exact failure a version number exists to prevent —
+a `1.0.0` that means nothing is worse than no number, because something reading it trusts
+it. And `versioning.md` requires approval for every bump, so keeping them would mean either
+gating every substantive edit or leaving them permanently stale.
+
+**`author` is noise for a single-author workspace.** `LXAgents` on 29 files and `RBZagan`
+on one recorded who typed the first version of a file, which stops being true the moment the
+file is edited — and **every one of them has been edited since.** There is no version
+control at the root to recover the authorship.
+
+**There is no consumer to serve.** A version is a claim made to someone downstream. There
+is no downstream.
+
+**What still matters is provenance, and it is recorded elsewhere** — in
+[`../rules/memory-policy.md`](../rules/memory-policy.md) for what a *project* may remember,
+and in
+[`../wiki/context/instruction-set-history.md`](../wiki/context/instruction-set-history.md)
+for how this tree reached its current shape. A file's history is a memory concern, not a
+frontmatter key.
+
+**Do not reintroduce either key** to record that a file changed. If a change is worth
+announcing, that is a memory record or the tree's history, not a number in a header.
+
+## One file holds one subject
+
+This is the rule the rest of this creator exists to enforce, and it is worth being exact
+about, because two defensible-sounding instincts pull against it.
+
+**A file holds the information that belongs to its own subject, and nothing else.** Not a
+related section, not a shared preamble, not a copy of another rule for convenience. If the
+content belongs to a different `name`, it belongs in a different file.
+
+**New scope means a new file.** If a rule you are about to add does not share the file's
+`name`, it is a new file — regardless of how close the subject feels. The test is the
+heading, not the topic area.
+
+The two instincts that pull against it:
+
+**"This would duplicate what's already there."** Sometimes. A rule that reads as a
+near-duplicate but has a different subject is not one. **Duplication is the lesser problem
+here**, and this workspace has the receipts: a block copied into six creator files on
+purpose, registered as an allowed exception, and then drifted into a claim about a server
+that no longer existed — six identical copies, all wrong in the same direction, because
+nobody edits six places when one rule changes. **Facts live once, and every other file links
+to them.**
+
+**"It makes this file unusable on its own."** It does, and that is correct. A creator that
+also carried the commit format, the session-link rule, the placement mandate, and the
+discovery gate was 85 lines of somebody else's rules wrapped around 45 lines of its own —
+and the part an agent actually needed was the smaller share. **Link, do not inline.** The
+files it points at are one hop away and are the ones that get updated.
 
 ## What this creator refuses
 
 * Writing documentation into an instruction folder — that is
-  [`information-creator.md`](agents://creators/information-creator.md).
+  [`information-creator.md`](../creators/information-creator.md).
 * Writing state — that is
-  [`memory-creator.md`](agents://creators/memory-creator.md).
+  [`memory-creator.md`](../creators/memory-creator.md).
+* Writing a plan — that is [`plan-creator.md`](../creators/plan-creator.md), and it
+  happens before this creator runs.
 * Putting rules in `AGENTS.md` or in any index. Those are entry points and routers.
-* Appending a cross-cutting rule as a section of an unrelated file. If the section heading
-  has nothing to do with the file's `name`, it is a new file.
-* **Writing a universal rule into a consuming repository.** That is a shared proposal.
+* Appending a rule to a file whose `name` it does not share. **That is a new file.**
+* Adding a `version` or an `author` to frontmatter. **`name` and `description` only.**
+* **Inlining another file's content** so this one reads on its own.
+* **Writing anything that assumes an MCP server, a plugin, or a second instruction set.**
+  This workspace is plain `.md`. If content is served from somewhere else, that is a
+  finding under [`../rules/discovery-protocol.md`](../rules/discovery-protocol.md), not a
+  new rule.
+## Related
 
-## Branch & Commit Convention
+Everything this creator follows, each in the file that owns it — **not restated here**:
 
-Applies to every commit this creator makes.
+| Concern | Owner |
+|---|---|
+| Branch naming, one branch per task | [`../git/branching-strategy.md`](../git/branching-strategy.md) |
+| Commit message format | [`../git/commit-conventions.md`](../git/commit-conventions.md) |
+| Pull request body | [`../git/pull-request-template.md`](../git/pull-request-template.md) |
+| Placement — the authority, wins over this file | [`../rules/directories.md`](../rules/directories.md) |
+| A rule you think should exist | [`../rules/discovery-protocol.md`](../rules/discovery-protocol.md) |
+| What this workspace may never install | [`../rules/repository.md`](../rules/repository.md) |
+| Version bumps — never automatic | [`../rules/versioning.md`](../rules/versioning.md) |
+| Registering the file in an index | [`index-creator.md`](../creators/index-creator.md) |
+| The plan that runs before this | [`plan-creator.md`](../creators/plan-creator.md) |
+| A rule you notice mid-task | [`../rules/discovery-protocol.md`](../rules/discovery-protocol.md) |
 
-**Branches** — `{type}/{primary-noun}`, from `feat`, `fix`, `docs`, `style`, `refactor`,
-`perf`, `test`, `build`, `ci`, `chore`, `revert`. Branch off the default branch; one task
-per branch, one pull request per branch. Never commit directly to the default branch,
-never use a tool-preset prefix (`claude/`, `codex/`, `cursor/`), never add a generated
-suffix. Multi-task work stacks in dependency order. Canonical:
-[`../git/branching-strategy.md`](agents://git/branching-strategy.md).
-
-**Commits** — `type(optional scope): description`. Imperative subject, plain text, no
-trailing period, no links, no issue IDs. Optional body of short bullets saying what and
-why. Commit each logical change; never batch a session into one commit; review the diff
-first. Index and memory updates ride in the **same commit** as the change they describe.
-Canonical: [`../git/commit-conventions.md`](agents://git/commit-conventions.md).
-
-## Which Set
-
-Choose the set before the folder. Universal content goes to the shared set served by the
-`lxagents-shared-instruction` connector; repository-specific content stays local; memory is always
-local. A shared file is never copied into a repository except as a declared override
-registered in `.agents/index/root-index.md`. See
-[`../rules/shared-instructions.md`](agents://rules/shared-instructions.md).
-
-## Directory Mandate
-
-* Indexes: `.agents/index/{scope}-index.md` — never an `INDEX.md`, anywhere.
-* Agent wiki: `.agents/wiki/{type}/{file}.md` (frontmatter). Human wiki:
-  `wiki/{folder}/{file}.md` (no frontmatter).
-* Memory: `.agents/memory/{type}/{file}.md` — local only.
-* Instructions: `{set}/{folder}/{file}.md` — one subject per file, matching the filename.
-
-Audience test: would a human contributor read it? → `wiki/`. Does it exist only so an agent
-behaves correctly? → `.agents/wiki/`. Both? Facts once in `wiki/`, linked from the agent
-page. When nothing fits, create a new folder rather than forcing the file into the closest
-one. Placement authority: [`../rules/directories.md`](agents://rules/directories.md).
-
-## No Session Links
-
-Nothing this creator writes, commits, or posts may carry an assistant or tool session link
-— including any trailer or footer its tooling appends by default. Strip it before the
-commit or the post goes out.
-[`../rules/no-session-links.md`](agents://rules/no-session-links.md)
-
-## Registration
-
-Every file this creator creates, moves, or removes is registered in the index that owns
-that scope, **in the same commit**. See
-[`index-creator.md`](agents://creators/index-creator.md).
-
-## Pull Requests and Versions
-
-Any pull request follows
-[`../git/pull-request-template.md`](agents://git/pull-request-template.md); merging requires
-user approval per
-[`plan-creator.md`](agents://creators/plan-creator.md) §F. Version changes
-require user approval per [`../rules/versioning.md`](agents://rules/versioning.md).
-
-## Discovery Protocol
-
-Source of truth: [`../rules/discovery-protocol.md`](agents://rules/discovery-protocol.md).
-
-```
-## Discovery Protocol
-
-While working, if you notice an instruction worth adding — a new rule, or new
-content for an existing instruction file — do NOT create or edit it yourself.
-Collect the findings, and when the task is done present them to the user:
-
-* one finding per message block, each in its own code block;
-* state the target set — `local` (this repository) or `shared` (the organization's
-  instruction set served by the `lxagents-shared-instruction` connector);
-* include the proposed file path, `name`, `description`, and the full proposed
-  body;
-* explain in one line why it is worth adding.
-
-Then let the user select which findings to apply. Create only the selected ones.
-Never batch-apply, never apply silently. A `shared` finding is never written from a
-consuming repository — it is reported so it can be raised against the shared set.
-
-**Scope of this gate:** it covers instruction files in either set. Documentation
-pages under `wiki/` and `.agents/wiki/` may be written when the facts are real and
-verified. Memory under `.agents/memory/` is written freely and automatically — see
-`memory-policy.md`.
-```
+`branching-strategy.md`, `commit-conventions.md`, and `pull-request-template.md` are written
+for a repository with a default branch. **The root here has no git at all**, so there is no
+branch to create and no commit to make — the root work is written directly and recorded in
+memory. The conventions apply inside `orgs/{org}/{repo}/`.

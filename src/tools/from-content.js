@@ -6,13 +6,31 @@ import { CONTENT_DIR } from "../version.js";
  * Names that do not survive mechanical derivation.
  *
  * Everything else is named after its own filename, so adding a file to `content/`
- * adds the tool that serves it without anyone deciding what to call it. The one
- * exception is the entry point: `AGENTS.md` would derive to `agents`, which says
- * nothing about which document it is.
+ * adds the tool that serves it without anyone deciding what to call it. The
+ * exceptions are the per-forge pages under `skills/github/` and `skills/gitlab/`:
+ * the folder is dropped from the derived name, so `api`, `authentication`, `issues`
+ * and `repositories` exist on both forges and would collide, and the rest (`ci`,
+ * `actions`, `releases`) say nothing about which forge they belong to. Each is named
+ * for its forge instead, matching the `name` in its own frontmatter.
+ *
+ * Keys are set-relative paths. A key that matches no file is a startup error, so a
+ * rename cannot leave an override quietly matching nothing.
  */
-const NAME_OVERRIDES = {
-  "AGENTS.md": "agents_entry_point",
-};
+export const NAME_OVERRIDES = Object.freeze({
+  "skills/github/actions.md": "github_actions",
+  "skills/github/api.md": "github_api",
+  "skills/github/authentication.md": "github_authentication",
+  "skills/github/issues.md": "github_issues",
+  "skills/github/pull-requests.md": "github_pull_requests",
+  "skills/github/releases.md": "github_releases",
+  "skills/github/repositories.md": "github_repositories",
+  "skills/gitlab/api.md": "gitlab_api",
+  "skills/gitlab/authentication.md": "gitlab_authentication",
+  "skills/gitlab/ci.md": "gitlab_ci",
+  "skills/gitlab/issues.md": "gitlab_issues",
+  "skills/gitlab/merge-requests.md": "gitlab_merge_requests",
+  "skills/gitlab/repositories.md": "gitlab_repositories",
+});
 
 /** The shape an MCP client will accept as a tool name. */
 const TOOL_NAME = /^[a-z][a-z0-9_]{0,63}$/;
@@ -92,8 +110,17 @@ function buildContentTools() {
   const tools = [];
   const files = new Map();
   const claimed = new Map();
+  const paths = markdownFiles();
 
-  for (const path of markdownFiles()) {
+  for (const key of Object.keys(NAME_OVERRIDES)) {
+    if (!paths.includes(key)) {
+      throw new Error(
+        `NAME_OVERRIDES names ${key}, which is not in the set. Remove the override or restore the file.`,
+      );
+    }
+  }
+
+  for (const path of paths) {
     const name = toolNameFor(path);
 
     if (!TOOL_NAME.test(name)) {

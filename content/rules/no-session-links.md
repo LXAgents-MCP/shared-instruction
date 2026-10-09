@@ -1,8 +1,6 @@
 ---
 name: no-session-links
 description: Never record an assistant or tool session link — what counts, why, what to write instead, and verifying the artifact after you post it.
-version: 1.0.0
-author: LXAgents
 ---
 
 # No Session Links
@@ -69,12 +67,12 @@ identifier.
 Put the substance in the artifact itself:
 
 * **In a commit:** say what changed and why, in the body, per
-  [`git/commit-conventions.md`](agents://git/commit-conventions.md). If the reasoning
-  is long, it belongs in the repository's `.agents/memory/decisions/` — see
-  [`memory-policy.md`](agents://rules/memory-policy.md).
+  [`git/commit-conventions.md`](../git/commit-conventions.md). If the reasoning
+  is long, it belongs in the repository's `.agents/memory/decisions/` — in a project, never at a root. See
+  [`memory-policy.md`](../rules/memory-policy.md).
 * **In a pull request:** the Overview and Summary sections carry the context a
   reviewer needs, per
-  [`git/pull-request-template.md`](agents://git/pull-request-template.md).
+  [`git/pull-request-template.md`](../git/pull-request-template.md).
 * **When provenance genuinely matters:** name the tool, not the session — a
   `Co-Authored-By:` trailer, or a sentence in the pull request body. Never a URL.
 

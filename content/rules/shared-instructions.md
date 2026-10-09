@@ -1,182 +1,120 @@
 ---
 name: shared-instructions
-description: How shared and local sets combine — precedence, overrides, promotion, adoption, and the always-on task and git workflow mandate.
-version: 1.0.0
-author: LXAgents
+description: The always-on task and git workflow mandate — what applies to every request without a trigger, and which file owns each part.
 ---
 
-# Shared Instructions
+# Workspace Instructions
 
-Open this the moment you are unsure whether something is local or universal.
+**These files are yours to edit.** A convention that lives here is not a vendored copy of
+something better kept elsewhere — it *is* the convention. Improve it locally; there is
+nowhere else for the improvement to go.
 
-## A. The two sets
+## A. One set
 
-| Set | Where it lives | What it holds |
-|---|---|---|
-| **Shared** | The `lxagents-shared-instruction` MCP server, addressed as `agents://` | Everything true across repositories. |
-| **Local** | `{repo}/.agents/` | Everything true of exactly one repository. |
+There is one instruction set, at `{repo}/.agents/`, and it is authoritative here.
 
-Memory, indexes, both wikis, and `rules/repository.md` are **always local**. Everything
-universal is **always shared**. There is no third place.
+**This workspace runs on plain `.md` files.** No MCP server serves them, no plugin supplies
+them, no marketplace distributes them, and no second set exists to reconcile against. A
+capability is recorded as a page — see
+[`../rules/repository.md`](../rules/repository.md) §The never-install rule — and never
+installed, cloned, or resolved from somewhere else.
 
-**This holds for the producer repository too.** `LXAgents-MCP/shared-instruction`
-publishes the shared set, but it is also an ordinary software project with source, tests
-and a container image — so it carries its own `.agents/` for its rules, indexes, agent
-wiki and memory, and it must not push any of that into the published set. Producing the
-set is not a licence to keep local rules in it: a repository-specific convention in
-`{shared}` is broadcast to everyone, which is the same failure as a shared convention
-copied into a consumer, running the other way.
+The `shared` / `local` vocabulary is retired. *"Is this true beyond this workspace?"* is
+still worth asking of a rule, because a rule that only fits one situation is a sign the rule
+is over-fitted — but the answer no longer decides where the file goes. There is one place it
+goes.
 
-## B. Resolution order
+## B. Changing a convention
 
-Full procedure in [`mcp-connector.md`](agents://rules/mcp-connector.md). In summary:
+Find the file that owns it — `AGENTS.md`'s Instruction tools block is the routing table and
+gives the path — and edit it. That is the whole procedure.
 
-1. If the `lxagents-shared-instruction` connector is available in this session, that is the
-   shared set.
-2. Every file in the set is its own tool, so the client's tool list already says what
-   exists. Start at `root_index`, which routes to the rest.
-3. Call the one tool whose trigger has fired. Nothing is called before that.
-4. If the connector is unavailable, say so plainly and continue on the local set only.
+The quality bars are the real constraint:
 
-**Never vendor the shared set.** There is no checkout to commit, and creating one by
-hand — cloning, copying, pasting — reintroduces exactly the drift the connector
-removes. If you find a vendored copy already present, that is a finding for
-[`duplicate-instruction-audit.md`](agents://rules/duplicate-instruction-audit.md), which
-runs on request.
+* A rule you **notice is missing** is still proposed, not written. See
+  [`discovery-protocol.md`](discovery-protocol.md). Editing a rule that exists is ordinary
+  work; inventing a new one is gated.
+* Shape, frontmatter, and one-subject-per-file:
+  [`../creators/instruction-creator.md`](../creators/instruction-creator.md).
+* A change this large wants a **memory record**, because the root has no version and no
+  history. See [`../rules/memory-policy.md`](../rules/memory-policy.md).
 
-## C. Precedence
+**One caution that replaces the old one.** The root is not a git repository, so these files
+have no version history. There is no `git diff` to recover a bad edit from and no rollback.
+**Read before you overwrite, and prefer a targeted edit to a rewrite when you are unsure.**
 
-Resolve by *kind* first; within a kind, **local always wins over shared**. Highest
-first:
+## C. The always-on mandate
 
-1. An explicit instruction from the user in the current session.
-2. Rules — local `{repo}/.agents/rules/`, then shared `agents://rules/`.
-3. Other instructions — local `{repo}/.agents/**`, then shared `agents://**`.
-4. Agent knowledge — local `{repo}/.agents/wiki/`.
-5. Human documentation — local `{repo}/wiki/`.
-6. Memory — local `{repo}/.agents/memory/`.
-7. Your own defaults and habits — last, always.
+Everything in this section applies to **every** request, automatically. There is no trigger
+phrase and no opt-in. A user who says only "fix the typo" has still asked for the procedure
+below; silence is not an exemption, and neither is the size of the change.
 
-## D. Override semantics
-
-Override is **by `name`, and it is whole-file**. A local file whose frontmatter `name`
-equals a shared file's `name` replaces that shared file entirely for that repository.
-There is no partial merge and no section-level override.
-
-The procedure:
-
-1. **Confirm the shared file genuinely does not fit this repository.** A preference is
-   not a reason; an incompatibility is.
-2. Copy the shared file into the matching local folder, keeping the **same `name`**.
-3. Change what must change, and state at the top of the local file which shared file it
-   replaces and why, in one line.
-4. Add a row to the override table in `.agents/index/root-index.md`, **in the same
-   commit**.
-5. Overrides are whole-file. A local file must never re-link to the shared file it
-   replaces as if both applied.
-6. **Overrides are a cost, not a feature.** Every override is a copy that will drift.
-   Prefer proposing the change upstream; keep the override only while the
-   incompatibility lasts, and drop it when it stops applying.
-
-An override with a stated reason is a decision. A copy without one is an accident, and
-the duplicate audit will propose deleting it.
-
-## E. Promoting a local rule to shared
-
-When a second repository needs the same rule, that is the signal. Propose it against
-the shared set per
-[`discovery-protocol.md`](agents://rules/discovery-protocol.md). Once it lands, delete
-the local copies and their override rows — in the same commit as the deletion, so no
-index points at a file that no longer exists.
-
-## F. Changing the shared set
-
-A pull request against `LXAgents-MCP/shared-instruction`, following that repository's
-own `git/` conventions. Because a shared change alters behavior in every consuming
-repository at once:
-
-* A change that breaks an existing convention is a **major** version bump
-  ([`versioning.md`](agents://rules/versioning.md)).
-* Every release is logged in that repository's `wiki/logs/`, and the entry names what
-  consumers must do — nothing, re-read a file, or drop an override.
-* Consumers pick the change up on their next read. There is no upgrade step, which is
-  why the log entry has to be explicit about what changed.
-
-## G. Adding a new repository to the organization
-
-The adoption checklist:
-
-1. Root `AGENTS.md` with the connector bootstrap block, verbatim.
-2. `.agents/index/root-index.md` with an override table — empty is valid and
-   meaningful.
-3. `.agents/rules/repository.md`, naming the mode and the connector.
-4. `.agents/wiki/context/repository-map.md`, filled with real discovery output.
-5. Local wiki and memory seeds.
-6. **Nothing copied from the shared set.**
-
-The `agents-setup` prompt performs all of it. Invoke it rather than doing it by hand.
-
-## H. Global task and git workflow enforcement
-
-Everything in this section applies to **every** request, automatically. There is no
-trigger phrase and no opt-in. A user who says only "fix the typo" has still asked for
-the procedure below; silence is not an exemption, and neither is the size of the change.
-
-This section is the mandate, not the procedure. Each row names the file that owns one,
+This section is the **mandate**, not the procedure. Each row names the file that owns one,
 and that file remains the single authority for how it is carried out.
 
 | On every request you must… | Authority |
 |---|---|
-| Declare the four mandatory tools in `AGENTS.md`, and carry their gates inline | `plan_creator`, `branching_strategy`, `commit_conventions`, `discovery_protocol` — [`auto-activation.md`](agents://rules/auto-activation.md) |
-| Refine the requirements and put a plan in front of the user **before** running code or writing a file | [`../creators/plan-creator.md`](agents://creators/plan-creator.md) §A |
-| Wait for the user to **approve** that plan before writing a file, creating a branch, or changing state | [`../creators/plan-creator.md`](agents://creators/plan-creator.md) §B |
-| Break the work into tasks and present the list before starting — task 1 is the record, task `n` is the release, the work goes between | [`../creators/plan-creator.md`](agents://creators/plan-creator.md) §B |
-| Write the task record **before** the work, and append each task's own entry in the same commit as that task | [`../creators/plan-creator.md`](agents://creators/plan-creator.md) §B, §E |
-| Isolate each task on its own branch — one task, one branch, never two on one | [`../git/branching-strategy.md`](agents://git/branching-strategy.md), [`../creators/plan-creator.md`](agents://creators/plan-creator.md) §C |
-| Ask before opening a pull request, and ask again before merging one | [`../creators/plan-creator.md`](agents://creators/plan-creator.md) §F |
-| Propose any instruction you think should exist — never write it into either set yourself | [`discovery-protocol.md`](agents://rules/discovery-protocol.md) |
-| Stop, ask, and write a diagnostic report the moment this workflow is bypassed despite activation having run | [`auto-activation.md`](agents://rules/auto-activation.md) |
+| Read the Instruction tools block and declare the four mandatory tools | the root [`AGENTS.md`](../../AGENTS.md) |
+| **Write a plan, and make sure `.agents/plans/` exists** before any work that is more than one step | [`../creators/plan-creator.md`](../creators/plan-creator.md) §A |
+| Refine the requirements and put the plan in front of the user **before** writing a file or changing state | [`../creators/plan-creator.md`](../creators/plan-creator.md) §A |
+| Wait for the user to **approve** that plan before writing a file, creating a branch, or changing state | [`../creators/plan-creator.md`](../creators/plan-creator.md) §B |
+| Break the work into tasks and present the list before starting — task 1 is the record, task `n` is the release | [`../creators/plan-creator.md`](../creators/plan-creator.md) §B |
+| Write the task record **before** the work, and append each task's entry as that task lands | [`../creators/memory-creator.md`](../creators/memory-creator.md) |
+| Isolate each task on its own branch — one task, one branch, never two on one | [`../git/branching-strategy.md`](../git/branching-strategy.md) |
+| Ask before opening a pull request, and ask again before merging one | [`../creators/plan-creator.md`](../creators/plan-creator.md) §F |
+| Propose any instruction you think should exist — never write it yourself | [`discovery-protocol.md`](discovery-protocol.md) |
+| Stop and write a diagnostic report the moment this workflow is bypassed despite activation having run | the root [`AGENTS.md`](../../AGENTS.md) §When activation runs but the workflow does not |
 
-### The gates are not trigger-gated; the procedures are
+**The gates are not trigger-gated; the procedures are.** `AGENTS.md` fires most conventions
+from a trigger — `plan_creator` on a request of more than one step,
+`branching_strategy` when a branch is about to exist. What is *not* trigger-gated is the part
+that has to stand before the work starts: **the gates live inline in `AGENTS.md`**, read from
+disk at session start, while the tools supply the procedures that implement them.
 
-[`auto-activation.md`](agents://rules/auto-activation.md) fires most conventions from a
-trigger, and the four below are no exception — `plan_creator` fires on a request of more
-than one step, `branching_strategy` when a branch is about to exist, and so on. What is
-*not* trigger-gated is the part that has to be standing before the work starts: **the gates
-themselves live inline in the repository's `AGENTS.md`**, read from disk at session start,
-while the tools supply the procedures that implement them.
+The activation contract — routing table, precedence order, gates, cost discipline — lives in
+that same `AGENTS.md` and nowhere else. It was briefly `rules/auto-activation.md`, which put
+one hop between the file every session already opens and the rules for how to use it.
 
-The distinction is the whole design. A permission gate first read at the moment you are
-about to write a file has already failed; a branch-naming procedure fetched at the moment
-you name a branch has not. So the cheap, always-true half is inline and the expensive,
+The distinction is the whole design. A permission gate first read at the moment you are about
+to write a file has already failed; a branch-naming procedure fetched at the moment you name
+a branch has not. So the cheap, always-true half is inline and the expensive,
 sometimes-needed half is a call.
 
-[`discovery-protocol.md`](agents://rules/discovery-protocol.md) is the sharpest case. Its
-trigger would fire only once you had already recognised a finding for what it is — the point
-at which writing the rule into the set yourself is one edit away. Its gate block is
-therefore reproduced verbatim in `AGENTS.md` and stands from the start of every request,
-including the request that never mentions rules at all; `discovery_protocol` supplies §B–§F
-when a finding actually appears.
+[`discovery-protocol.md`](discovery-protocol.md) is the sharpest case. Its trigger would fire
+only once you had already recognised a finding for what it is — the point at which writing
+the rule yourself is one edit away. Its gate therefore stands in `AGENTS.md` from the start
+of every request, including the request that never mentions rules at all.
 
 **The four are declared by every repository.** A repository may narrow the rest of its
 declaration block to the conventions it uses; it may not drop one of these four, and it may
 not carry them as a tool row without the inline gates.
 
-### The three permission gates
+## D. The three permission gates
 
 All three are explicit-consent gates, and each is satisfied by permission the user has
-already given — for this task or as a standing instruction. Once given, do not ask
-again.
+already given — for this task or as a standing instruction. Once given, do not ask again.
 
 * **Approving the plan.** Present the task list, then ask, and wait for a yes. Until it
-  arrives, write no file, create no branch, and run nothing that changes state. Reading
-  and searching to *build* the plan are not gated.
+  arrives, write no file, create no branch, and run nothing that changes state. Reading and
+  searching to *build* the plan are not gated.
 * **Opening a pull request.** Ask, and wait for a yes.
-* **Merging a branch or a pull request.** Ask, and wait for a yes. Never merge on your
-  own initiative, and never enable auto-merge unless you were asked to.
+* **Merging a branch or a pull request.** Ask, and wait for a yes. Never merge on your own
+  initiative, and never enable auto-merge unless you were asked.
 
-**No gate is satisfied by inference.** A detailed request is not an approved plan,
-finishing the work is not permission to open anything, and a green pipeline is not
-permission to merge it. The full terms of the plan gate — what counts as approval and
-what does not — are in
-[`../creators/plan-creator.md`](agents://creators/plan-creator.md) §B.
+**No gate is satisfied by inference.** A detailed request is not an approved plan, finishing
+the work is not permission to open anything, and a green pipeline is not permission to merge
+it. The full terms of the plan gate are in
+[`../creators/plan-creator.md`](../creators/plan-creator.md) §B.
+
+## Related
+
+| Concern | Owner |
+|---|---|
+| Precedence between the kinds of file | the root [`AGENTS.md`](../../AGENTS.md) §Precedence |
+| Placement — the authority | [`directories.md`](directories.md) |
+| What may never be installed | [`repository.md`](repository.md) §The never-install rule |
+| Version bumps in a real project — never automatic, and never here | [`versioning.md`](versioning.md) |
+
+**This file's name is retired.** It is called `shared-instructions.md` because the links
+point there, and there is nothing shared any more. The content is the always-on mandate, and
+that is what it is about.
