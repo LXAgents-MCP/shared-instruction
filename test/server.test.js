@@ -234,6 +234,74 @@ test("every tool is generated from a file", async () => {
   assert.deepEqual(names, [...TOOL_FILES.keys()].sort());
 });
 
+// The hub. `automation` is read in every session, so it is the one tool whose size is a recurring
+// cost, and the one tool allowed to name the others. These tests keep it total (every tool is
+// routed), honest (no tool that does not exist), and small.
+
+const HUB_NAME = "Read this tool every session";
+const HUB_BUDGET = 10_000;
+
+/** The `- \`id\` — condition` rows of the hub. */
+function hubRows(text) {
+  return [...text.matchAll(/^- `([a-z][a-z0-9_]*)` — (.+)$/gm)].map((m) => ({
+    id: m[1],
+    condition: m[2],
+  }));
+}
+
+test("automation is the first tool, and says it is read every session", async () => {
+  const { client } = await connect();
+  const { tools } = await client.listTools();
+
+  assert.equal(tools[0].name, "automation", "the hub must be the first tool a client lists");
+  assert.ok(
+    tools[0].description.startsWith(HUB_NAME),
+    `the description must open with "${HUB_NAME}", found: ${tools[0].description.slice(0, 60)}`,
+  );
+
+  const text = textOf(await client.callTool({ name: "automation", arguments: {} }));
+  assert.match(text, new RegExp(`^---\\r?\\nname: ${HUB_NAME}\\r?\\n`));
+});
+
+test("automation routes every other tool exactly once, and no tool that does not exist", async () => {
+  const { client } = await connect();
+  const { tools } = await client.listTools();
+  const text = textOf(await client.callTool({ name: "automation", arguments: {} }));
+
+  const rows = hubRows(text);
+  const listed = rows.map((row) => row.id);
+  const expected = tools.map((tool) => tool.name).filter((name) => name !== "automation");
+
+  assert.deepEqual([...listed].sort(), [...expected].sort());
+  assert.equal(new Set(listed).size, listed.length, "a tool is listed twice");
+
+  for (const { id, condition } of rows) {
+    assert.ok(
+      condition.length >= 20 && condition.length <= 200,
+      `${id} needs a condition a reader can match against a request, found ${condition.length} chars`,
+    );
+  }
+});
+
+test("automation stays small enough to read every session", async () => {
+  const { client } = await connect();
+  const text = textOf(await client.callTool({ name: "automation", arguments: {} }));
+
+  assert.ok(
+    text.length <= HUB_BUDGET,
+    `automation is ${text.length} characters; the budget is ${HUB_BUDGET}. It is paid for in every session.`,
+  );
+});
+
+test("the server's own instructions send a session to automation first", async () => {
+  const { client } = await connect();
+  const instructions = client.getInstructions() ?? "";
+
+  assert.match(instructions, /`automation`/);
+  assert.match(instructions, /every session/);
+  assert.doesNotMatch(instructions, /Call nothing at session start/);
+});
+
 // Each tool ends in itself. A tool is read on its own, by a session that has not read any other,
 // so a pointer to another tool is a pointer to text the reader does not have. The detector
 // below is deliberately about links, filenames and ids, not about prose: single words such as
@@ -264,11 +332,12 @@ function pointersFrom(file, tools) {
       if (other.path === file.path) continue;
 
       const sameName = other.stem === file.stem; // github/api.md and gitlab/api.md
-      const pathless = other.path.replace(/\.md$/, "");
+      // A root-level file has no folder, so its path without `.md` is one ordinary word.
+      const pathless = other.path.includes("/") ? other.path.replace(/\.md$/, "") : null;
       if (
         !sameName &&
         (new RegExp(`(?<![\\w-])${escapeRegExp(other.stem)}\\.md\\b`).test(line) ||
-          line.includes(pathless))
+          (pathless !== null && line.includes(pathless)))
       ) {
         hits.push([at, "path", other.path]);
       }

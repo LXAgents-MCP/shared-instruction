@@ -19,7 +19,7 @@ condition that activates each. The server boots and `npm test` is green.
 the owner will delete it, so nothing here may depend on it afterwards: files are copied, never
 linked.
 
-**Status:** open. Tasks 1–4 of 7 landed.
+**Status:** open. Tasks 1–5 of 7 landed.
 
 ## Tasks
 
@@ -163,4 +163,42 @@ the `automation` hub that task 5 adds.
 
 **Left for later tasks.** `automation` (task 5). Docs and the local set still name the removed
 tools (task 6).
+
+### Task 5 — feat/automation
+
+Landed. `content/automation.md` is the 48th tool and the only one that names the others. Id
+`automation`; frontmatter `name: Read this tool every session`; the description opens with the
+same words so a client listing tools shows them.
+
+- **What it holds.** The rules of use (read once, call nothing else yet, call a tool only when its
+  condition is true, never "just in case", call in the order the work reaches them), then one row
+  per other tool — 47 rows in eight groups, each `` `id` — condition ``. It is a manifest with
+  conditions, not a copy of any tool's text. 5.6 KB, about 1.5k tokens; the test ceiling is 10 KB.
+- **Where the conditions come from.** Each is taken from that tool's own description and body
+  (`branching_strategy` before a branch is created, `commit_conventions` before a commit message,
+  `github_authentication` before any `gh` call), and from the routing the old set carried where a
+  tool already existed. Docs and format tools fire on the file type; forge tools fire on the
+  operation.
+- **One condition is broader than the old rule.** `shared_instructions` is routed to "any request
+  that will write a file, commit, or change state", so a read-only question does not pay for it.
+- **One sentence added that no source tool carried.** "If a tool named here is not in your tool list,
+  say so in your first message and work from what you have; never rebuild a missing tool from
+  memory." It replaces the unavailable-connector obligation that went with the deleted
+  connector rule.
+- **`src/server.js`.** The `initialize` instructions now send a session to `automation` first,
+  once, and say each tool is complete on its own. This is the mirror of the hub's own wording.
+- **Tests.** The hub is the first tool listed; its description opens with the name; it routes every
+  other tool exactly once and no tool that does not exist; every condition is 20–200 characters; it
+  stays under 10 KB; the server's instructions name it and say "every session". Each of the first
+  three checks was mutation-proven by dropping a row, adding a phantom row, and padding the file.
+  The pointer guard from task 4 also needed a fix: for a root-level file, "its path without `.md`"
+  is one ordinary word, so it matched prose.
+
+**The read is text, not mechanism.** A read-only server cannot make a client call a tool. What
+makes an agent read it is the description, the `initialize` instructions, the repository's
+`AGENTS.md` (task 6), and these tests pinning the wording. The tests prove the sentences exist,
+not that anyone obeys them.
+
+**Left for later tasks.** `AGENTS.md`, `README.md`, the wiki and the local indexes still say "call
+nothing at session start" and name removed tools (task 6).
 

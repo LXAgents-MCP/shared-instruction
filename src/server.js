@@ -27,7 +27,7 @@ export function createServer() {
     { name: SERVER_NAME, version: VERSION },
     {
       instructions:
-        "The LXAgents shared agent instruction set, read-only. Every file in the set is its own tool: call the one whose name says what you need, such as plan_creator, branching_strategy, commit_conventions, or discovery_protocol. Call nothing at session start — each convention fires on its own trigger.",
+        "The LXAgents shared agent instruction set, read-only. Read the `automation` tool once at the start of every session: it lists every tool and the condition that activates each. Call no other tool until its condition is true. Each tool is complete on its own and points to no other.",
     },
   );
 
