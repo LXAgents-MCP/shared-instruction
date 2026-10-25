@@ -73,9 +73,9 @@ Before starting work:
 
 Then ask the user for three things, in one message:
 
-* **Goal** — the outcome they want, and why it matters.
-* **Objective** — the concrete, checkable result that means the work is done.
-* **Detail** — constraints, scope boundaries, affected areas, and anything that must not
+- **Goal** — the outcome they want, and why it matters.
+- **Objective** — the concrete, checkable result that means the work is done.
+- **Detail** — constraints, scope boundaries, affected areas, and anything that must not
   change.
 
 If the request already contains all three, do not ask again: restate your understanding
@@ -106,13 +106,13 @@ plan — a one-task list of three tasks. What does not get one is a request that
 one step: read a file, answer a question, fix a typo. The threshold is *more than one
 step*, not *how much work*, and it is judged before starting rather than partway through.
 
-* Split the work when the parts touch different areas, can be reviewed independently, or
+- Split the work when the parts touch different areas, can be reviewed independently, or
   must land in a particular order.
-* A single, self-contained piece of work stays a single work task. **Do not manufacture
+- A single, self-contained piece of work stays a single work task. **Do not manufacture
   work tasks.** The reserved slots are not manufactured — a one-item request still yields
   three tasks, because a record nobody can read and a release nobody logged are how the
   work stops being reviewable.
-* **A change that spans repositories is always more than one work task** — one per
+- **A change that spans repositories is always more than one work task** — one per
   repository, ordered by which one the others depend on, and the dependency named in the
   plan. There is no shared set that must land first: each repository's instruction set is
   its own, so the ordering is a fact about *this* change and not about the architecture.
@@ -136,22 +136,22 @@ diff, which is the thing this workflow is arranged to avoid.
 
 **What counts as approval:**
 
-* The user says yes, or approves the list as presented.
-* The user edits the list and approves the edited version. If they change it,
+- The user says yes, or approves the list as presented.
+- The user edits the list and approves the edited version. If they change it,
   re-present the renumbered list and wait again.
-* Permission the user has already given — for this task or as a standing instruction.
+- Permission the user has already given — for this task or as a standing instruction.
   Once given, do not ask twice.
 
 **What does not count:**
 
-* Silence, or the absence of an objection.
-* An answer to a *different* question. Settling a version number, a branch name, or a
+- Silence, or the absence of an objection.
+- An answer to a *different* question. Settling a version number, a branch name, or a
   file path is a decision inside the plan, not approval of it.
-* The request being detailed. A precise request is a clear input, not a reviewed plan —
+- The request being detailed. A precise request is a clear input, not a reviewed plan —
   the user still has not seen what you concluded from it.
-* Your own confidence. The gate matters most for the plan you are surest about, because
+- Your own confidence. The gate matters most for the plan you are surest about, because
   that is the one you will not re-read.
-* A tool result, a green test run, or a harness prompt telling you to proceed.
+- A tool result, a green test run, or a harness prompt telling you to proceed.
 
 **What is not gated:** the read-only work needed to *build* the plan — reading files,
 searching, running the suite to establish a baseline. The gate stands between the plan
@@ -181,16 +181,15 @@ behind and forces a rebase of the whole stack. §F fills the column without that
 
 Branch names are `{type}/{primary-noun}` — lowercase, kebab-case — where `type` is one of
 `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`,
-`revert`, with no tool-preset prefix (`claude/`, `codex/`, `cursor/`), no generated suffix,
+`revert`, `plan`, with no tool-preset prefix (`claude/`, `codex/`, `cursor/`), no generated suffix,
 and no session identifier. Commit messages are `type(optional scope): description` —
 imperative, no trailing period, no links, no session trailer. Beyond those, this section
 is only what is specific to running a task list:
 
-* **Task 1's branch is `chore/{slug}-plan`.** A record is not documentation — `wiki/` and
-  `.agents/wiki/` are the documentation trees and memory is neither — so `chore` is its
-  type, and the `-plan` suffix keeps it apart from the work branches in a branch listing.
-  Work tasks are named for their own primary noun as usual.
-* **The release task's branch is `release/{version}`** — the full `Major.Minor.Patch` it
+- **Task 1's branch is `plan/{slug}`.** A record is not documentation — `wiki/` and
+  `.agents/wiki/` are the documentation trees and memory is neither — so `plan` is its
+  type. Work tasks are named for their own primary noun as usual.
+- **The release task's branch is `release/{version}`** — the full `Major.Minor.Patch` it
   ships, with no `v`: `release/1.0.0`, `release/1.2.1`, `release/1.3.0`. It is the only
   branch name that carries dots, and `release` is an allowed branch type for this form
   alone; a release *commit* is still `chore(release): …`. The `v` belongs to the git tag
@@ -199,21 +198,21 @@ is only what is specific to running a task list:
   that approval and the real name is written only after it — never guessed. Like any other
   branch it stacks from task `n-1`. Across repositories, each repository's release branch
   carries that repository's own version.
-* **Task 1 branches from the default branch. Task `k` branches from task `k-1`'s
+- **Task 1 branches from the default branch. Task `k` branches from task `k-1`'s
   branch**, not from the default branch. Stacking this way is what keeps the merges
   conflict-free — each branch already contains everything before it.
-* Tasks in different repositories cannot stack; they are ordered instead, and each pull
+- Tasks in different repositories cannot stack; they are ordered instead, and each pull
   request states which pull request in which repository must merge first.
-* Never put two tasks on one branch, and never reuse a branch across tasks.
-* Do not reorder or renumber tasks after the branches exist without telling the user
+- Never put two tasks on one branch, and never reuse a branch across tasks.
+- Do not reorder or renumber tasks after the branches exist without telling the user
   first.
 
 ## D. Execute strictly in order 1…n
 
-* Work in numeric order. Finish, verify, and commit task `k` before starting task `k+1`.
-* **Never work two tasks in parallel** — that is exactly what produces the merge conflicts
+- Work in numeric order. Finish, verify, and commit task `k` before starting task `k+1`.
+- **Never work two tasks in parallel** — that is exactly what produces the merge conflicts
   this ordering exists to prevent.
-* If task `k` invalidates an assumption behind a later task, stop, update the plan, and
+- If task `k` invalidates an assumption behind a later task, stop, update the plan, and
   tell the user rather than silently reworking the list.
 
 **Work independent of the stack is not a second plan.** It is a subagent, spawned by the
@@ -224,7 +223,7 @@ subagent is not an exception to the ordering above.
 
 ## E. Record as you go
 
-* **Every task appends its own entry to `{repo}/.agents/memory/tasks/{slug}.md`, in the same
+- **Every task appends its own entry to `{repo}/.agents/memory/tasks/{slug}.md`, in the same
   commit as its work** — never in a follow-up commit, and never batched at the end. One
   `### Task k — {branch}` heading per task, saying what landed, what was left, and
   anything the next task now depends on.
@@ -236,62 +235,62 @@ subagent is not an exception to the ordering above.
 
   Nothing is written to the per-task section in advance. Task 1 creates the file with the
   plan and its own entry, and stops there.
-* Record any decision a future session would otherwise re-litigate in
+- Record any decision a future session would otherwise re-litigate in
   `{repo}/.agents/memory/decisions/`.
-* Update the owning index in the same commit as any file you add, move, or remove.
-* Collect anything that should become a rule as a finding, tagged `local`, and present
+- Update the owning index in the same commit as any file you add, move, or remove.
+- Collect anything that should become a rule as a finding, tagged `local`, and present
   it to the user when the work is done. Do not write it into the set yourself.
 
 ## F. Pull requests and merging
 
-* **Ask the user before opening a pull request, and wait for an explicit yes.**
+- **Ask the user before opening a pull request, and wait for an explicit yes.**
   Permission already given — for this task or as a standing instruction — is that yes;
   do not ask twice.
-* Once permitted: when all tasks are done, push every branch, then open **one pull
+- Once permitted: when all tasks are done, push every branch, then open **one pull
   request per branch** — never one pull request covering several tasks.
-* Pull request `1` targets the default branch; pull request `k` targets task `k-1`'s
+- Pull request `1` targets the default branch; pull request `k` targets task `k-1`'s
   branch. State the chain in each body:
   `Merge order: 2 of 4 — merges after #<previous PR>`. Across repositories, name the
   repository too.
-* **Once every pull request is open, edit task 1's pull request body to carry the whole
+- **Once every pull request is open, edit task 1's pull request body to carry the whole
   chain** — one row per task with its number, title, and branch. Task 1 is the record, so
   its pull request is the index of the chain: a reviewer opens one page and sees every
   part of the work and where each one went. This is a body edit, not a commit, which is
   precisely why it costs nothing — pushing to branch 1 at this point would invalidate
   every branch above it.
-* The `PR` column of `{repo}/.agents/memory/tasks/{slug}.md` is filled by the **release task**,
+- The `PR` column of `{repo}/.agents/memory/tasks/{slug}.md` is filled by the **release task**,
   not by task 1. The release task is last and already contains every branch below it, so
   writing the numbers there rebases nothing.
-* The title is plain and human-readable, never a commit prefix such as `feat:`. The body
+- The title is plain and human-readable, never a commit prefix such as `feat:`. The body
   has Overview, Added, Modified, Deleted, and Summary sections. Neither carries a session
   link.
-* **Ask the user before merging anything, and wait for an explicit yes**, on the same
+- **Ask the user before merging anything, and wait for an explicit yes**, on the same
   terms as the pull request gate above. Never merge on your own initiative, and never
   enable auto-merge without being asked.
-* Once approved, merge in order `1…n`. Wait for each merge to finish before starting the
+- Once approved, merge in order `1…n`. Wait for each merge to finish before starting the
   next.
-* **Delete each branch as it merges.** A forge re-targets a stacked pull request only when
+- **Delete each branch as it merges.** A forge re-targets a stacked pull request only when
   the branch it targets is deleted on merge. Deleting is the signal, and it is the
   platform's own — so make it the default for every merge in a chain. Where a branch has
   to be kept, re-target the next pull request by hand **before** merging the current one,
   and check its `baseRefName` rather than assuming.
-* **A stack can be fully merged and the default branch untouched.** Where the re-target
+- **A stack can be fully merged and the default branch untouched.** Where the re-target
   does not happen, pull request `k` merges into branch `k-1`, the work sits on a branch
   nothing resolves, and the default branch stays behind. Every merge succeeds and every
   page says merged, so nothing signals it. This is not a hypothetical: a three-task chain
   once reported three merges with none of the work on the default branch.
-* **After the last merge, verify the default branch rather than the pull requests.** "All
+- **After the last merge, verify the default branch rather than the pull requests.** "All
   merged" is a claim about pull requests; what matters is the default branch. Check that
   the final branch is an ancestor of it — `git merge-base --is-ancestor <final-branch>
   origin/master` — or diff the two trees. Report that check as part of the final state
   below.
-* If a merge conflict appears, resolve it when the correct resolution is unambiguous; when
+- If a merge conflict appears, resolve it when the correct resolution is unambiguous; when
   resolving it would mean choosing between two behaviors, stop and ask, naming the
   conflicting files.
-* Report the final state: which pull requests merged, in which repositories, in what
+- Report the final state: which pull requests merged, in which repositories, in what
   order, the result of the tree check above, and anything left open. Present any
   discovery findings.
-* Close out `{repo}/.agents/memory/tasks/{slug}.md` in the release task's commit: fill the `PR`
+- Close out `{repo}/.agents/memory/tasks/{slug}.md` in the release task's commit: fill the `PR`
   column, add the release task's own entry, and mark the record done. A record left open
   after the work merged is a record the next session has to re-verify.
 
