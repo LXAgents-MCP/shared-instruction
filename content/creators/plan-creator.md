@@ -95,14 +95,14 @@ goes between them.
 
 | # | Slot | What it is |
 |---|---|---|
-| `1` | **The task record** | Creates `{repo}/.agents/memory/tasks/{slug}.md` — the confirmed task list, written *before* any of it is built. **In a project**; a root has no memory, so the plan file is the record there. |
+| `1` | **The task record** | Creates `{repo}/.agents/memory/tasks/{slug}.md` — the confirmed task list, written *before* any of it is built. **Its branch is strictly `plan/{slug}`.** **In a project**; a root has no memory, so the plan file is the record there. |
 | `2…n-1` | **The work** | One task per unit of work. |
-| `n` | **The release** | Version, changelog, index rows, and the closing entry on the record. Its branch is `release/{version}`. |
+| `n` | **The release** | Version, changelog, index rows, and the closing entry on the record. **Its branch is strictly `release/{version}`.** |
 
 Splitting applies to the middle only.
 
 **Every task list starts here, every time.** A single self-contained edit still gets a
-plan — a one-task list of three tasks. What does not get one is a request that is genuinely
+plan — a one-task list of three tasks. **STRICT RULE: Task 1 MUST be on branch `plan/{slug}` and the final task MUST be on branch `release/{version}`.** What does not get one is a request that is genuinely
 one step: read a file, answer a question, fix a typo. The threshold is *more than one
 step*, not *how much work*, and it is judged before starting rather than partway through.
 
@@ -186,10 +186,10 @@ and no session identifier. Commit messages are `type(optional scope): descriptio
 imperative, no trailing period, no links, no session trailer. Beyond those, this section
 is only what is specific to running a task list:
 
-- **Task 1's branch is `plan/{slug}`.** A record is not documentation — `wiki/` and
+- **STRICT RULE: Task 1's branch is ALWAYS `plan/{slug}`.** No exceptions. A record is not documentation — `wiki/` and
   `.agents/wiki/` are the documentation trees and memory is neither — so `plan` is its
   type. Work tasks are named for their own primary noun as usual.
-- **The release task's branch is `release/{version}`** — the full `Major.Minor.Patch` it
+- **STRICT RULE: The final release task's branch is ALWAYS `release/{version}`** — the full `Major.Minor.Patch` it
   ships, with no `v`: `release/1.0.0`, `release/1.2.1`, `release/1.3.0`. It is the only
   branch name that carries dots, and `release` is an allowed branch type for this form
   alone; a release *commit* is still `chore(release): …`. The `v` belongs to the git tag
@@ -431,3 +431,4 @@ that gate authorises.
 - Starting the work. The plan is not the work.
 - Adding a second center file, or a routing table outside `tasks.md`.
 - Skipping the record, or writing it at the end instead of as task 1.
+- Creating a task list where the first task's branch is not `plan/{slug}` or the last task's branch is not `release/{version}`.
